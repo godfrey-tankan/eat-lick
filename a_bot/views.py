@@ -21,7 +21,6 @@ from .responses import *
 
 def get_greeting():
     current_hour = datetime.now().hour
-
     if 5 <= current_hour < 12:
         return "morning"
     elif 12 <= current_hour < 18:
