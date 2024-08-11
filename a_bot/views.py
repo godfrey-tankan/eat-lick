@@ -33,6 +33,13 @@ def generate_response(response, wa_id, name):
         support_member = SupportMember.objects.get(phone_number=wa_id[0])
     except SupportMember.DoesNotExist:
         support_member = None
+    with contextlib.suppress(Ticket.DoesNotExist):
+        if check_ticket := Ticket.objects.get(created_by=wa_id[0]):
+            if check_ticket.status.lower() == HELPING_MODE:
+                response = accept_ticket(wa_id, name, response)
+                return response
+            else:
+                return "Ticket already assigned or not available
     if support_member and support_member.user_mode == HELPING_MODE:
         response = handle_help(wa_id, response, name)
         return response
@@ -239,11 +246,11 @@ def accept_ticket(wa_id,name, ticket_id):
     if is_ticket_open:
         ticket = Ticket.objects.get(id=ticket_id)
         ticket.assigned_to = support_member.phone_number
-        ticket.status = HELPING_MODE
+        ticket.status = PENDING_MODE
         ticket.save()
         TicketLog.objects.create(
             ticket=ticket,
-            status=HELPING_MODE,
+            status=PENDING_MODE,
             changed_by=support_member.phone_number
         )
         message=f"ticket *#{ticket.id}* is now assigned to *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
