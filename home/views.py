@@ -15,17 +15,31 @@ from django.views.generic import UpdateView
 # Create your views here.
 
 def index(request):
-    # Page from the theme 
+    # Get all tickets
     all_tickets = Ticket.objects.all()
-    
+    total_tickets = all_tickets.count()
+
+    open_tickets_count = all_tickets.filter(status='open').count()
+    closed_tickets_count = all_tickets.filter(status='closed').count()
+    pending_tickets_count = all_tickets.filter(status='pending').count()
+    resolved_tickets_count = all_tickets.filter(status='resolved').count()
+
+    def calculate_percentage(count):
+        return (count / total_tickets * 100) if total_tickets > 0 else 0
+
     context = {
-        "tickets_count" :all_tickets.count(),
-        "open_tickets" :all_tickets.filter(status ='open').count(),
-        "closed_tickets":all_tickets.filter(status='closed'),
-        "pending_ticktes":all_tickets.filter(status='pending'),
-        "resolved_tickets":all_tickets.filter(status='resolved')
+        "tickets_count": total_tickets,
+        "open_tickets_count": open_tickets_count,
+        "closed_tickets_count": closed_tickets_count,
+        "pending_tickets_count": pending_tickets_count,
+        "resolved_tickets_count": resolved_tickets_count,
+        "open_tickets_percentage": calculate_percentage(open_tickets_count),
+        "closed_tickets_percentage": calculate_percentage(closed_tickets_count),
+        "pending_tickets_percentage": calculate_percentage(pending_tickets_count),
+        "resolved_tickets_percentage": calculate_percentage(resolved_tickets_count),
     }
-    return render(request, 'pages/index.html',context=context)
+
+    return render(request, 'pages/index.html', context=context)
 
 # Create your views here.
 def home_view(request):
