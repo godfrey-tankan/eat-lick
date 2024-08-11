@@ -20,13 +20,18 @@ load_dotenv()  # take environment variables from .env.
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
+VERIFY_TOKEN = os.getenv('VERIFY_TOKEN')
+APP_SECRET = os.getenv('APP_SECRET')
+APP_ID = os.getenv('APP_ID')
+VERSION = os.getenv('VERSION')
+PHONE_NUMBER_ID = os.getenv('PHONE_NUMBER_ID')
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
-if not SECRET_KEY:
-    SECRET_KEY = ''.join(random.choice( string.ascii_lowercase  ) for i in range( 32 ))
+SECRET_KEY = os.environ.get('SECRET_KEY') or ''.join(random.choice( string.ascii_lowercase  ) for i in range( 32 ))
 
 # Enable/Disable DEBUG Mode
 DEBUG = str2bool(os.environ.get('DEBUG'))
@@ -146,7 +151,8 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = 'media/'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
