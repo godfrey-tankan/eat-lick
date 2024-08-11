@@ -51,7 +51,7 @@ def generate_response(response, wa_id, name):
     
     if response:#not support_member or wa_id[0]=="263779586059":
         for help_message in help_messages:
-            if help_message in response.lower():
+            if help_message in response.lower() or len(response) > 5:
                 response = handle_inquiry(wa_id, response, name)
             else:
                 response = 'how can i help you today?'
