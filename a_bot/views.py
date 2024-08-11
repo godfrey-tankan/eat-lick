@@ -214,12 +214,12 @@ def broadcast_messages(name,ticket=None,message=None):
     for support_member in support_members:
         user_mobile = support_member.phone_number
         if message:
-            support_member.user_mode = ACCEPT_TICKET_MODE
             support_member.user_status = HELPING_MODE
-            support_member.save()
             message=message
         else:
+            support_member.user_mode = ACCEPT_TICKET_MODE
             message=accept_ticket_response.format(support_member.username,name,ticket.id, ticket.description)
+        support_member.save()
         try:
             data = get_text_message_input(user_mobile, message, None)
             response = send_message(data)
