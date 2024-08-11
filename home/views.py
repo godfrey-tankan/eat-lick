@@ -21,6 +21,9 @@ def index(request):
     context = {
         "tickets_count" :all_tickets.count(),
         "open_tickets" :all_tickets.filter(status ='open').count(),
+        "closed_tickets":all_tickets.filter(status='closed'),
+        "pending_ticktes":all_tickets.filter(status='pending'),
+        "resolved_tickets":all_tickets.filter(status='resolved')
     }
     return render(request, 'pages/index.html',context=context)
 
