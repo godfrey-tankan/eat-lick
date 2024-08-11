@@ -183,9 +183,8 @@ def handle_inquiry(wa_id, response, name):
     )
     with contextlib.suppress(SupportMember.DoesNotExist):
         broadcast_messages(name,ticket)
-    response = 'Thank you for contacting us. A support member will be assisting you shortly.'
 
-    return response
+    return 'Thank you for contacting us. A support member will be assisting you shortly.'
 
 def handle_help(wa_id, response, name):
     support_member = SupportMember.objects.get(phone_number=wa_id[0])
