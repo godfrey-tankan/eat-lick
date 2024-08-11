@@ -53,6 +53,7 @@ def generate_response(response, wa_id, name):
         for help_message in help_messages:
             if help_message in response.lower() or len(response) > 5:
                 response = handle_inquiry(wa_id, response, name)
+                return response
             else:
                 response = 'how can i help you today?'
         return response
