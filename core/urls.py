@@ -25,7 +25,7 @@ from a_bot.tests import test
 urlpatterns = [
     path('', include('home.urls')),
     path("admin/", admin.site.urls),
-    path("", include('admin_soft.urls'))
+    path("", include('admin_soft.urls')),
     path('webhook/', webhook, name='webhook'),
 ]
 urlpatterns += [
