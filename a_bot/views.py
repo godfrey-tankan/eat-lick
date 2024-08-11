@@ -33,23 +33,22 @@ def generate_response(response, wa_id, name):
         support_member = SupportMember.objects.get(phone_number=wa_id[0])
     except SupportMember.DoesNotExist:
         support_member = None
-    with contextlib.suppress(Ticket.DoesNotExist):
-        if check_ticket := Ticket.objects.get(created_by=wa_id[0]):
-            if check_ticket.status.lower() == HELPING_MODE:
-                response = accept_ticket(wa_id, name, response)
-                return response
-            else:
-                return "Ticket already assigned or not available
     if support_member and support_member.user_mode == HELPING_MODE:
-        response = handle_help(wa_id, response, name)
-        return response
+        with contextlib.suppress(Ticket.DoesNotExist):
+            if check_ticket := Ticket.objects.get(created_by=wa_id[0]):
+                if check_ticket.status.lower() == PENDING_MODE:
+                    response = handle_help(wa_id, response, name)
+                    return response
+                return "Ticket already assigned or not available"
+
     if response.lower() in greeting_messages:
         time_of_day = get_greeting()
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
+    
     if support_member and support_member.user_mode == ACCEPT_TICKET_MODE:
-        print('accepting ticket')
         response=accept_ticket(wa_id,name, response)
         return response
+    
     if response:#not support_member or wa_id[0]=="263779586059":
         for help_message in help_messages:
             if help_message in response.lower():
@@ -194,19 +193,24 @@ def handle_inquiry(wa_id, response, name):
     return 'Thank you for contacting us. A support member will be assisting you shortly.'
 
 def handle_help(wa_id, response, name):
-    support_member = SupportMember.objects.get(phone_number=wa_id[0])
-    support_member.user_status = WAITING_MODE
-    support_member.save()
+    support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
     if open_inquiries:= Ticket.objects.filter(status=OPEN_MODE,assigned_to=wa_id[0]).first():
         message = f"*Hello {open_inquiries.created_by},* \n{response}"
         with contextlib.suppress(SupportMember.DoesNotExist):
             open_inquiries.status = RESOLVED_MODE
             open_inquiries.save()
-            
+            TicketLog.objects.create(
+                ticket=open_inquiries,
+                status=RESOLVED_MODE,
+                changed_by=wa_id[0]
+            )
+    if support_member:
+        
+        data = get_text_message_input(support_member.phone_number, response, None)
+    else:
         data = get_text_message_input(open_inquiries.created_by, message, None)
-        response = send_message(data)
-        return response
-    return "No open tickets assigned to you at the moment."
+    response = send_message(data)
+    return response
 def broadcast_messages(name,ticket=None,message=None):
     support_members = SupportMember.objects.all()
     for support_member in support_members:
@@ -253,6 +257,8 @@ def accept_ticket(wa_id,name, ticket_id):
             status=PENDING_MODE,
             changed_by=support_member.phone_number
         )
+        support_member.user_mode=WAITING_MODE
+        support_member.save()
         message=f"ticket *#{ticket.id}* is now assigned to *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
         return broadcast_messages(name,None,message)
     else:
