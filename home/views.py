@@ -80,7 +80,7 @@ class FAQDetailView(generics.RetrieveUpdateDestroyAPIView):
     
 def ticket_list(request):
     tickets = Ticket.objects.all()
-    return render(request, 'ticket_list.html', {'tickets': tickets})
+    return render(request, 'tickets/ticket_list.html', {'tickets': tickets})
 
 def ticket_detail(request, pk):
     ticket = get_object_or_404(Ticket, pk=pk)
@@ -94,7 +94,7 @@ def ticket_detail(request, pk):
             return redirect('ticket-detail', pk=ticket.pk)
     else:
         form = CommentForm()
-    return render(request, 'ticket_detail.html', {'ticket': ticket, 'form': form})
+    return render(request, 'tickets/ticket_detail.html', {'ticket': ticket, 'form': form})
 
 def ticket_create(request):
     if request.method == 'POST':
@@ -106,5 +106,5 @@ def ticket_create(request):
             return redirect('ticket-list')
     else:
         form = TicketForm()
-    return render(request, 'create_ticket.html', {'form': form})
+    return render(request, 'tickets/create_ticket.html', {'form': form})
 
