@@ -5,5 +5,10 @@ help_messages = ["help", "help me", "i need help", "can you help me", "can you h
 ACCEPT_TICKET_MODE = "ticket_acceptance"
 HELPING_MODE = "helping"
 INQUIRY_MODE = "inquiry"
+RESOLVED_MODE = "resolved"
+PENDING_MODE = "pending"
+CLOSED_MODE = "closed"
+OPEN_MODE = "open"
+WAITING_MODE = "waiting"
 
 

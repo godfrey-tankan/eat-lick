@@ -19,14 +19,27 @@ from .responses import *
 #   -d '{ \"messaging_product\": \"whatsapp\", \"to\": \"263779586059\", \"type\": \"template\", \"template\": { \"name\": \"hello_world\", \"language\": { \"code\": \"en_US\" } } }'
 # Create your views here.
 
+def get_greeting():
+    current_hour = datetime.now().hour
+
+    if 5 <= current_hour < 12:
+        return "morning"
+    elif 12 <= current_hour < 18:
+        return "afternoon"
+    else:
+        return "evening"
+
 def generate_response(response, wa_id, name):
     try:
         support_member = SupportMember.objects.get(phone_number=wa_id[0])
     except SupportMember.DoesNotExist:
         support_member = None
-        
+    if support_member and support_member.user_mode == HELPING_MODE:
+        response = handle_help(wa_id, response, name)
+        return response
     if response.lower() in greeting_messages:
-        return f"Hello {name}, how can I help you today?"
+        time_of_day = get_greeting()
+        return f"golden  {time_of_day}, how can I help you today?"
     if support_member and support_member.user_mode == ACCEPT_TICKET_MODE:
         print('accepting ticket')
         response=accept_ticket(wa_id,name, response)
@@ -37,8 +50,7 @@ def generate_response(response, wa_id, name):
             if help_message in response.lower():
                 response = handle_inquiry(wa_id, response, name)
         return response
-    return f"Hello {name},"    
-
+    return "Hello,golden greetings."    
 
 def get_text_message_input(recipient, text,media,template=False):
     if media:
@@ -162,11 +174,11 @@ def handle_inquiry(wa_id, response, name):
         title=f"Inquiry from {name}",
         description=response,
         created_by=wa_id[0], 
-        status='open'
+        status=OPEN_MODE
     )
     TicketLog.objects.create(
         ticket=ticket,
-        status='open',
+        status=OPEN_MODE,
         changed_by=wa_id[0]
     )
     with contextlib.suppress(SupportMember.DoesNotExist):
@@ -177,19 +189,24 @@ def handle_inquiry(wa_id, response, name):
 
 def handle_help(wa_id, response, name):
     support_member = SupportMember.objects.get(phone_number=wa_id[0])
-    support_member.user_mode = HELPING_MODE
+    support_member.user_status = WAITING_MODE
     support_member.save()
-    if open_inquiries:= Ticket.objects.filter(status='open',assigned_to=wa_id[0]).first():
+    if open_inquiries:= Ticket.objects.filter(status=OPEN_MODE,assigned_to=wa_id[0]).first():
         message = f"*Hello {open_inquiries.created_by},* \n{response}"
+        with contextlib.suppress(SupportMember.DoesNotExist):
+            open_inquiries.status = RESOLVED_MODE
+            open_inquiries.save()
+            
         data = get_text_message_input(open_inquiries.created_by, message, None)
         response = send_message(data)
         return response
-    return
+    return "No open tickets assigned to you at the moment."
 def broadcast_messages(name,ticket=None,message=None):
     support_members = SupportMember.objects.all()
     for support_member in support_members:
         user_mobile = support_member.phone_number
         support_member.user_mode = ACCEPT_TICKET_MODE
+        support_member.user_status = HELPING_MODE
         support_member.save()
         if message:
             message=message
@@ -215,7 +232,7 @@ def accept_ticket(wa_id,name, ticket_id):
     is_ticket_open = False
     try:
         if check_ticket := Ticket.objects.get(id=ticket_id):
-            is_ticket_open = check_ticket.status.lower() == 'open'
+            is_ticket_open = check_ticket.status.lower() == OPEN_MODE
         else:
             return "wrong ticket id"
     except Ticket.DoesNotExist:
@@ -223,14 +240,14 @@ def accept_ticket(wa_id,name, ticket_id):
     if is_ticket_open:
         ticket = Ticket.objects.get(id=ticket_id)
         ticket.assigned_to = support_member.phone_number
-        ticket.status = 'pending'
+        ticket.status = HELPING_MODE
         ticket.save()
         TicketLog.objects.create(
             ticket=ticket,
-            status='pending',
+            status=HELPING_MODE,
             changed_by=support_member.phone_number
         )
-        message=f"ticket #{ticket.id} is now assigned to {support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}"
+        message=f"ticket *#{ticket.id}* is now assigned to *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
         return broadcast_messages(name,None,message)
     else:
         return "Ticket not available or already assigned"
