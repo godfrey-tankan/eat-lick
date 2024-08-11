@@ -21,9 +21,9 @@ from .responses import *
 
 def get_greeting():
     current_hour = datetime.now().hour
-    if 5 <= current_hour < 12:
+    if 3 <= current_hour < 10:
         return "morning"
-    elif 12 <= current_hour < 18:
+    elif 10 <= current_hour < 16:
         return "afternoon"
     else:
         return "evening"
@@ -205,10 +205,10 @@ def broadcast_messages(name,ticket=None,message=None):
     support_members = SupportMember.objects.all()
     for support_member in support_members:
         user_mobile = support_member.phone_number
-        support_member.user_mode = ACCEPT_TICKET_MODE
-        support_member.user_status = HELPING_MODE
-        support_member.save()
         if message:
+            support_member.user_mode = ACCEPT_TICKET_MODE
+            support_member.user_status = HELPING_MODE
+            support_member.save()
             message=message
         else:
             message=accept_ticket_response.format(support_member.username,name,ticket.id, ticket.description)
