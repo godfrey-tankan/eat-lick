@@ -12,7 +12,6 @@ from django.http import JsonResponse
 from home.models import *
 from .responses import *
 
-
 # curl -i -X POST `
 #   https://graph.facebook.com/v20.0/339066582617708/messages `
 #   -H 'Authorization: Bearer EAAMarOkeZCq4BOyJvORfv7dZAQFz3IQfft5pBnyPPwZCHCYN0jajF2ZCpIe6QAIGRACBqjOC77oUTscRQltXMmxlXiyaiPAoxNLqwWrBjV3MT79C4EtpSZBXwBs3vV6gB2vLiXIWTZBzH3Tt0zgit4PdaGTiOifq2ZB6MwMbgqeRwGHUMVnZACRKX8g2OMqdEq0mNIIsQWt6DBPCVYBShUCNayDZBXB7N9jEmMkcZD' `
@@ -37,7 +36,7 @@ def generate_response(response, wa_id, name):
         response = handle_inquiry(wa_id, response, name)
         print('handling inquiry',response)
         return response
-    return f"Hello {name}, you said: {response}"    
+    return f"Hello {name},"    
 
 
 def get_text_message_input(recipient, text,media,template=False):

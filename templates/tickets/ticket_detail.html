@@ -1,4 +1,4 @@
-{% extends "base2.html" %} {% block content %}
+{% extends "tickets/base2.html" %} {% block content %}
 <div class="container mt-5">
   <h2>Ticket #{{ ticket.id }} - {{ ticket.title }}</h2>
   <p><strong>Status:</strong> {{ ticket.get_status_display }}</p>

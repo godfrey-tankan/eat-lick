@@ -11,11 +11,18 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .forms import TicketForm, CommentForm
 from django.views.generic import UpdateView
 
+
 # Create your views here.
 
 def index(request):
     # Page from the theme 
-    return render(request, 'pages/index.html')
+    all_tickets = Ticket.objects.all()
+    
+    context = {
+        "tickets_count" :all_tickets.count(),
+        "open_tickets" :all_tickets.filter(status ='open').count(),
+    }
+    return render(request, 'pages/index.html',context=context)
 
 # Create your views here.
 def home_view(request):
