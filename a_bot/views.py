@@ -211,6 +211,7 @@ def handle_help(wa_id, response, name):
         data = get_text_message_input(open_inquiries.created_by, message, None)
     response = send_message(data)
     return response
+
 def broadcast_messages(name,ticket=None,message=None):
     support_members = SupportMember.objects.all()
     for support_member in support_members:
@@ -230,6 +231,7 @@ def broadcast_messages(name,ticket=None,message=None):
     return response
 @csrf_exempt
 def accept_ticket(wa_id,name, ticket_id):
+    
     try:
         ticket_id = int(ticket_id)
     except Exception as e:
@@ -263,3 +265,18 @@ def accept_ticket(wa_id,name, ticket_id):
         return broadcast_messages(name,None,message)
     else:
         return "Ticket not available or already assigned"
+
+def close_ticket(support_member, ticket_id):
+    ticket = Ticket.objects.get(id=ticket_id)
+    ticket.status = RESOLVED_MODE
+    ticket.closed_at = datetime.now()
+    ticket.save()
+    TicketLog.objects.create(
+        ticket=ticket,
+        status=RESOLVED_MODE,
+        changed_by=support_member.phone_number
+    )
+    support_member.user_status=WAITING_MODE
+    support_member.save()
+    message=f"ticket *#{ticket.id}* is now resolved by *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
+    return broadcast_messages(None,ticket,message)
