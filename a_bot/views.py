@@ -194,18 +194,11 @@ def handle_inquiry(wa_id, response, name):
 
 def handle_help(wa_id, response, name):
     support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
-    if open_inquiries:= Ticket.objects.filter(status=OPEN_MODE,assigned_to=wa_id[0]).first():
-        message = f"*Hello {open_inquiries.created_by},* \n{response}"
-        with contextlib.suppress(SupportMember.DoesNotExist):
-            open_inquiries.status = RESOLVED_MODE
-            open_inquiries.save()
-            TicketLog.objects.create(
-                ticket=open_inquiries,
-                status=RESOLVED_MODE,
-                changed_by=wa_id[0]
-            )
     if support_member:
         
+    if open_inquiries:= Ticket.objects.filter(status=OPEN_MODE,assigned_to=wa_id[0]).first():
+        message = f"*Hello {open_inquiries.created_by},* \n{response}"
+    if support_member:
         data = get_text_message_input(support_member.phone_number, response, None)
     else:
         data = get_text_message_input(open_inquiries.created_by, message, None)
@@ -266,7 +259,7 @@ def accept_ticket(wa_id,name, ticket_id):
     else:
         return "Ticket not available or already assigned"
 
-def close_ticket(support_member, ticket_id):
+def close_ticket( ticket_id):
     ticket = Ticket.objects.get(id=ticket_id)
     ticket.status = RESOLVED_MODE
     ticket.closed_at = datetime.now()
@@ -274,9 +267,7 @@ def close_ticket(support_member, ticket_id):
     TicketLog.objects.create(
         ticket=ticket,
         status=RESOLVED_MODE,
-        changed_by=support_member.phone_number
+        changed_by=ticket.assigned_to
     )
-    support_member.user_status=WAITING_MODE
-    support_member.save()
-    message=f"ticket *#{ticket.id}* is now resolved by *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
+    message=f"ticket *#{ticket.id}* is now resolved by."
     return broadcast_messages(None,ticket,message)
