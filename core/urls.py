@@ -20,7 +20,6 @@ from a_bot.webhooks import webhook
 from a_bot.accept_ticket import *
 from django.conf import settings
 from django.conf.urls.static import static
-from a_bot.tests import test
 from a_bot.logout import logout_view
 
 urlpatterns = [
