@@ -1,4 +1,4 @@
-# from a_home.models import *
+# from home.models import *
 # from .views import create_ticket
 # from django.http import JsonResponse
 # def handle_inquiry(request):

@@ -2,7 +2,7 @@
 # from django.views.decorators.csrf import csrf_exempt
 # from django.shortcuts import render
 # from django.http import JsonResponse
-# from a_home.models import *
+# from home.models import *
 # from django.contrib.auth.models import Group
 # from .responses import *
 # from .views import get_text_message_input, send_message

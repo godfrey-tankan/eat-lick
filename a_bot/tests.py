@@ -1,5 +1,5 @@
 from django.test import TestCase
-from a_home.models import *
+from home.models import *
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 

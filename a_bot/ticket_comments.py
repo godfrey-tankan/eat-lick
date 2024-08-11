@@ -1,6 +1,6 @@
 import json
 from django.http import JsonResponse
-from a_home.models import *
+from home.models import *
 
 def add_comment(request, ticket_id):
     ticket = Ticket.objects.get(id=ticket_id)
