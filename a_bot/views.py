@@ -31,9 +31,10 @@ def get_greeting():
 def generate_response(response, wa_id, name):
     try:
         support_member = SupportMember.objects.get(phone_number=wa_id[0])
+        
     except SupportMember.DoesNotExist:
         support_member = None
-    if support_member and support_member.user_mode == HELPING_MODE:
+    if support_member and support_member.user_mode == WAITING_MODE:
         with contextlib.suppress(Ticket.DoesNotExist):
             if check_ticket := Ticket.objects.get(created_by=wa_id[0]):
                 if check_ticket.status.lower() == PENDING_MODE:
