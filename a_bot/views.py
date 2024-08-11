@@ -39,7 +39,7 @@ def generate_response(response, wa_id, name):
         return response
     if response.lower() in greeting_messages:
         time_of_day = get_greeting()
-        return f"golden  {time_of_day}"
+        return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     if support_member and support_member.user_mode == ACCEPT_TICKET_MODE:
         print('accepting ticket')
         response=accept_ticket(wa_id,name, response)
