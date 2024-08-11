@@ -10,10 +10,14 @@ from .serializers import TicketSerializer, TicketLogSerializer, CommentSerialize
 from django.shortcuts import render, get_object_or_404, redirect
 from .forms import TicketForm, CommentForm
 from django.views.generic import UpdateView
+from django.contrib.auth.decorators import login_required
+from django.views.generic import DeleteView
+from django.urls import reverse_lazy
+from .models import Ticket
 
 
 # Create your views here.
-
+@login_required
 def index(request):
     # Get all tickets
     all_tickets = Ticket.objects.all()
@@ -66,10 +70,6 @@ class TicketLogDetailView(generics.RetrieveAPIView):
     queryset = TicketLog.objects.all()
     serializer_class = TicketLogSerializer
     permission_classes = [IsAuthenticated]
-
-from django.views.generic import DeleteView
-from django.urls import reverse_lazy
-from .models import Ticket
 
 class TicketDeleteView(DeleteView):
     model = Ticket
