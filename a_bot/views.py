@@ -194,9 +194,12 @@ def handle_inquiry(wa_id, response, name):
 
 def handle_help(wa_id, response, name):
     support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
-    if support_member:
         
     if open_inquiries:= Ticket.objects.filter(status=OPEN_MODE,assigned_to=wa_id[0]).first():
+        for message in thank_you_messages:
+            if message in response.lower() and not support_member:
+                response = mark_as_resolved(open_inquiries.id)
+                return response
         message = f"*Hello {open_inquiries.created_by},* \n{response}"
     if support_member:
         data = get_text_message_input(support_member.phone_number, response, None)
@@ -259,7 +262,7 @@ def accept_ticket(wa_id,name, ticket_id):
     else:
         return "Ticket not available or already assigned"
 
-def close_ticket( ticket_id):
+def mark_as_resolved( ticket_id):
     ticket = Ticket.objects.get(id=ticket_id)
     ticket.status = RESOLVED_MODE
     ticket.closed_at = datetime.now()
