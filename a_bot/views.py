@@ -200,9 +200,9 @@ def handle_help(wa_id, response, name):
                 
         message = f"*Hello {open_inquiries.created_by},* \n{response}"
     if support_member:
-        data = get_text_message_input(support_member.phone_number, response, None)
+        data = get_text_message_input(open_inquiries.created_by, response, None)
     else:
-        data = get_text_message_input(open_inquiries.created_by, message, None)
+        data = get_text_message_input('263777951000', response, None)
     response = send_message(data)
     return response
 
