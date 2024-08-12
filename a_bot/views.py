@@ -198,9 +198,9 @@ def handle_inquiry(wa_id, response, name):
 def handle_help(wa_id, response, name):
     support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
         
-    if open_inquiries:= Ticket.objects.filter(status=OPEN_MODE,assigned_to=wa_id[0]).first():
+    if open_inquiries:= Ticket.objects.filter(status=PENDING_MODE,created_by=wa_id[0]).last() :
         for message in thank_you_messages:
-            if message in response.lower() and not support_member:
+            if message in response.lower():
                 response = mark_as_resolved(open_inquiries.id)
                 return response
         message = f"*Hello {open_inquiries.created_by},* \n{response}"
