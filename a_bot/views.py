@@ -271,5 +271,5 @@ def mark_as_resolved( ticket_id):
     support_member = SupportMember.objects.filter(phone_number=ticket.assigned_to).first()
     support_member.user_mode = WAITING_MODE
     support_member.save()
-    message=f"ticket *#{ticket.id}* is now resolved by."
+    message=f"ticket *#{ticket.id}* is now resolved ✅."
     return broadcast_messages(None,ticket,message)
