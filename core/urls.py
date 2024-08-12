@@ -46,7 +46,6 @@ urlpatterns += [
     path('tickets-list/', ticket_list, name='ticket-list'),
     path('tickets/create/', ticket_create, name='ticket-create'),
     path('ticket/<int:pk>/', ticket_detail, name='ticket-detail'),
-    path('tickets/', tickets_list, name='tickets_list'),
     path('get-chart-data/', get_chart_data, name='get_chart_data'),
 ]
 

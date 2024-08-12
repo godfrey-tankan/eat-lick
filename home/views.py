@@ -40,6 +40,7 @@ def index(request):
     ).filter(
         resolved_tickets_count__gt=1
     )
+    tickets = Ticket.objects.all()
 
     context = {
         "tickets_count": total_tickets,
@@ -52,6 +53,7 @@ def index(request):
         "pending_tickets_percentage": calculate_percentage(pending_tickets_count),
         "resolved_tickets_percentage": calculate_percentage(resolved_tickets_count),
         "active_support_members": active_support_members or 0,
+        'tickets': tickets,
     }
 
     return render(request, 'pages/index.html', context=context)
@@ -144,10 +146,6 @@ def get_chart_data(request):
     }
 
     return JsonResponse(data)
-
-def tickets_list(request):
-    tickets = Ticket.objects.all()
-    return render(request, 'index.html', {'tickets': tickets})
 
 # Create your views here.
 def home_view(request):
