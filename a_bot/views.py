@@ -34,13 +34,13 @@ def generate_response(response, wa_id, name):
         
     except SupportMember.DoesNotExist:
         support_member = None
-    if support_member and support_member.user_mode == WAITING_MODE:
-        with contextlib.suppress(Ticket.DoesNotExist):
-            if check_ticket := Ticket.objects.get(created_by=wa_id[0]):
-                if check_ticket.status.lower() == PENDING_MODE:
-                    response = handle_help(wa_id, response, name)
-                    return response
-                return "Ticket already assigned or not available"
+        try:
+            check_ticket = Ticket.objects.filter(created_by=wa_id[0]).last()
+        except Ticket.DoesNotExist:
+            check_ticket = None
+    if support_member and support_member.user_mode == WAITING_MODE or check_ticket and check_ticket.status.lower() == PENDING_MODE:
+        response = handle_help(wa_id, response, name)
+        return response
 
     if response.lower() in greeting_messages:
         time_of_day = get_greeting()
