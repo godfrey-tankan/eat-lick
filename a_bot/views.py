@@ -34,10 +34,11 @@ def generate_response(response, wa_id, name):
         
     except SupportMember.DoesNotExist:
         support_member = None
-        try:
-            check_ticket = Ticket.objects.filter(created_by=wa_id[0],status=PENDING_MODE).last()
-        except Ticket.DoesNotExist:
-            check_ticket = None
+    try:
+        check_ticket = Ticket.objects.filter(created_by=wa_id[0],status=PENDING_MODE).last()
+    except Ticket.DoesNotExist:
+        check_ticket = None
+        
     if response.lower() in greeting_messages:
         time_of_day = get_greeting()
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
