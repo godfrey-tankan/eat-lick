@@ -17,7 +17,7 @@ class SupportMember(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Support Member: {self.id}"
+        return f"Support Member: {self.username}"
 
 class Ticket(models.Model):
     STATUS_CHOICES = [
