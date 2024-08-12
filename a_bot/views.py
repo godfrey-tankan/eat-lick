@@ -253,7 +253,7 @@ def accept_ticket(wa_id,name, ticket_id):
         )
         support_member.user_mode=HELPING_MODE
         support_member.save()
-        message=f"ticket *#{ticket.id}* is now assigned to *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
+        message=f"🟡ticket *#{ticket.id}* is now assigned to *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
         return broadcast_messages(name,None,message)
     else:
         return "Ticket not available or already assigned"
