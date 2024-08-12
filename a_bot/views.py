@@ -25,7 +25,6 @@ def get_greeting():
 def generate_response(response, wa_id, name):
     try:
         support_member = SupportMember.objects.get(phone_number=wa_id[0])
-        
     except SupportMember.DoesNotExist:
         support_member = None
     try:
