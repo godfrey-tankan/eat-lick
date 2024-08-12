@@ -187,21 +187,27 @@ def handle_inquiry(wa_id, response, name):
 
 def handle_help(wa_id, response, name):
     support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
-        
-    if open_inquiries:= Ticket.objects.filter(status=PENDING_MODE,created_by=wa_id[0]).last() :
+    try:
+        open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=wa_id[0]).last()
+    except Ticket.DoesNotExist:
+        open_inquiries = None
+    try:
+        open_inquiries = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id).last()
+    except Ticket.DoesNotExist:
+        open_inquiries = None
+    if open_inquiries:
         for message in thank_you_messages:
-            if message in response.lower():
+            if message in response.lower() and not support_member:
                 data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
                 send_message(data)
                 return mark_as_resolved(open_inquiries.id)
                 
-        message = f"*Hello {open_inquiries.created_by},* \n{response}"
     if support_member:
         data = get_text_message_input(open_inquiries.created_by, response, None)
     else:
         data = get_text_message_input('263777951000', response, None)
     response = send_message(data)
-    return response
+    return response          
 
 def broadcast_messages(name,ticket=None,message=None):
     support_members = SupportMember.objects.all()
@@ -276,7 +282,7 @@ def mark_as_resolved( ticket_id):
     support_member.user_status = WAITING_MODE
     support_member.save()
     message=f"ticket *#{ticket.id}* is now resolved ✅."
-    reply = f'Your inquiry *{ticket.description[:6]}*... has been marked as resolved'
+    reply = f'Your inquiry *{ticket.description[:10]}*... has been marked as resolved'
     data = get_text_message_input(ticket.created_by, reply, None)
     send_message(data)
     return broadcast_messages(None,ticket,message)
