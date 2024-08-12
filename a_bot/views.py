@@ -196,8 +196,8 @@ def handle_help(wa_id, response, name):
             if message in response.lower():
                 data = get_text_message_input(open_inquiries.assigned_to.phone_number, message, None)
                 send_message(data)
-                response = mark_as_resolved(open_inquiries.id)
-                return response
+                return mark_as_resolved(open_inquiries.id)
+                
         message = f"*Hello {open_inquiries.created_by},* \n{response}"
     if support_member:
         data = get_text_message_input(support_member.phone_number, response, None)
@@ -211,12 +211,11 @@ def broadcast_messages(name,ticket=None,message=None):
     for support_member in support_members:
         user_mobile = support_member.phone_number
         if message:
-            support_member.user_status = HELPING_MODE
             message=message
         else:
             support_member.user_mode = ACCEPT_TICKET_MODE
             message=accept_ticket_response.format(support_member.username,name,ticket.id, ticket.description)
-        support_member.save()
+            support_member.save()
         try:
             data = get_text_message_input(user_mobile, message, None)
             response = send_message(data)
@@ -254,6 +253,8 @@ def accept_ticket(wa_id,name, ticket_id):
             changed_by=support_member
         )
         support_member.user_mode=HELPING_MODE
+        support_member.user_status = HELPING_MODE
+        
         support_member.save()
         message=f"🟡ticket *#{ticket.id}* is now assigned to *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
         return broadcast_messages(name,None,message)
@@ -272,6 +273,7 @@ def mark_as_resolved( ticket_id):
     )
     support_member = SupportMember.objects.filter(phone_number=ticket.assigned_to).first()
     support_member.user_mode = WAITING_MODE
+    support_member.user_status = WAITING_MODE
     support_member.save()
     message=f"ticket *#{ticket.id}* is now resolved ✅."
     return broadcast_messages(None,ticket,message)
