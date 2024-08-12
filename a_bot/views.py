@@ -194,6 +194,8 @@ def handle_help(wa_id, response, name):
     if open_inquiries:= Ticket.objects.filter(status=PENDING_MODE,created_by=wa_id[0]).last() :
         for message in thank_you_messages:
             if message in response.lower():
+                data = get_text_message_input(open_inquiries.assigned_to.phone_number, message, None)
+                send_message(data)
                 response = mark_as_resolved(open_inquiries.id)
                 return response
         message = f"*Hello {open_inquiries.created_by},* \n{response}"
