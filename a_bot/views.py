@@ -243,13 +243,13 @@ def accept_ticket(wa_id,name, ticket_id):
         return "error ticket not available or already assigned "
     if is_ticket_open:
         ticket = Ticket.objects.get(id=ticket_id)
-        ticket.assigned_to = support_member.phone_number
+        ticket.assigned_to = support_member
         ticket.status = PENDING_MODE
         ticket.save()
         TicketLog.objects.create(
             ticket=ticket,
             status=PENDING_MODE,
-            changed_by=support_member.phone_number
+            changed_by=support_member
         )
         support_member.user_mode=HELPING_MODE
         support_member.save()
