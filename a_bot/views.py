@@ -194,7 +194,7 @@ def handle_help(wa_id, response, name):
     if open_inquiries:= Ticket.objects.filter(status=PENDING_MODE,created_by=wa_id[0]).last() :
         for message in thank_you_messages:
             if message in response.lower():
-                data = get_text_message_input(open_inquiries.assigned_to.phone_number, message, None)
+                data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
                 send_message(data)
                 return mark_as_resolved(open_inquiries.id)
                 
@@ -271,7 +271,7 @@ def mark_as_resolved( ticket_id):
         status=RESOLVED_MODE,
         changed_by=ticket.assigned_to
     )
-    support_member = SupportMember.objects.filter(phone_number=ticket.assigned_to).first()
+    support_member = SupportMember.objects.filter(id=ticket.assigned_to).first()
     support_member.user_mode = WAITING_MODE
     support_member.user_status = WAITING_MODE
     support_member.save()
