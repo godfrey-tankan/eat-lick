@@ -264,6 +264,7 @@ def mark_as_resolved( ticket_id):
     ticket = Ticket.objects.get(id=ticket_id)
     ticket.status = RESOLVED_MODE
     ticket.closed_at = aware_datetime
+    ticket.resolved_at = aware_datetime
     ticket.save()
     TicketLog.objects.create(
         ticket=ticket,
