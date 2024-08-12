@@ -12,13 +12,6 @@ from django.http import JsonResponse
 from home.models import *
 from .responses import *
 
-# curl -i -X POST `
-#   https://graph.facebook.com/v20.0/339066582617708/messages `
-#   -H 'Authorization: Bearer EAAMarOkeZCq4BOyJvORfv7dZAQFz3IQfft5pBnyPPwZCHCYN0jajF2ZCpIe6QAIGRACBqjOC77oUTscRQltXMmxlXiyaiPAoxNLqwWrBjV3MT79C4EtpSZBXwBs3vV6gB2vLiXIWTZBzH3Tt0zgit4PdaGTiOifq2ZB6MwMbgqeRwGHUMVnZACRKX8g2OMqdEq0mNIIsQWt6DBPCVYBShUCNayDZBXB7N9jEmMkcZD' `
-#   -H 'Content-Type: application/json' `
-#   -d '{ \"messaging_product\": \"whatsapp\", \"to\": \"263779586059\", \"type\": \"template\", \"template\": { \"name\": \"hello_world\", \"language\": { \"code\": \"en_US\" } } }'
-# Create your views here.
-
 def get_greeting():
     current_hour = datetime.now().hour
     if 3 <= current_hour < 10:
