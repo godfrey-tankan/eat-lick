@@ -35,10 +35,10 @@ def generate_response(response, wa_id, name):
     except SupportMember.DoesNotExist:
         support_member = None
         try:
-            check_ticket = Ticket.objects.filter(created_by=wa_id[0]).last()
+            check_ticket = Ticket.objects.filter(created_by=wa_id[0],status=PENDING_MODE).last()
         except Ticket.DoesNotExist:
             check_ticket = None
-    if support_member and support_member.user_mode == WAITING_MODE or check_ticket and check_ticket.status.lower() == PENDING_MODE:
+    if support_member and support_member.user_mode == WAITING_MODE or check_ticket:
         response = handle_help(wa_id, response, name)
         return response
 
