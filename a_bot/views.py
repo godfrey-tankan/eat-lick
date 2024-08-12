@@ -190,11 +190,8 @@ def handle_help(wa_id, response, name):
     try:
         open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=wa_id[0]).last()
     except Ticket.DoesNotExist:
-        open_inquiries = None
-    try:
         open_inquiries = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id).last()
-    except Ticket.DoesNotExist:
-        open_inquiries = None
+
     if open_inquiries:
         for message in thank_you_messages:
             if message in response.lower() and not support_member:
@@ -205,7 +202,7 @@ def handle_help(wa_id, response, name):
     if support_member:
         data = get_text_message_input(open_inquiries.created_by, response, None)
     else:
-        data = get_text_message_input('263777951000', response, None)
+        data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
     response = send_message(data)
     return response          
 
