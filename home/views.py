@@ -169,7 +169,6 @@ def home_view(request):
 @login_required
 def profile_view(request):
     user = request.user
-    print(user.first_name)
     return render(request, 'pages/profile.html', {'user': user})
 
 def support_users_list(request):

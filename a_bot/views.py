@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from home.models import *
 from .responses import *
+from django.utils import timezone
 
 def get_greeting():
     current_hour = datetime.now().hour
@@ -244,13 +245,13 @@ def accept_ticket(wa_id,name, ticket_id):
         return "error ticket not available or already assigned "
     if is_ticket_open:
         ticket = Ticket.objects.get(id=ticket_id)
-        ticket.assigned_to = support_member
+        ticket.assigned_to = support_member.id
         ticket.status = PENDING_MODE
         ticket.save()
         TicketLog.objects.create(
             ticket=ticket,
             status=PENDING_MODE,
-            changed_by=support_member
+            changed_by=support_member.id
         )
         support_member.user_mode=HELPING_MODE
         support_member.user_status = HELPING_MODE
@@ -262,9 +263,11 @@ def accept_ticket(wa_id,name, ticket_id):
         return "Ticket not available or already assigned"
 
 def mark_as_resolved( ticket_id):
+    naive_datetime = datetime.now()
+    aware_datetime = timezone.make_aware(naive_datetime)
     ticket = Ticket.objects.get(id=ticket_id)
     ticket.status = RESOLVED_MODE
-    ticket.closed_at = datetime.now()
+    ticket.closed_at = aware_datetime
     ticket.save()
     TicketLog.objects.create(
         ticket=ticket,
