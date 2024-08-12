@@ -145,6 +145,9 @@ def get_chart_data(request):
 
     return JsonResponse(data)
 
+def tickets_list(request):
+    tickets = Ticket.objects.all()
+    return render(request, 'index.html', {'tickets': tickets})
 
 # Create your views here.
 def home_view(request):

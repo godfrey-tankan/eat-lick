@@ -43,9 +43,10 @@ urlpatterns += [
 
     path('faqs/', FAQListCreateView.as_view(), name='faq-list-create'),
     path('faqs/<int:pk>/', FAQDetailView.as_view(), name='faq-detail'),
-    path('tickets/', ticket_list, name='ticket-list'),
+    path('tickets-list/', ticket_list, name='ticket-list'),
     path('tickets/create/', ticket_create, name='ticket-create'),
     path('ticket/<int:pk>/', ticket_detail, name='ticket-detail'),
+    path('tickets/', tickets_list, name='tickets_list'),
     path('get-chart-data/', get_chart_data, name='get_chart_data'),
 ]
 
