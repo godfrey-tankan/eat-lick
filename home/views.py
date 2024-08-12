@@ -43,7 +43,14 @@ def index(request):
         resolved_tickets_count__gt=1
     )
     tickets = Ticket.objects.all()
-    request_user_tickets = tickets.filter(assigned_to=request.user)
+    request_user_support_member = SupportMember.objects.get(user=request.user)
+    request_user_tickets = tickets.filter(assigned_to=request_user_support_member)
+    request_user_tickets_count = request_user_tickets.count()
+    request_user_open_tickets_count = request_user_tickets.filter(status='open').count()
+    request_user_resolved_tickets_count = request_user_tickets.filter(status='resolved').count()
+    request_user_closed_tickets_count = request_user_tickets.filter(status='closed').count()
+    request_user_pending_tickets_count = request_user_tickets.filter(status='pending').count()
+    
 
     context = {
         "tickets_count": total_tickets,
@@ -57,6 +64,16 @@ def index(request):
         "resolved_tickets_percentage": calculate_percentage(resolved_tickets_count),
         "active_support_members": active_support_members or 0,
         'tickets': tickets,
+        'request_user_tickets_count': request_user_tickets_count,
+        'request_user_open_tickets_count': request_user_open_tickets_count,
+        'request_user_resolved_tickets_count': request_user_resolved_tickets_count,
+        'request_user_closed_tickets_count': request_user_closed_tickets_count,
+        'request_user_pending_tickets_count': request_user_pending_tickets_count,
+        'request_user_open_tictes_percentage': calculate_percentage(request_user_open_tickets_count),
+        'request_user_resolved_tictes_percentage': calculate_percentage(request_user_resolved_tickets_count),
+        'request_user_closed_tictes_percentage': calculate_percentage(request_user_closed_tickets_count),
+        'request_user_pending_tictes_percentage': calculate_percentage(request_user_pending_tickets_count),
+        
     }
 
     return render(request, 'pages/index.html', context=context)
