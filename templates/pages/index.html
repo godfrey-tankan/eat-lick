@@ -143,8 +143,8 @@
                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Title</th>
                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description</th>
                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Assigned to</th>
                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Created At</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Assigned to</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -176,6 +176,11 @@
                         <td class="align-middle text-center">
                           <span class="text-secondary text-xs font-weight-bold">{{ ticket.created_at|date:"d/m/Y" }}</span>
                         </td>
+                        <td class="align-middle text-center">
+                          <span class="text-secondary text-xs font-weight-bold">{{ ticket.assigned_to }}</span>
+                        </td>
+
+
                       </tr>
                       {% endfor %}
                     </tbody>
@@ -189,7 +194,7 @@
       
 
       
-        <div class="row mt-4">
+        {% comment %} <div class="row mt-4">
         <div class="col-lg-7 mb-lg-0 mb-4">
           <div class="card">
             <div class="card-body p-3">
@@ -232,7 +237,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> {% endcomment %}
 
       {% include "includes/footer.html" %}
 
