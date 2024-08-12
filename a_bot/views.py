@@ -202,7 +202,7 @@ def handle_help(wa_id, response, name):
     if support_member:
         data = get_text_message_input(open_inquiries.created_by, response, None)
     else:
-        data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
+        data = get_text_message_input('263777951000', response, None)
     return send_message(data)
 
 def broadcast_messages(name,ticket=None,message=None):
