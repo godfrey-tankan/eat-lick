@@ -271,7 +271,7 @@ def mark_as_resolved( ticket_id):
         status=RESOLVED_MODE,
         changed_by=ticket.assigned_to
     )
-    support_member = SupportMember.objects.filter(id=ticket.assigned_to).first()
+    support_member = SupportMember.objects.filter(id=ticket.assigned_to.id).first()
     support_member.user_mode = WAITING_MODE
     support_member.user_status = WAITING_MODE
     support_member.save()
