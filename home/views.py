@@ -29,7 +29,7 @@ def index(request):
     resolved_tickets_count = all_tickets.filter(status='resolved').count()
 
     def calculate_percentage(count):
-        return (count / total_tickets * 100) if total_tickets > 0 else 0
+        return round((count / total_tickets * 100),2) if total_tickets > 0 else 0
 
     context = {
         "tickets_count": total_tickets,
