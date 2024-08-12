@@ -38,14 +38,14 @@ def generate_response(response, wa_id, name):
             check_ticket = Ticket.objects.filter(created_by=wa_id[0],status=PENDING_MODE).last()
         except Ticket.DoesNotExist:
             check_ticket = None
-    if support_member and support_member.user_mode == WAITING_MODE or check_ticket:
-        response = handle_help(wa_id, response, name)
-        return response
-
     if response.lower() in greeting_messages:
         time_of_day = get_greeting()
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     
+    if support_member and support_member.user_mode == HELPING_MODE or check_ticket:
+        response = handle_help(wa_id, response, name)
+        return response
+
     if support_member and support_member.user_mode == ACCEPT_TICKET_MODE:
         response=accept_ticket(wa_id,name, response)
         return response
@@ -257,7 +257,7 @@ def accept_ticket(wa_id,name, ticket_id):
             status=PENDING_MODE,
             changed_by=support_member.phone_number
         )
-        support_member.user_mode=WAITING_MODE
+        support_member.user_mode=HELPING_MODE
         support_member.save()
         message=f"ticket *#{ticket.id}* is now assigned to *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
         return broadcast_messages(name,None,message)
@@ -274,5 +274,8 @@ def mark_as_resolved( ticket_id):
         status=RESOLVED_MODE,
         changed_by=ticket.assigned_to
     )
+    support_member = SupportMember.objects.filter(phone_number=ticket.assigned_to).first()
+    support_member.user_mode = WAITING_MODE
+    support_member.save()
     message=f"ticket *#{ticket.id}* is now resolved by."
     return broadcast_messages(None,ticket,message)
