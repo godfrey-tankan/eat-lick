@@ -25,6 +25,8 @@ from a_bot.logout import logout_view
 urlpatterns = [
     path('', include('home.urls')),
     path('admins/logout/', logout_view),
+    path('tables/', support_users_list, name='support_users_list'),
+    path('profile/', profile_view, name='profile'),
     path("admins/", admin.site.urls),
     path("", include('admin_soft.urls')),
     path('webhook/', webhook, name='webhook'),

@@ -13,8 +13,10 @@ from django.views.generic import UpdateView
 from django.contrib.auth.decorators import login_required
 from django.views.generic import DeleteView
 from django.urls import reverse_lazy
-from .models import Ticket
 from django.db.models import Count, Q
+from django.views.decorators.http import require_GET
+from datetime import datetime, timedelta
+
 
 @login_required
 def index(request):
@@ -58,11 +60,6 @@ def index(request):
 
     return render(request, 'pages/index.html', context=context)
 
-from django.http import JsonResponse
-from django.views.decorators.http import require_GET
-from .models import Ticket
-from django.db.models import Count
-from datetime import datetime, timedelta
 
 @require_GET
 def get_chart_data(request):
@@ -151,6 +148,15 @@ def get_chart_data(request):
 def home_view(request):
     return JsonResponse({'message': 'Home!'})
 
+@login_required
+def profile_view(request):
+    user = request.user
+    print(user.first_name)
+    return render(request, 'pages/profile.html', {'user': user})
+
+def support_users_list(request):
+    support_members = SupportMember.objects.all()
+    return render(request, 'pages/tables.html', {'support_members': support_members})
 # Ticket Views
 class TicketListCreateView(generics.ListCreateAPIView):
     queryset = Ticket.objects.all()
