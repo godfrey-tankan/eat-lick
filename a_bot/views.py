@@ -50,9 +50,6 @@ def generate_response(response, wa_id, name):
             if help_message in response.lower() or len(response) > 5:
                 response = handle_inquiry(wa_id, response, name)
                 return response
-            else:
-                response = 'how can i help you today?'
-        return response
     return "Hello,golden greetings."    
 
 def get_text_message_input(recipient, text,media,template=False):
