@@ -29,12 +29,12 @@
           <ul class="nav nav-pills nav-fill p-1 bg-transparent" role="tablist">
             <li class="nav-item">
               <a class="nav-link mb-0 px-0 py-1 active " data-bs-toggle="tab" href="javascript:;" role="tab" aria-selected="true">
-                <!-- SVG icon and text -->
+                Profile
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link mb-0 px-0 py-1 " data-bs-toggle="tab" href="javascript:;" role="tab" aria-selected="false">
-                <!-- SVG icon and text -->
+                Settings
               </a>
             </li>
           </ul>
@@ -79,22 +79,11 @@
           </p>
           <hr class="horizontal gray-light my-4">
           <ul class="list-group">
-            <li class="list-group-item border-0 ps-0 pt-0 text-sm"><strong class="text-dark">Full Name:</strong> &nbsp; {{ user.first_name }}</li>
+            <li class="list-group-item border-0 ps-0 pt-0 text-sm"><strong class="text-dark">Full Name:</strong> &nbsp; {{ user.first_name }} {{user.last_name}}</li>
             <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Mobile:</strong> &nbsp; {{ user.profile.mobile }}</li>
             <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Email:</strong> &nbsp; {{ user.email }}</li>
-            <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Location:</strong> &nbsp; {{ user.profile.location }}</li>
-            <li class="list-group-item border-0 ps-0 pb-0">
-              <strong class="text-dark text-sm">Social:</strong> &nbsp;
-              <a class="btn btn-facebook btn-simple mb-0 ps-1 pe-2 py-0" href="{{ user.profile.facebook_url }}">
-                <i class="fab fa-facebook fa-lg"></i>
-              </a>
-              <a class="btn btn-twitter btn-simple mb-0 ps-1 pe-2 py-0" href="{{ user.profile.twitter_url }}">
-                <i class="fab fa-twitter fa-lg"></i>
-              </a>
-              <a class="btn btn-instagram btn-simple mb-0 ps-1 pe-2 py-0" href="{{ user.profile.instagram_url }}">
-                <i class="fab fa-instagram fa-lg"></i>
-              </a>
-            </li>
+            <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Branch:</strong> &nbsp; {{ user.profile.location }}</li>
+            
           </ul>
         </div>
       </div>

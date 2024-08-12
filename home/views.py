@@ -43,6 +43,7 @@ def index(request):
         resolved_tickets_count__gt=1
     )
     tickets = Ticket.objects.all()
+    request_user_tickets = tickets.filter(assigned_to=request.user)
 
     context = {
         "tickets_count": total_tickets,

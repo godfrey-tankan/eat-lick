@@ -62,6 +62,7 @@ class FAQ(models.Model):
     def __str__(self):
         return f"FAQ: {self.question}"
 class SupportMember(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     username = models.CharField(max_length=255,null=True, blank=True,default='Support')
     phone_number = models.CharField(max_length=15, null=True, blank=True)
     user_mode = models.CharField(max_length=20, null=True, blank=True)
