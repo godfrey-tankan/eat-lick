@@ -56,6 +56,95 @@ def index(request):
 
     return render(request, 'pages/index.html', context=context)
 
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from .models import Ticket
+from django.db.models import Count
+from datetime import datetime, timedelta
+
+@require_GET
+def get_chart_data(request):
+    today = datetime.today()
+    start_of_week = today - timedelta(days=today.weekday())
+    last_seven_days = [start_of_week + timedelta(days=i) for i in range(7)]
+    
+    resolved_counts_weekly = []
+    open_counts_weekly = []
+    closed_counts_weekly = []
+    pending_counts_weekly = []
+
+    for day in last_seven_days:
+        resolved_count = Ticket.objects.filter(
+            status='resolved',
+            resolved_at__date=day.date()
+        ).count()
+        open_count = Ticket.objects.filter(
+            status='open',
+            created_at__date=day.date()
+        ).count()
+        closed_count = Ticket.objects.filter(
+            status='closed',
+            closed_at__date=day.date()
+        ).count()
+        pending_count = Ticket.objects.filter(
+            status='pending',
+            created_at__date=day.date()
+        ).count()
+
+        resolved_counts_weekly.append(resolved_count)
+        open_counts_weekly.append(open_count)
+        closed_counts_weekly.append(closed_count)
+        pending_counts_weekly.append(pending_count)
+
+    last_nine_months = [(today - timedelta(days=30 * i)).strftime('%b') for i in reversed(range(9))]
+    
+    resolved_counts_monthly = []
+    open_counts_monthly = []
+    closed_counts_monthly = []
+    pending_counts_monthly = []
+
+    for month in reversed(range(9)):
+        start_of_month = (today.replace(day=1) - timedelta(days=30 * month)).replace(day=1)
+        end_of_month = (start_of_month + timedelta(days=31)).replace(day=1) - timedelta(seconds=1)
+        
+        resolved_count = Ticket.objects.filter(
+            status='resolved',
+            resolved_at__range=[start_of_month, end_of_month]
+        ).count()
+        open_count = Ticket.objects.filter(
+            status='open',
+            created_at__range=[start_of_month, end_of_month]
+        ).count()
+        closed_count = Ticket.objects.filter(
+            status='closed',
+            closed_at__range=[start_of_month, end_of_month]
+        ).count()
+        pending_count = Ticket.objects.filter(
+            status='pending',
+            created_at__range=[start_of_month, end_of_month]
+        ).count()
+
+        resolved_counts_monthly.append(resolved_count)
+        open_counts_monthly.append(open_count)
+        closed_counts_monthly.append(closed_count)
+        pending_counts_monthly.append(pending_count)
+
+    data = {
+        "labels_weekly": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        "resolved_counts_weekly": resolved_counts_weekly,
+        "open_counts_weekly": open_counts_weekly,
+        "closed_counts_weekly": closed_counts_weekly,
+        "pending_counts_weekly": pending_counts_weekly,
+        
+        "labels_monthly": last_nine_months,
+        "resolved_counts_monthly": resolved_counts_monthly,
+        "open_counts_monthly": open_counts_monthly,
+        "closed_counts_monthly": closed_counts_monthly,
+        "pending_counts_monthly": pending_counts_monthly,
+    }
+
+    return JsonResponse(data)
+
 
 # Create your views here.
 def home_view(request):
