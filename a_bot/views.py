@@ -300,7 +300,7 @@ def mark_as_resolved( ticket_id):
     support_member.user_mode = WAITING_MODE
     support_member.user_status = WAITING_MODE
     support_member.save()
-    message=f"ticket *#{ticket.id}* is now resolved ✅."
+    message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."
     reply = f'Your inquiry *{ticket.description[:10]}*... has been marked as resolved'
     data = get_text_message_input(ticket.created_by, reply, None)
     send_message(data)
