@@ -1,0 +1,69 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>Support Members Table</h6>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <div class="table-responsive p-0">
+            <table class="table align-items-center mb-0">
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Full Name</th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Role</th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Active</th>
+                  <th class="text-secondary opacity-7"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in users %}
+                <tr>
+                  <td>
+                    <div class="d-flex px-2 py-1">
+                        <img src="{% static 'avatars/avatar.svg' %}" class="avatar avatar-sm me-3" alt="{{ user.first_name }} {{user.surname}}">
+                      </div>
+                      <div class="d-flex flex-column justify-content-center">
+                        <h6 class="mb-0 text-sm">{{ user.first_name }} {{user.surname}}</h6>
+                      </div>
+                    </div>
+                  </td>
+                
+                  <td class="align-middle text-center">
+                    <span class="badge badge-sm {% if member.is_active %}bg-gradient-success{% else %}bg-gradient-secondary{% endif %}">
+                      {% if user.is_staff %}Active{% else %}Inactive{% endif %}
+                    </span>
+                  </td>
+                  <td class="align-middle text-center">
+                    <span class="badge badge-sm {% if member.is_active %}bg-gradient-success{% else %}bg-gradient-secondary{% endif %}">
+                      {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                  </td>
+                  
+                  <td class="align-middle text-center">
+                    <a href="{% url 'edit_support_member' member.id %}" class="text-secondary font-weight-bold text-xs edit-member" data-toggle="tooltip" data-original-title="Edit member">
+                      Edit
+                    </a>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="7" class="text-center">No support members available.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% include "includes/footer.html" %}
+{% endblock content %}

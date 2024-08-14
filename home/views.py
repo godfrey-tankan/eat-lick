@@ -213,6 +213,10 @@ def ticket_list_by_status(request, status):
 # Create your views here.
 def home_view(request):
     return JsonResponse({'message': 'Home!'})
+
+def users_list(request):
+    users = User.objects.all()
+    return render(request, 'pages/users.html', {'users': users})
 def edit_support_member(request, id):
     member = get_object_or_404(SupportMember, id=id)
     

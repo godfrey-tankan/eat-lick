@@ -29,6 +29,7 @@ urlpatterns = [
     path('tables/', support_users_list, name='support_users_list'),
     path('tickets/status/<str:status>/', ticket_list_by_status, name='ticket_list_by_status'),
     path('tickets/assigned-to/<int:member_id>/', support_member_tickets, name='tickets_by_assignee'),
+    path('users/', users_list, name='user_list'),
     path('profile/', profile_view, name='profile'),
     path('edit/<int:id>/', edit_support_member, name='edit_support_member'),
     path("admins/", admin.site.urls),
