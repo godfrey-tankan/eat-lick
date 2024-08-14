@@ -12,7 +12,7 @@ def generate_weekly_report(request):
     start_date = today - timedelta(days=today.weekday() + 7)
     end_date = start_date + timedelta(days=6)
 
-    tickets = Ticket.objects.filter(created_at__range=[start_date, end_date])
+    tickets = Ticket.objects.filter(created_at__range=[start_date, today])
     support_members = SupportMember.objects.all()
     
     report_data = []

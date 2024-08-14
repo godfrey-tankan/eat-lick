@@ -74,12 +74,7 @@
         <p>Total Resolved Tickets: {{ total_resolved }}</p>
     </div>
 
-    <div class="statistics">
-        <p>Day with Most Opened Tickets: {{ day_most_opened.created_at__date }} ({{ day_most_opened.opened }} tickets)</p>
-        <p>Day with Most Closed Tickets: {{ day_most_closed.created_at__date }} ({{ day_most_closed.closed }} tickets)</p>
-        <p>Day with Most Resolved Tickets: {{ day_most_resolved.created_at__date }} ({{ day_most_resolved.resolved }} tickets)</p>
-    </div>
-
+    
     <h2>Support Member Statistics</h2>
     <table>
         <thead class="header">
@@ -101,7 +96,7 @@
             {% endfor %}
         </tbody>
     </table>
-
+    
     <h2>Daily Ticket Counts</h2>
     <table>
         <thead class="header">
@@ -123,5 +118,10 @@
             {% endfor %}
         </tbody>
     </table>
+    <div class="statistics">
+        <p>Day with Most Opened Tickets: {{ day_most_opened.created_at__date }} ({{ day_most_opened.opened }} tickets)</p>
+        <p>Day with Most Closed Tickets: {{ day_most_closed.created_at__date }} ({{ day_most_closed.closed }} tickets)</p>
+        <p>Day with Most Resolved Tickets: {{ day_most_resolved.created_at__date }} ({{ day_most_resolved.resolved }} tickets)</p>
+    </div>
 </body>
 </html>
