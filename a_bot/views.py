@@ -194,9 +194,11 @@ def handle_help(wa_id, response, name):
 
     if open_inquiries:
         if support_member:
+            print('support member')
             data = get_text_message_input(open_inquiries.created_by, response, None)
-            send_message(data)
+            return send_message(data)
         else:
+            print('not support member')
             for message in thank_you_messages:
                 if message in response.lower():
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
@@ -228,6 +230,8 @@ def accept_ticket(wa_id,name, ticket_id):
         ticket_id = int(ticket_id)
     except Exception as e:
         return "Invalid ticket id"
+    try:
+        
     
     support_team_mobiles =[support_member.phone_number for support_member in SupportMember.objects.all()]
     if wa_id[0] not in support_team_mobiles:
