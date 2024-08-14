@@ -53,7 +53,7 @@ urlpatterns += [
     path('tickets/create/', ticket_create, name='ticket-create'),
     path('ticket/<int:pk>/', ticket_detail, name='ticket-detail'),
     path('get-chart-data/', get_chart_data, name='get_chart_data'),
-    path('weekly-report/', weekly_report_pdf, name='weekly_report_pdf'),
+    path('reports/weekly/', generate_weekly_report, name='generate_weekly_report'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
