@@ -54,10 +54,33 @@
         .total-row {
             font-weight: bold;
         }
+
+        .statistics {
+            margin-bottom: 20px;
+        }
+
+        .statistics p {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <h1>Weekly Report ({{ start_date }} to {{ end_date }})</h1>
+
+    <div class="statistics">
+        <p>Total Opened Tickets: {{ total_opened }}</p>
+        <p>Total Closed Tickets: {{ total_closed }}</p>
+        <p>Total Resolved Tickets: {{ total_resolved }}</p>
+    </div>
+
+    <div class="statistics">
+        <p>Day with Most Opened Tickets: {{ day_most_opened.created_at__date }} ({{ day_most_opened.opened }} tickets)</p>
+        <p>Day with Most Closed Tickets: {{ day_most_closed.created_at__date }} ({{ day_most_closed.closed }} tickets)</p>
+        <p>Day with Most Resolved Tickets: {{ day_most_resolved.created_at__date }} ({{ day_most_resolved.resolved }} tickets)</p>
+    </div>
+
+    <h2>Support Member Statistics</h2>
     <table>
         <thead class="header">
             <tr>
@@ -74,6 +97,28 @@
                 <td>{{ data.resolved_count }}</td>
                 <td>{{ data.closed_count }}</td>
                 <td>{{ data.average_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Daily Ticket Counts</h2>
+    <table>
+        <thead class="header">
+            <tr>
+                <th>Date</th>
+                <th>Opened Tickets</th>
+                <th>Closed Tickets</th>
+                <th>Resolved Tickets</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in daily_counts %}
+            <tr>
+                <td>{{ data.created_at__date }}</td>
+                <td>{{ data.opened }}</td>
+                <td>{{ data.closed }}</td>
+                <td>{{ data.resolved }}</td>
             </tr>
             {% endfor %}
         </tbody>
