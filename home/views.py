@@ -23,7 +23,6 @@ from .decorators import staff_required
 
 
 @login_required
-@staff_required
 def index(request):
     # Get all tickets
     all_tickets = Ticket.objects.all()
@@ -93,7 +92,7 @@ def index(request):
 
 @require_GET
 @login_required
-# @staff_required
+@staff_required
 def get_chart_data(request):
     today = datetime.today()
     start_of_week = today - timedelta(days=today.weekday())
@@ -226,13 +225,13 @@ def home_view(request):
     return JsonResponse({'message': 'Home!'})
 
 @login_required
-# @staff_required
+@staff_required
 def users_list(request):
     users = User.objects.all()
     return render(request, 'pages/users.html', {'users': users})
 
 @login_required
-# @staff_required
+@staff_required
 def edit_user(request, id):
     user = get_object_or_404(User, id=id)
     
@@ -246,7 +245,7 @@ def edit_user(request, id):
     return render(request, 'pages/edit_system_user.html', {'form': form, 'user': user})
 
 @login_required
-# @staff_required
+@staff_required
 def edit_support_member(request, id):
     member = get_object_or_404(SupportMember, id=id)
     
@@ -261,13 +260,13 @@ def edit_support_member(request, id):
 
 
 @login_required
-# @staff_required
+@staff_required
 def profile_view(request):
     user = request.user
     return render(request, 'pages/profile.html', {'user': user})
 
 @login_required
-# @staff_required
+@staff_required
 def support_users_list(request):
     support_members = SupportMember.objects.all()
     return render(request, 'pages/tables.html', {'support_members': support_members})
