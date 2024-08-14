@@ -1,5 +1,8 @@
 from django import forms
 from .models import Ticket, Comment,SupportMember
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class TicketForm(forms.ModelForm):
     class Meta:
@@ -15,3 +18,8 @@ class SupportMemberForm(forms.ModelForm):
     class Meta:
         model = SupportMember
         fields = ['username', 'phone_number','branch', 'is_active'] 
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username','first_name','last_name', 'email','is_active','is_staff','is_superuser']

@@ -25,7 +25,6 @@
                 <tr>
                   <td>
                     <div class="d-flex px-2 py-1">
-                        <img src="{% static 'avatars/avatar.svg' %}" class="avatar avatar-sm me-3" alt="{{ user.first_name }} {{user.surname}}">
                       </div>
                       <div class="d-flex flex-column justify-content-center">
                         <h6 class="mb-0 text-sm">{{ user.first_name }} {{user.surname}}</h6>
@@ -34,18 +33,18 @@
                   </td>
                 
                   <td class="align-middle text-center">
-                    <span class="badge badge-sm {% if member.is_active %}bg-gradient-success{% else %}bg-gradient-secondary{% endif %}">
-                      {% if user.is_staff %}Active{% else %}Inactive{% endif %}
+                    <span class="badge badge-sm {% if user.is_staff %}bg-gradient-success{% else %}bg-gradient-secondary{% endif %}">
+                      {% if user.is_staff %}STAFF{% else %}USER{% endif %}
                     </span>
                   </td>
                   <td class="align-middle text-center">
-                    <span class="badge badge-sm {% if member.is_active %}bg-gradient-success{% else %}bg-gradient-secondary{% endif %}">
+                    <span class="badge badge-sm {% if user.is_active %}bg-gradient-success{% else %}bg-gradient-secondary{% endif %}">
                       {% if user.is_active %}Active{% else %}Inactive{% endif %}
                     </span>
                   </td>
                   
                   <td class="align-middle text-center">
-                    <a href="{% url 'users' member.id %}" class="text-secondary font-weight-bold text-xs edit-member" data-toggle="tooltip" data-original-title="Edit member">
+                    <a href="{% url 'user_list'  %}" class="text-secondary font-weight-bold text-xs edit-member" data-toggle="tooltip" data-original-title="Edit member">
                       Edit
                     </a>
                   </td>

@@ -217,6 +217,19 @@ def home_view(request):
 def users_list(request):
     users = User.objects.all()
     return render(request, 'pages/users.html', {'users': users})
+
+def edit_user(request, id):
+    user = get_object_or_404(User, id=id)
+    
+    if request.method == 'POST':
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')  
+    else:
+        form = UserForm(instance=user)
+    return render(request, 'pages/edit_user.html', {'form': form, 'user': user})
+
 def edit_support_member(request, id):
     member = get_object_or_404(SupportMember, id=id)
     
