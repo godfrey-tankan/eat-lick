@@ -8,29 +8,34 @@
             font-family: Arial, sans-serif;
             margin: 20px;
             color: #333;
+            background-color: #f4f4f9;
         }
 
-        h1 {
+        h1, h2 {
             text-align: center;
+            color: #007bff;
             margin-bottom: 20px;
+            font-weight: 300;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         th, td {
-            padding: 10px;
+            padding: 12px;
             text-align: left;
             border: 1px solid #ddd;
         }
 
         th {
-            background-color: #f4f4f4;
-            color: #555;
-            font-weight: bold;
+            background-color: #007bff;
+            color: #fff;
+            font-weight: 600;
         }
 
         tbody tr:nth-child(even) {
@@ -38,7 +43,22 @@
         }
 
         tbody tr:hover {
-            background-color: #f1f1f1;
+            background-color: #e1e1e1;
+        }
+
+        .statistics {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .statistics p {
+            font-size: 1.2em;
+            margin: 5px 0;
+            color: #555;
         }
 
         .header {
@@ -49,19 +69,12 @@
 
         .header th {
             font-size: 1.1em;
+            padding: 10px;
         }
 
         .total-row {
-            font-weight: bold;
-        }
-
-        .statistics {
-            margin-bottom: 20px;
-        }
-
-        .statistics p {
-            font-size: 1.2em;
-            font-weight: bold;
+            font-weight: 600;
+            background-color: #e9ecef;
         }
     </style>
 </head>
@@ -69,12 +82,11 @@
     <h2>Weekly Report ({{ start_date }} to {{ end_date }})</h2>
 
     <div class="statistics">
-        <p>Total Opened Tickets: {{ total_opened }}</p>
-        <p>Total Closed Tickets: {{ total_closed }}</p>
-        <p>Total Resolved Tickets: {{ total_resolved }}</p>
+        <p>Total Opened Tickets: <strong>{{ total_opened }}</strong></p>
+        <p>Total Closed Tickets: <strong>{{ total_closed }}</strong></p>
+        <p>Total Resolved Tickets: <strong>{{ total_resolved }}</strong></p>
     </div>
 
-    
     <h2>Support Member Statistics</h2>
     <table>
         <thead class="header">
@@ -118,10 +130,11 @@
             {% endfor %}
         </tbody>
     </table>
+    
     <div class="statistics">
-        <p>Day with Most Opened Tickets: {{ day_most_opened.created_at__date }} ({{ day_most_opened.opened }} tickets)</p>
-        <p>Day with Most Closed Tickets: {{ day_most_closed.created_at__date }} ({{ day_most_closed.closed }} tickets)</p>
-        <p>Day with Most Resolved Tickets: {{ day_most_resolved.created_at__date }} ({{ day_most_resolved.resolved }} tickets)</p>
+        <p>Day with Most Opened Tickets: <strong>{{ day_most_opened.created_at__date }} ({{ day_most_opened.opened }} tickets)</strong></p>
+        <p>Day with Most Closed Tickets: <strong>{{ day_most_closed.created_at__date }} ({{ day_most_closed.closed }} tickets)</strong></p>
+        <p>Day with Most Resolved Tickets: <strong>{{ day_most_resolved.created_at__date }} ({{ day_most_resolved.resolved }} tickets)</strong></p>
     </div>
 </body>
 </html>
