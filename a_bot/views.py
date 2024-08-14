@@ -169,6 +169,12 @@ def is_valid_whatsapp_message(body):
         and body["entry"][0]["changes"][0]["value"]["messages"][0]
     )
 def handle_inquiry(wa_id, response, name):
+    try:
+        open_inquiries = Ticket.objects.filter(status=OPEN_MODE,created_by=wa_id[0]).first()
+    except Ticket.DoesNotExist:
+        open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=wa_id[0]).first()
+    if open_inquiries:
+        return "Your inquiry is already being attended to."
     ticket = Ticket.objects.create(
         title=f"Inquiry from {name}",
         description=response,
