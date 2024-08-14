@@ -33,7 +33,7 @@ def generate_weekly_report(request):
     day_most_resolved = daily_counts.order_by('-resolved').first()
     
     for member in support_members:
-        tickets_for_member = tickets.filter(assigned_to=member)
+        tickets_for_member = tickets.filter(assigned_to=member.id)
         resolved_tickets = tickets_for_member.filter(status='resolved')
         closed_tickets = tickets_for_member.filter(status='closed')
         
