@@ -18,10 +18,12 @@ from django.utils.timezone import now
 from django.views.generic import ListView
 from django.db.models import ExpressionWrapper, F, DurationField
 from django.db.models.functions import Coalesce
+from .decorators import staff_required
 
 
 
 @login_required
+@staff_required
 def index(request):
     # Get all tickets
     all_tickets = Ticket.objects.all()
@@ -47,13 +49,20 @@ def index(request):
         resolved_tickets_count__gt=1
     )
     tickets = Ticket.objects.all()
-    request_user_support_member = SupportMember.objects.get(user=request.user)
-    request_user_tickets = tickets.filter(assigned_to=request_user_support_member)
-    request_user_tickets_count = request_user_tickets.count()
-    request_user_open_tickets_count = request_user_tickets.filter(status='open').count()
-    request_user_resolved_tickets_count = request_user_tickets.filter(status='resolved').count()
-    request_user_closed_tickets_count = request_user_tickets.filter(status='closed').count()
-    request_user_pending_tickets_count = request_user_tickets.filter(status='pending').count()
+    try:
+        request_user_support_member = SupportMember.objects.get(user=request.user.id)
+        request_user_tickets = tickets.filter(assigned_to=request_user_support_member)
+        request_user_tickets_count = request_user_tickets.count()
+        request_user_open_tickets_count = request_user_tickets.filter(status='open').count()
+        request_user_resolved_tickets_count = request_user_tickets.filter(status='resolved').count()
+        request_user_closed_tickets_count = request_user_tickets.filter(status='closed').count()
+        request_user_pending_tickets_count = request_user_tickets.filter(status='pending').count()
+    except SupportMember.DoesNotExist:
+        request_user_tickets_count = 0
+        request_user_open_tickets_count = 0
+        request_user_resolved_tickets_count = 0
+        request_user_closed_tickets_count = 0
+        request_user_pending_tickets_count = 0
     
 
     context = {
@@ -83,6 +92,8 @@ def index(request):
     return render(request, 'pages/index.html', context=context)
 
 @require_GET
+@login_required
+# @staff_required
 def get_chart_data(request):
     today = datetime.today()
     start_of_week = today - timedelta(days=today.weekday())
@@ -214,10 +225,14 @@ def ticket_list_by_status(request, status):
 def home_view(request):
     return JsonResponse({'message': 'Home!'})
 
+@login_required
+# @staff_required
 def users_list(request):
     users = User.objects.all()
     return render(request, 'pages/users.html', {'users': users})
 
+@login_required
+# @staff_required
 def edit_user(request, id):
     user = get_object_or_404(User, id=id)
     
@@ -228,8 +243,10 @@ def edit_user(request, id):
             return redirect('user_list')  
     else:
         form = UserForm(instance=user)
-    return render(request, 'pages/edit_user.html', {'form': form, 'user': user})
+    return render(request, 'pages/edit_system_user.html', {'form': form, 'user': user})
 
+@login_required
+# @staff_required
 def edit_support_member(request, id):
     member = get_object_or_404(SupportMember, id=id)
     
@@ -242,11 +259,15 @@ def edit_support_member(request, id):
         form = SupportMemberForm(instance=member)
     return render(request, 'pages/edit_user.html', {'form': form, 'member': member})
 
+
 @login_required
+# @staff_required
 def profile_view(request):
     user = request.user
     return render(request, 'pages/profile.html', {'user': user})
 
+@login_required
+# @staff_required
 def support_users_list(request):
     support_members = SupportMember.objects.all()
     return render(request, 'pages/tables.html', {'support_members': support_members})
