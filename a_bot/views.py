@@ -197,10 +197,11 @@ def handle_help(wa_id, response, name):
         open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=wa_id[0]).last()
     except Ticket.DoesNotExist:
         open_inquiries = None
-    try:
-        open_inquiries = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member).first()
-    except Ticket.DoesNotExist:
-        open_inquiries = None
+    if support_member:
+        try:
+            open_inquiries = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member).first()
+        except Ticket.DoesNotExist:
+            open_inquiries = None
 
     if open_inquiries:
         if support_member:
