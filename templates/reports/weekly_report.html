@@ -9,11 +9,13 @@
             margin: 20px;
             color: #333;
             background-color: #f4f4f9;
+            position: relative;
+            padding-bottom: 50px; /* Space for footer */
         }
 
         h1, h2 {
             text-align: center;
-            color: #007bff;
+            color: #000;
             margin-bottom: 20px;
             font-weight: 300;
         }
@@ -33,7 +35,7 @@
         }
 
         th {
-            background-color: #007bff;
+            background-color: grey;
             color: #fff;
             font-weight: 600;
         }
@@ -76,10 +78,20 @@
             font-weight: 600;
             background-color: #e9ecef;
         }
+
+        .footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-size: 1em;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <h2>Weekly Report ({{ start_date }} to {{ end_date }})</h2>
+    <h1>Weekly Report ({{ start_date }} to {{ end_date }})</h1>
 
     <div class="statistics">
         <p>Total Opened Tickets: <strong>{{ total_opened }}</strong></p>
@@ -136,5 +148,9 @@
         <p>Day with Most Closed Tickets: <strong>{{ day_most_closed.created_at__date }} ({{ day_most_closed.closed }} tickets)</strong></p>
         <p>Day with Most Resolved Tickets: <strong>{{ day_most_resolved.created_at__date }} ({{ day_most_resolved.resolved }} tickets)</strong></p>
     </div>
+
 </body>
+<div class="footer">
+    &copy; 2024 ict support
+</div>
 </html>
