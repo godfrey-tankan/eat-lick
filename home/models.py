@@ -21,11 +21,11 @@ class SupportMember(models.Model):
 
 class Ticket(models.Model):
     STATUS_CHOICES = [
-        ('open', 'Open'),
-        ('pending', 'Pending'),
-        ('closed', 'Closed'),
-        ('expired', 'Expired'),
-        ('resolved', 'Resolved'),
+        ('open', 'open'),
+        ('pending', 'pending'),
+        ('closed', 'closed'),
+        ('expired', 'expired'),
+        ('resolved', 'resolved'),
     ]
 
     title = models.CharField(max_length=255)
