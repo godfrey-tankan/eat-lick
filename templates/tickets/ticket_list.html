@@ -64,7 +64,6 @@
                         <select name="operator" id="operator-select" style="margin-right: -200px; width: 80px;">
                             <option value="<" {% if request.GET.operator == "<" %}selected{% endif %}><</option>
                             <option value="=" {% if request.GET.operator == "=" %}selected{% endif %}>=</option>
-                            
                             <option value=">" {% if request.GET.operator == ">" %}selected{% endif %}>></option>
                             <option value="<=" {% if request.GET.operator == "<=" %}selected{% endif %}><=</option>
                             <option value=">=" {% if request.GET.operator == ">=" %}selected{% endif %}>>=</option>
@@ -127,19 +126,13 @@
       var filterTimeInput = document.getElementById('filter-time-input');
   
       function submitForm() {
-          filterForm.submit(); // Automatically submit the form
+          filterForm.submit(); 
       }
-  
-      // Listen for changes in the select element
       operatorSelect.addEventListener('change', submitForm);
-  
-      // Listen for input changes in the text field
       filterTimeInput.addEventListener('input', function() {
-          // Delay submission to handle typing
           clearTimeout(this.timeout);
-          this.timeout = setTimeout(submitForm, 300); // Submit after 300ms of inactivity
+          this.timeout = setTimeout(submitForm, 300); 
       });
-  
       // Popup logic
       var popup = document.getElementById('popup');
       var popupContent = document.getElementById('popup-content');
