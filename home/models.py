@@ -12,6 +12,7 @@ class SupportMember(models.Model):
     phone_number = models.CharField(max_length=15, null=True, blank=True)
     user_mode = models.CharField(max_length=20, null=True, blank=True)
     user_status = models.CharField(max_length=20, null=True, blank=True)
+    branch = models.CharField(max_length=20, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

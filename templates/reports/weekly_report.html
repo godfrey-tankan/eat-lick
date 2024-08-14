@@ -81,12 +81,11 @@
 
         .footer {
             position: absolute;
-            bottom: 0;
+            bottom: -15%;
             width: 100%;
             text-align: center;
-            color: #fff;
+            color: #c2c2c2;
             font-size: 1em;
-            font-weight: bold;
         }
     </style>
 </head>
@@ -149,8 +148,8 @@
         <p>Day with Most Resolved Tickets: <strong>{{ day_most_resolved.created_at__date }} ({{ day_most_resolved.resolved }} tickets)</strong></p>
     </div>
 
+    <div class="footer">
+        &copy; 2024 ict support
+    </div>
 </body>
-<div class="footer">
-    &copy; 2024 ict support
-</div>
 </html>
