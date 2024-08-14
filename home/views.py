@@ -76,7 +76,6 @@ def index(request):
 
     return render(request, 'pages/index.html', context=context)
 
-
 @require_GET
 def get_chart_data(request):
     today = datetime.today()
@@ -163,8 +162,6 @@ def get_chart_data(request):
 # Create your views here.
 def home_view(request):
     return JsonResponse({'message': 'Home!'})
-
-
 def edit_support_member(request, id):
     member = get_object_or_404(SupportMember, id=id)
     
@@ -175,7 +172,6 @@ def edit_support_member(request, id):
             return redirect('support_users_list')  
     else:
         form = SupportMemberForm(instance=member)
-    
     return render(request, 'pages/edit_user.html', {'form': form, 'member': member})
 
 @login_required
