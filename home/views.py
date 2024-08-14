@@ -220,7 +220,7 @@ def ticket_list_by_status(request, status):
             pass  # Ignore if the filter_time is not a valid integer
 
     return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'status': status})
-# Create your views here.
+
 def home_view(request):
     return JsonResponse({'message': 'Home!'})
 
@@ -258,7 +258,6 @@ def edit_support_member(request, id):
         form = SupportMemberForm(instance=member)
     return render(request, 'pages/edit_user.html', {'form': form, 'member': member})
 
-
 @login_required
 @staff_required
 def profile_view(request):
@@ -270,11 +269,6 @@ def profile_view(request):
 def support_users_list(request):
     support_members = SupportMember.objects.all()
     return render(request, 'pages/tables.html', {'support_members': support_members})
-# Ticket Views
-class TicketListCreateView(generics.ListCreateAPIView):
-    queryset = Ticket.objects.all()
-    serializer_class = TicketSerializer
-    permission_classes = [IsAuthenticated]
 
 def support_member_tickets(request, member_id):
     try:
@@ -283,8 +277,6 @@ def support_member_tickets(request, member_id):
         return HttpResponse("Support Member not found")
 
     tickets = Ticket.objects.filter(assigned_to=member.id)
-
-    # Calculate time taken for each ticket
     for ticket in tickets:
         if ticket.status in ['resolved', 'closed']:
             if ticket.resolved_at:
@@ -296,6 +288,12 @@ def support_member_tickets(request, member_id):
             ticket.time_taken = None
 
     return render(request, 'tickets/tickets_by_assignee.html', {'tickets': tickets, 'member': member})
+# Ticket Views
+class TicketListCreateView(generics.ListCreateAPIView):
+    queryset = Ticket.objects.all()
+    serializer_class = TicketSerializer
+    permission_classes = [IsAuthenticated]
+
 class TicketDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
