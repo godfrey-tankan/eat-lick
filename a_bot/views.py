@@ -44,7 +44,7 @@ def generate_response(response, wa_id, name):
         response=accept_ticket(wa_id,name, response)
         return response
     
-    if response:#not support_member or wa_id[0]=="263779586059":
+    if not support_member:
         for help_message in help_messages:
             if help_message in response.lower() or len(response) > 10:
                 response = handle_inquiry(wa_id, response, name)
