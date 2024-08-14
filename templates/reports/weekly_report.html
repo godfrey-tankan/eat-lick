@@ -4,23 +4,17 @@
     <meta charset="UTF-8">
     <title>Weekly Report</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { border: 1px solid #dddddd; text-align: left; padding: 8px; }
-        th { background-color: #f2f2f2; }
+        /* Add any required styles here */
     </style>
 </head>
 <body>
-    <h1>Weekly Report</h1>
-    <p>From: {{ start_date }}</p>
-    <p>To: {{ end_date }}</p>
-    
-    <table>
+    <h1>Weekly Report ({{ start_date }} to {{ end_date }})</h1>
+    <table border="1">
         <thead>
             <tr>
                 <th>Support Member</th>
-                <th>Total Resolved Tickets</th>
-                <th>Total Closed Tickets</th>
+                <th>Resolved Tickets</th>
+                <th>Closed Tickets</th>
                 <th>Average Time to Resolve</th>
             </tr>
         </thead>
@@ -30,13 +24,7 @@
                 <td>{{ data.member }}</td>
                 <td>{{ data.resolved_count }}</td>
                 <td>{{ data.closed_count }}</td>
-                <td>
-                    {% if data.average_time %}
-                        {{ data.average_time.days }} days {{ data.average_time.seconds // 3600 }} hours {{ (data.average_time.seconds % 3600) // 60 }} minutes
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </td>
+                <td>{{ data.average_time }}</td>  <!-- This will display the pre-calculated average time -->
             </tr>
             {% endfor %}
         </tbody>
