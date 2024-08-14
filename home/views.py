@@ -22,6 +22,7 @@ def index(request):
     all_tickets = Ticket.objects.all()
     total_tickets = all_tickets.count()
 
+
     open_tickets_count = all_tickets.filter(status='open').count()
     closed_tickets_count = all_tickets.filter(status='closed').count()
     pending_tickets_count = all_tickets.filter(status='pending').count()
