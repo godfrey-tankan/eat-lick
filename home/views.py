@@ -1,6 +1,4 @@
-from django.shortcuts import render
 from django.http import HttpResponse
-from django.shortcuts import render
 from django.http import JsonResponse
 from rest_framework import generics
 from rest_framework.response import Response
@@ -8,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import *
 from .serializers import TicketSerializer, TicketLogSerializer, CommentSerializer, FAQSerializer
 from django.shortcuts import render, get_object_or_404, redirect
-from .forms import TicketForm, CommentForm
+from .forms import *
 from django.views.generic import UpdateView
 from django.contrib.auth.decorators import login_required
 from django.views.generic import DeleteView
@@ -165,6 +163,20 @@ def get_chart_data(request):
 # Create your views here.
 def home_view(request):
     return JsonResponse({'message': 'Home!'})
+
+
+def edit_support_member(request, id):
+    member = get_object_or_404(SupportMember, id=id)
+    
+    if request.method == 'POST':
+        form = SupportMemberForm(request.POST, instance=member)
+        if form.is_valid():
+            form.save()
+            return redirect('support_users_list')  
+    else:
+        form = SupportMemberForm(instance=member)
+    
+    return render(request, 'pages/edit_user.html', {'form': form, 'member': member})
 
 @login_required
 def profile_view(request):

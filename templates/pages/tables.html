@@ -42,7 +42,7 @@
                   </td>
                   
                   <td class="align-middle text-center">
-                    <a href="admins/home/supportmember/{{member.id}}/change/" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit member">
+                    <a href="{% url 'edit_support_member' member.id %}" class="text-secondary font-weight-bold text-xs edit-member" data-toggle="tooltip" data-original-title="Edit member">
                       Edit
                     </a>
                   </td>
@@ -60,6 +60,7 @@
     </div>
   </div>
 </div>
+
 
 {% include "includes/footer.html" %}
 {% endblock content %}

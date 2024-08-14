@@ -27,6 +27,7 @@ urlpatterns = [
     path('admins/logout/', logout_view),
     path('tables/', support_users_list, name='support_users_list'),
     path('profile/', profile_view, name='profile'),
+    path('edit/<int:id>/', edit_support_member, name='edit_support_member'),
     path("admins/", admin.site.urls),
     path("", include('admin_soft.urls')),
     path('webhook/', webhook, name='webhook'),
