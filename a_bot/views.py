@@ -230,13 +230,18 @@ def accept_ticket(wa_id,name, ticket_id):
         ticket_id = int(ticket_id)
     except Exception as e:
         return "Invalid ticket id"
-    try:
-        
-    
+
     support_team_mobiles =[support_member.phone_number for support_member in SupportMember.objects.all()]
     if wa_id[0] not in support_team_mobiles:
         return "You are not authorized to accept tickets"
     support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
+    try:
+        if assigned_tickets := Ticket.objects.filter(
+            assigned_to=support_member.id, status=PENDING_MODE
+        ):
+            return "You already have an open ticket"
+    except Ticket.DoesNotExist:
+        assigned_tickets = None
     is_ticket_open = False
     try:
         if check_ticket := Ticket.objects.get(id=ticket_id):
@@ -257,7 +262,7 @@ def accept_ticket(wa_id,name, ticket_id):
         )
         support_member.user_mode=HELPING_MODE
         support_member.user_status = HELPING_MODE
-        
+
         support_member.save()
         message=f"🟡ticket *#{ticket.id}* is now assigned to *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
         return broadcast_messages(name,None,message)
