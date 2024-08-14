@@ -14,4 +14,4 @@ class CommentForm(forms.ModelForm):
 class SupportMemberForm(forms.ModelForm):
     class Meta:
         model = SupportMember
-        fields = ['username', 'phone_number', 'is_active'] 
+        fields = ['username', 'phone_number','branch', 'is_active'] 
