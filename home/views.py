@@ -20,8 +20,57 @@ from django.db.models import ExpressionWrapper, F, DurationField
 from django.db.models.functions import Coalesce
 from .decorators import staff_required
 
+class TicketListCreateView(generics.ListCreateAPIView):
+    queryset = Ticket.objects.all()
+    serializer_class = TicketSerializer
+    permission_classes = [IsAuthenticated]
 
+class TicketDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Ticket.objects.all()
+    serializer_class = TicketSerializer
+    permission_classes = [IsAuthenticated]
 
+class TicketLogListCreateView(generics.ListCreateAPIView):
+    queryset = TicketLog.objects.all()
+    serializer_class = TicketLogSerializer
+    permission_classes = [IsAuthenticated]
+
+class TicketLogDetailView(generics.RetrieveAPIView):
+    queryset = TicketLog.objects.all()
+    serializer_class = TicketLogSerializer
+    permission_classes = [IsAuthenticated]
+
+class TicketDeleteView(DeleteView):
+    model = Ticket
+    template_name = 'ticket_confirm_delete.html' 
+    success_url = reverse_lazy('ticket-list')  
+
+class TicketEditView(UpdateView):
+    model = Ticket
+    fields = ['title', 'description', 'status', 'assigned_to'] 
+    template_name = 'your_template.html'
+    success_url = '/tickets/'
+
+class CommentListCreateView(generics.ListCreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+class FAQListCreateView(generics.ListCreateAPIView):
+    queryset = FAQ.objects.all()
+    serializer_class = FAQSerializer
+    permission_classes = [IsAuthenticated]
+
+class FAQDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = FAQ.objects.all()
+    serializer_class = FAQSerializer
+    permission_classes = [IsAuthenticated]
+    
 @login_required
 def index(request):
     # Get all tickets
@@ -288,59 +337,7 @@ def support_member_tickets(request, member_id):
             ticket.time_taken = None
 
     return render(request, 'tickets/tickets_by_assignee.html', {'tickets': tickets, 'member': member})
-# Ticket Views
-class TicketListCreateView(generics.ListCreateAPIView):
-    queryset = Ticket.objects.all()
-    serializer_class = TicketSerializer
-    permission_classes = [IsAuthenticated]
 
-class TicketDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Ticket.objects.all()
-    serializer_class = TicketSerializer
-    permission_classes = [IsAuthenticated]
-
-# TicketLog Views
-class TicketLogListCreateView(generics.ListCreateAPIView):
-    queryset = TicketLog.objects.all()
-    serializer_class = TicketLogSerializer
-    permission_classes = [IsAuthenticated]
-
-class TicketLogDetailView(generics.RetrieveAPIView):
-    queryset = TicketLog.objects.all()
-    serializer_class = TicketLogSerializer
-    permission_classes = [IsAuthenticated]
-
-class TicketDeleteView(DeleteView):
-    model = Ticket
-    template_name = 'ticket_confirm_delete.html' 
-    success_url = reverse_lazy('ticket-list')  
-
-class TicketEditView(UpdateView):
-    model = Ticket
-    fields = ['title', 'description', 'status', 'assigned_to'] 
-    template_name = 'your_template.html'
-    success_url = '/tickets/'
-
-class CommentListCreateView(generics.ListCreateAPIView):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
-
-class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
-
-class FAQListCreateView(generics.ListCreateAPIView):
-    queryset = FAQ.objects.all()
-    serializer_class = FAQSerializer
-    permission_classes = [IsAuthenticated]
-
-class FAQDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = FAQ.objects.all()
-    serializer_class = FAQSerializer
-    permission_classes = [IsAuthenticated]
-    
 def ticket_list(request):
     tickets = Ticket.objects.all()
     return render(request, 'tickets/ticket_list.html', {'tickets': tickets})
