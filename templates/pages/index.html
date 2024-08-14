@@ -232,7 +232,7 @@
                   <table class="table align-items-center mb-0">
                     <thead>
                       <tr>
-                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Title</th>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Opened By</th>
                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description</th>
                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Created At</th>
@@ -245,7 +245,7 @@
                         <td>
                           <div class="d-flex px-2 py-1">
                             <div class="d-flex flex-column justify-content-center">
-                              <h6 class="mb-0 text-sm">{{ ticket.title }}</h6>
+                              <h6 class="mb-0 text-sm">{{ ticket.created_by }}</h6>
                             </div>
                           </div>
                         </td>
@@ -268,10 +268,16 @@
                         <td class="align-middle text-center">
                           <span class="text-secondary text-xs font-weight-bold">{{ ticket.created_at|date:"d/m/Y" }}</span>
                         </td>
-                        <td class="align-middle text-center">
-                          <a href="{% url 'tickets_by_assignee' ticket.assigned_to %}" class="text-secondary text-xs font-weight-bold">
-                              {{ ticket.assigned_to }}
-                          </a>
+                        {% if ticket.assigned_to %}
+                          <td class="align-middle text-center">
+                            <a href="{% url 'tickets_by_assignee' ticket.assigned_to.id%}" class="text-secondary text-xs font-weight-bold">
+                                {{ ticket.assigned_to.username }}
+                            </a>
+                        {% else %}
+                          <td class="align-middle text-center">
+                            <span class="text-secondary text-xs font-weight-bold">Unassigned</span>
+                          </td>
+                        {% endif %}
                       </td>
 
 

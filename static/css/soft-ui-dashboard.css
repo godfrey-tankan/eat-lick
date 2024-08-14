@@ -344,6 +344,7 @@ fieldset {
   margin: 0;
   border: 0; }
 
+  /* CUSTOM STYLES ADDITIONS========================================================================================================= */
 
  /* Popup overlay */
 .popup-overlay {
@@ -394,6 +395,19 @@ fieldset {
 /* Popup description */
 .popup-description {
   margin-top: 20px;
+}
+#filter-form {
+  display: inline-flex;
+  align-items: center;
+}
+
+#filter-time-input {
+  margin-right: 5px;
+  width: 100px;
+}
+
+#operator-select {
+  margin-right: 10px;
 }
 
 

@@ -24,12 +24,52 @@
         <div class="card-body px-0 pt-0 pb-2">
           <div class="table-responsive p-0">
             <table class="table align-items-center mb-0">
-              <thead>
+              {% comment %} <thead>
                 <tr>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Title</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Opened By</th>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description</th>
                   <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Created At</th>
                   <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Assigned to</th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Time Taken</th>
+
+                </tr>
+              </thead> {% endcomment %}
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                    Opened By
+                  </th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                    Description
+                  </th>
+                  
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                    <a href="?sort=created_at" class="text-secondary">Created At</a>
+                  </th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                    Assigned to
+                  </th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                    <a href="?sort=time_taken" class="text-secondary">Time Taken</a>
+                    <form id="filter-form" method="GET" action="" style="display:inline;">
+                      <div style="display: flex; align-items: center;">
+                          <input 
+                              type="text" 
+                              name="filter_time" 
+                              placeholder="minutes" 
+                              class="text-secondary text-xs font-weight-bold" 
+                              id="filter-time-input"
+                              style="margin-right: 5px; width: 100px;">
+                          <select name="operator" id="operator-select" style="margin-right: 10px;">
+                              <option value="=">=</option>
+                              <option value="<"><</option>
+                              <option value=">">></option>
+                              <option value="<="><=</option>
+                              <option value=">=">>=</option>
+                          </select>
+                      </div>
+                  </form>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -39,7 +79,7 @@
                     <div class="d-flex px-2 py-1">
                       <div class="d-flex flex-column justify-content-center">
                         <h6 class="mb-0 text-sm">
-                          <a href="#" class="open-popup" data-creater="{{ticket.created_by}}" data-description="{{ ticket.description }}">{{ ticket.title }}</a>
+                          <a href="#" class="open-popup" data-creater="{{ticket.created_by}}" data-description="{{ ticket.description }}">{{ ticket.created_by }}</a>
                         </h6>
                       </div>
                     </div>
@@ -53,6 +93,8 @@
                   <td class="align-middle text-center">
                     <span class="text-secondary text-xs font-weight-bold">{{ ticket.assigned_to }}</span>
                   </td>
+                  <td class="align-middle text-center">
+                    <span class="text-secondary text-xs font-weight-bold">{{ ticket.get_time_to_resolve }}</span>
                 </tr>
                 {% empty %}
                 <tr>
@@ -76,12 +118,33 @@
   <span class="close-btn">&times;</span>
 </div>
 <script>
+
+  
+  
   document.addEventListener('DOMContentLoaded', function() {
     var popup = document.getElementById('popup');
     var popupContent = document.getElementById('popup-content');
     var closeButton = document.querySelector('.close-btn');
     var viewDetailsButtons = document.querySelectorAll('.open-popup');
-  
+    var filterForm = document.getElementById('filter-form');
+    var operatorSelect = document.getElementById('operator');
+    var filterTimeInput = document.getElementById('filter-time-input');
+
+    operatorSelect.addEventListener('change', function() {
+        filterForm.submit();
+    });
+
+    filterTimeInput.addEventListener('input', function() {
+        filterForm.submit();
+    });
+    
+    {% comment %} GETTING THE TIME ACCORDING TO ENTERED TIME FRAME {% endcomment %}
+    document.getElementById('filter-time-input').addEventListener('input', function() {
+      clearTimeout(this.delay);
+      this.delay = setTimeout(function() {
+          document.getElementById('filter-form').submit();
+      }.bind(this), 500);
+  });
     viewDetailsButtons.forEach(function(button) {
       button.addEventListener('click', function(event) {
         event.preventDefault(); // Prevent the default action

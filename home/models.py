@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils.timezone import now
 
 # Create your models here.
 
@@ -38,9 +39,36 @@ class Ticket(models.Model):
     resolved_at = models.DateTimeField(null=True, blank=True)
     closed_at = models.DateTimeField(null=True, blank=True)
     expired_at = models.DateTimeField(null=True, blank=True)
+    
+    def get_time_to_resolve(self):
+        if self.resolved_at:
+            time_diff = self.resolved_at - self.created_at
+        elif self.closed_at:
+            time_diff = self.closed_at - self.created_at
+        else:
+            return "Not resolved yet"
 
+        weeks, days = divmod(time_diff.days, 7)
+        hours, remainder = divmod(time_diff.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        
+        result = []
+        if weeks > 0:
+            result.append(f"{weeks} weeks")
+        if days > 0:
+            result.append(f"{days} days")
+        if hours > 0:
+            result.append(f"{hours} hours")
+        if minutes > 0:
+            result.append(f"{minutes} minutes")
+        
+        return ', '.join(result) if result else "Less than a minute"
+    def get_time_to_resolve_duration(self):
+        end_time = self.resolved_at or self.closed_at or now()
+        return end_time - self.created_at
     def __str__(self):
         return f"Ticket #{self.id} - {self.title} ({self.status})"
+    
 
 
 class TicketLog(models.Model):

@@ -14,7 +14,11 @@ from django.urls import reverse_lazy
 from django.db.models import Count, Q
 from django.views.decorators.http import require_GET
 from datetime import datetime, timedelta
+from django.utils.timezone import now
 from django.views.generic import ListView
+from django.db.models import ExpressionWrapper, F, DurationField
+from django.db.models.functions import Coalesce
+
 
 
 @login_required
@@ -163,8 +167,49 @@ def get_chart_data(request):
 
 def ticket_list_by_status(request, status):
     tickets = Ticket.objects.filter(status=status)
-    return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'status': status})
 
+    operator = request.GET.get('operator', '=')
+    filter_time = request.GET.get('filter_time')
+
+    if filter_time:
+        try:
+            filter_time = int(filter_time)
+            # Convert minutes to a timedelta object
+            filter_time_duration = timedelta(minutes=filter_time)
+            end_time = now()
+
+            # Use expression to calculate the duration from creation to the end time
+            tickets = tickets.annotate(
+                time_to_resolve=ExpressionWrapper(
+                    F('resolved_at') - F('created_at'),
+                    output_field=DurationField()
+                )
+            )
+
+            if operator == '=':
+                tickets = tickets.filter(
+                    time_to_resolve=filter_time_duration
+                )
+            elif operator == '<':
+                tickets = tickets.filter(
+                    time_to_resolve__lt=filter_time_duration
+                )
+            elif operator == '>':
+                tickets = tickets.filter(
+                    time_to_resolve__gt=filter_time_duration
+                )
+            elif operator == '<=':
+                tickets = tickets.filter(
+                    time_to_resolve__lte=filter_time_duration
+                )
+            elif operator == '>=':
+                tickets = tickets.filter(
+                    time_to_resolve__gte=filter_time_duration
+                )
+        except ValueError:
+            pass  # Ignore if the filter_time is not a valid integer
+
+    return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'status': status})
 # Create your views here.
 def home_view(request):
     return JsonResponse({'message': 'Home!'})
@@ -195,18 +240,25 @@ class TicketListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
 def support_member_tickets(request, member_id):
-    # Assuming member_id is a string
     try:
-        member = SupportMember.objects.get(identifier=member_id)
+        member = SupportMember.objects.get(id=member_id)
     except SupportMember.DoesNotExist:
-        # Handle the case where the member does not exist
         return HttpResponse("Support Member not found")
-    
-    # Your logic to filter tickets assigned to the member
-    tickets = Ticket.objects.filter(assigned_to=member)
-    
-    return render(request, 'tickets/.html', {'tickets': tickets})
 
+    tickets = Ticket.objects.filter(assigned_to=member.id)
+
+    # Calculate time taken for each ticket
+    for ticket in tickets:
+        if ticket.status in ['resolved', 'closed']:
+            if ticket.resolved_at:
+                time_taken = ticket.resolved_at - ticket.created_at
+            else:
+                time_taken = ticket.closed_at - ticket.created_at
+            ticket.time_taken = time_taken
+        else:
+            ticket.time_taken = None
+
+    return render(request, 'tickets/tickets_by_assignee.html', {'tickets': tickets, 'member': member})
 class TicketDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
