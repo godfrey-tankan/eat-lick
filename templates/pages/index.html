@@ -269,8 +269,10 @@
                           <span class="text-secondary text-xs font-weight-bold">{{ ticket.created_at|date:"d/m/Y" }}</span>
                         </td>
                         <td class="align-middle text-center">
-                          <span class="text-secondary text-xs font-weight-bold">{{ ticket.assigned_to }}</span>
-                        </td>
+                          <a href="{% url 'tickets_by_assignee' ticket.assigned_to %}" class="text-secondary text-xs font-weight-bold">
+                              {{ ticket.assigned_to }}
+                          </a>
+                      </td>
 
 
                       </tr>

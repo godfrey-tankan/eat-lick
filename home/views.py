@@ -193,14 +193,20 @@ class TicketListCreateView(generics.ListCreateAPIView):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
     permission_classes = [IsAuthenticated]
-class TicketsByAssigneeView(ListView):
-    model = Ticket
-    template_name = 'tickets_by_assignee.html'
-    context_object_name = 'tickets'
 
-    def get_queryset(self):
-        assignee = self.kwargs['assignee']
-        return Ticket.objects.filter(assigned_to=assignee)
+def support_member_tickets(request, member_id):
+    # Assuming member_id is a string
+    try:
+        member = SupportMember.objects.get(identifier=member_id)
+    except SupportMember.DoesNotExist:
+        # Handle the case where the member does not exist
+        return HttpResponse("Support Member not found")
+    
+    # Your logic to filter tickets assigned to the member
+    tickets = Ticket.objects.filter(assigned_to=member)
+    
+    return render(request, 'tickets/.html', {'tickets': tickets})
+
 class TicketDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
