@@ -6,6 +6,7 @@
     <div class="container-fluid py-4">
       {% if request.user.is_authenticated and not request.user.is_superuser %}
       <div class="row">
+        
         <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
           <div class="card">
             <div class="card-body p-3">
@@ -97,6 +98,9 @@
       </div>
       {% else %}
       <div class="row">
+        <div class="col-12 mb-4">
+          <a href="{% url 'generate_weekly_report' %}" class="btn btn-primary">Generate Report</a>
+        </div>
         <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
           <div class="card">
             <div class="card-body p-3">
