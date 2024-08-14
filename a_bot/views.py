@@ -207,11 +207,14 @@ def handle_help(wa_id, response, name):
             print('not support member')
             for message in thank_you_messages:
                 if message in response.lower():
+                    print('matched')
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
                     send_message(data)
                     return mark_as_resolved(open_inquiries.id)
-            data = get_text_message_input('263777951000', response, None)
-            return send_message(data)
+                else:
+                    print('replying to support member')
+                    data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
+                    return send_message(data)
     return "You have no open inquiries"
 def broadcast_messages(name,ticket=None,message=None):
     support_members = SupportMember.objects.all()
