@@ -14,6 +14,7 @@ from django.urls import reverse_lazy
 from django.db.models import Count, Q
 from django.views.decorators.http import require_GET
 from datetime import datetime, timedelta
+from django.views.generic import ListView
 
 
 @login_required
@@ -160,6 +161,10 @@ def get_chart_data(request):
 
     return JsonResponse(data)
 
+def ticket_list_by_status(request, status):
+    tickets = Ticket.objects.filter(status=status)
+    return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'status': status})
+
 # Create your views here.
 def home_view(request):
     return JsonResponse({'message': 'Home!'})
@@ -188,7 +193,14 @@ class TicketListCreateView(generics.ListCreateAPIView):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
     permission_classes = [IsAuthenticated]
+class TicketsByAssigneeView(ListView):
+    model = Ticket
+    template_name = 'tickets_by_assignee.html'
+    context_object_name = 'tickets'
 
+    def get_queryset(self):
+        assignee = self.kwargs['assignee']
+        return Ticket.objects.filter(assigned_to=assignee)
 class TicketDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer

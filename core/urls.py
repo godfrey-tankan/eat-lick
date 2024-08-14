@@ -26,6 +26,8 @@ urlpatterns = [
     path('', include('home.urls')),
     path('admins/logout/', logout_view),
     path('tables/', support_users_list, name='support_users_list'),
+    path('tickets/status/<str:status>/', ticket_list_by_status, name='ticket_list_by_status'),
+    path('tickets/assigned-to/<str:assignee>/', TicketsByAssigneeView.as_view(), name='tickets_by_assignee'),
     path('profile/', profile_view, name='profile'),
     path('edit/<int:id>/', edit_support_member, name='edit_support_member'),
     path("admins/", admin.site.urls),
