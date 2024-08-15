@@ -12,5 +12,5 @@ env
 #src
 #*.sqlite*
 
-#.env
+.env
 node_modules
