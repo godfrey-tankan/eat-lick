@@ -289,15 +289,17 @@ def accept_ticket(wa_id,name, ticket_id):
         return "You are not authorized to accept tickets"
     support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
     try:
-        if assigned_tickets := Ticket.objects.filter(
+        assigned_tickets = Ticket.objects.filter(
             assigned_to=support_member.id, status=PENDING_MODE
-        ):
+        ).first()
+        if assigned_tickets:
             return "You already have an open ticket"
     except Ticket.DoesNotExist:
         assigned_tickets = None
     is_ticket_open = False
     try:
-        if check_ticket := Ticket.objects.get(id=ticket_id):
+        check_ticket = Ticket.objects.get(id=ticket_id)
+        if check_ticket:
             is_ticket_open = check_ticket.status.lower() == OPEN_MODE
         else:
             return "wrong ticket id"
