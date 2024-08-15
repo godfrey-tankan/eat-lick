@@ -80,7 +80,8 @@
                     <div class="d-flex px-2 py-1">
                       <div class="d-flex flex-column justify-content-center">
                         <h6 class="mb-0 text-sm">
-                          <a href="#" class="open-popup" data-creater="{{ticket.created_by}}" data-description="{{ ticket.description }}">{{ ticket.created_by }}</a>
+                          {% comment %} <a href="#" class="open-popup" data-creater="{{ticket.created_by}}" data-description="{{ ticket.description }}">{{ ticket.created_by }}</a> {% endcomment %}
+                          <a href="{% url 'ticket_detail' ticket.id %}">{{ ticket.created_by }}</a>
                         </h6>
                       </div>
                     </div>

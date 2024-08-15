@@ -356,6 +356,18 @@ def ticket_detail(request, pk):
         form = CommentForm()
     return render(request, 'tickets/ticket_detail.html', {'ticket': ticket, 'form': form})
 
+def ticket_detail_view(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    messages = Message.objects.filter(ticket_id=ticket_id)
+    logs = TicketLog.objects.filter(ticket=ticket).order_by('timestamp')
+
+    context = {
+        'ticket': ticket,
+        'messages': messages,
+        'logs': logs,
+    }
+    return render(request, 'tickets/ticket_detail.html', context)
+
 def ticket_create(request):
     if request.method == 'POST':
         form = TicketForm(request.POST)

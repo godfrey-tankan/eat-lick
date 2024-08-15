@@ -45,6 +45,7 @@ urlpatterns += [
     path('ticket-logs/', TicketLogListCreateView.as_view(), name='ticketlog-list-create'),
     path('ticket-logs/<int:pk>/', TicketLogDetailView.as_view(), name='ticketlog-detail'),
     path('tickets/delete/<int:pk>/', TicketDeleteView.as_view(), name='ticket-delete'),
+     path('ticket/<int:ticket_id>/', ticket_detail_view, name='ticket_detail'),
 
     path('comments/', CommentListCreateView.as_view(), name='comment-list-create'),
     path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),

@@ -1,53 +1,34 @@
-{% extends "tickets/base2.html" %} {% block content %}
-<div class="container mt-5">
-  <h2>Ticket #{{ ticket.id }} - {{ ticket.title }}</h2>
-  <p><strong>Status:</strong> {{ ticket.get_status_display }}</p>
-  <p><strong>Description:</strong> {{ ticket.description }}</p>
-  <p>
-    <strong>Assigned To:</strong> {{ ticket.assigned_to.username if
-    ticket.assigned_to else "Unassigned" }}
-  </p>
-  <p><strong>Created At:</strong> {{ ticket.created_at }}</p>
-
-  {% if ticket.resolved_at %}
-  <p><strong>Resolved At:</strong> {{ ticket.resolved_at }}</p>
-  {% endif %} {% if ticket.closed_at %}
-  <p><strong>Closed At:</strong> {{ ticket.closed_at }}</p>
-  {% endif %}
-
-  <h4>Logs</h4>
-  <ul>
-    {% for log in ticket.logs.all %}
-    <li>
-      {{ log.timestamp }}: {{ log.changed_by.username }} changed status to {{
-      log.get_status_display }}
-    </li>
-    {% endfor %}
-  </ul>
-
-  <h4>Comments</h4>
-  <ul>
-    {% for comment in ticket.comments.all %}
-    <li>
-      {{ comment.created_at }}: <strong>{{ comment.user.username }}:</strong> {{
-      comment.content }}
-    </li>
-    {% endfor %}
-  </ul>
-
-  <form method="POST" action="{% url 'add-comment' ticket.id %}">
-    {% csrf_token %}
-    <div class="form-group">
-      <label for="content">Add Comment</label>
-      <textarea
-        class="form-control"
-        id="content"
-        name="content"
-        rows="3"
-        required
-      ></textarea>
+{% extends 'layouts/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>Ticket #{{ ticket.id }} - {{ ticket.title }}</h6>
+        </div>
+        <div class="card-body">
+          <p>Status: {{ ticket.status }}</p>
+          <p>Description: {{ ticket.description }}</p>
+          <p>Created by: {{ ticket.created_by }}</p>
+          <p>Assigned to: {{ ticket.assigned_to }}</p>
+          
+          <h6 class="mt-4">Messages</h6>
+          <ul>
+            {% for message in messages %}
+              <li>{{ message.created_at }}: {{ message.content }}</li>
+            {% endfor %}
+          </ul>
+          
+          <h6 class="mt-4">History</h6>
+          <ul>
+            {% for log in logs %}
+              <li>{{ log.timestamp }}: {{ log.status }} (Changed by {{ log.changed_by }})</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
     </div>
-    <button type="submit" class="btn btn-primary">Add Comment</button>
-  </form>
+  </div>
 </div>
-{% endblock %}
+{% endblock content %}
