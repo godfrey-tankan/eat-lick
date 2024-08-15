@@ -172,7 +172,7 @@ def handle_inquiry(wa_id, response, name):
     inquirer_obj = Inquirer.objects.filter(phone_number=wa_id[0]).first()
     if not inquirer_obj:
         Inquirer.objects.create(phone_number=wa_id[0],user_mode=NAMES_MODE)
-        return f'helo{name}, please provide your first name and last name'
+        return f'Hello {name}, please provide your *first name* and *last name*'
     else:
         if inquirer_obj.user_mode == NAMES_MODE:
             names = response.split()
