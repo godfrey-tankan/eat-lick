@@ -224,6 +224,8 @@ def handle_help(wa_id, response, name):
                 save_messages(open_inquiries.id,None,support_member.id,response)
             except Exception as e:
                 print('error saving message')
+            if response in close_ticket_responses:
+                return mark_as_resolved(open_inquiries.id)
             data = get_text_message_input(open_inquiries.created_by, response, None)
             return send_message(data)
         else:
@@ -237,7 +239,8 @@ def handle_help(wa_id, response, name):
                     print('matched')
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
                     send_message(data)
-                    return mark_as_resolved(open_inquiries.id)
+                    data = get_text_message_input(open_inquiries.assigned_to.phone_number,inquirer_helped_assumed_messages , None)
+                    return send_message(data)
                 else:
                     print('replying to support member')
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)

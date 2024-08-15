@@ -1,7 +1,9 @@
 accept_ticket_response = "🟢There is a ticket opened just now by {}\n\n*Ticket ID:* {}\n*Description:* \n- {}\n\nPlease reply with this ticket id to assign it to yourself."
 greeting_messages = ["hello", "hi", "hey", "good day", "good morning", "good afternoon", "good evening"]
-thank_you_messages = ["thank",'zvaita','yaita']
+thank_you_messages = ["thank",'zvaita','yaita','now working']
 help_messages = ["help", "help me", "i need help", "can you help me", "can you help me with this",'please','assist','support','can you ','is not','a problem','an issue','error','fault','mistake','wrong','fail','trouble']
+inquirer_helped_assumed_messages = 'This inquirer seem to have been helped, Reply with #helped or #done to mark this inquirer as helped'
+close_ticket_responses = ['#done','#resolved']
 ACCEPT_TICKET_MODE = "ticket_acceptance"
 HELPING_MODE = "helping"
 INQUIRY_MODE = "inquiry"
