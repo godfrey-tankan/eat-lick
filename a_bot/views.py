@@ -264,7 +264,6 @@ def save_messages(ticket_id,inquirer, support_member, content):
     return "Message saved successfully"
 @csrf_exempt
 def accept_ticket(wa_id,name, ticket_id):
-    
     try:
         ticket_id = int(ticket_id)
     except Exception as e:
