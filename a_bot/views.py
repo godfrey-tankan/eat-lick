@@ -266,9 +266,11 @@ def broadcast_messages(name,ticket=None,message=None):
         if message:
             message=message
         else:
-            support_member.user_mode = ACCEPT_TICKET_MODE
-            message=accept_ticket_response.format(name,ticket.id, ticket.description)
-            support_member.save()
+            pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id).first()
+            if not pending_ticket:
+                support_member.user_mode = ACCEPT_TICKET_MODE
+                message=accept_ticket_response.format(name,ticket.id, ticket.description)
+                support_member.save()
         try:
             data = get_text_message_input(user_mobile, message, None)
             response = send_message(data)
@@ -338,8 +340,8 @@ def mark_as_resolved( ticket_id):
         changed_by=ticket.assigned_to
     )
     support_member = SupportMember.objects.filter(id=ticket.assigned_to.id).first()
-    support_member.user_mode = WAITING_MODE
-    support_member.user_status = WAITING_MODE
+    support_member.user_mode = ACCEPT_TICKET_MODE
+    support_member.user_status = ACCEPT_TICKET_MODE
     support_member.save()
     message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."
     reply = f'Your inquiry *{ticket.description[:10]}*... has been marked as resolved'
