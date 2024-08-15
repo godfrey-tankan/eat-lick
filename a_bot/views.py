@@ -179,8 +179,15 @@ def handle_inquiry(wa_id, response, name):
             if len(names) < 2:
                 return 'Please provide your first name and last name'
             inquirer_obj.username = response
-            inquirer_obj.user_mode = INQUIRY_MODE
             inquirer_obj.save()
+            if inquirer_obj.branch:
+                inquirer_obj.user_mode = INQUIRY_MODE
+                inquirer_obj.save()
+                return f'Hello {names[0].title()}, What is your inquiry?'
+            else:
+                if response #in branches:
+            return 'Please provide your branch'
+            inquirer_obj.user_mode = INQUIRY_MODE
             return f'Hello {names[0].title()}, What is your inquiry?'
         
     try:
@@ -193,6 +200,7 @@ def handle_inquiry(wa_id, response, name):
         title=f"Inquiry from {name}",
         description=response,
         created_by=wa_id[0], 
+        branch_opened =inquirer_obj.branch
         status=OPEN_MODE
     )
     TicketLog.objects.create(
