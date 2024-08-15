@@ -38,8 +38,9 @@ class SupportMember(models.Model):
 
 
 class Message(models.Model):
-    inquirer = models.ForeignKey(Inquirer, related_name='messages', on_delete=models.DO_NOTHING)
-    support_member = models.ForeignKey(SupportMember, related_name='messages', on_delete=models.DO_NOTHING)
+    inquirer = models.ForeignKey(Inquirer, related_name='messages', on_delete=models.DO_NOTHING, null=True, blank=True)
+    support_member = models.ForeignKey(SupportMember, related_name='messages', on_delete=models.DO_NOTHING, null=True, blank=True)
+    ticket_id = models.IntegerField(null=True, blank=True)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 

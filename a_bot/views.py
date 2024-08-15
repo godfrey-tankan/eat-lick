@@ -206,10 +206,18 @@ def handle_help(wa_id, response, name):
     if open_inquiries:
         if support_member:
             print('support member')
+            try:
+                save_messages(open_inquiries.id,None,support_member.id,response)
+            except Exception as e:
+                print('error saving message')
             data = get_text_message_input(open_inquiries.created_by, response, None)
             return send_message(data)
         else:
             print('not support member')
+            try:
+                save_messages(open_inquiries.id,open_inquiries.created_by.id,None,response)
+            except Exception as e:
+                print('error saving message')
             for message in thank_you_messages:
                 if message in response.lower():
                     print('matched')
@@ -237,7 +245,9 @@ def broadcast_messages(name,ticket=None,message=None):
         except Exception as e:
             response = "error sending messages"
     return response
-def save_messages
+def save_messages(ticket_id,inquirer, support_member, content):
+    Message.objects.create(ticket_id=ticket_id,inquirer=inquirer, support_member=support_member, content=content)
+    return "Message saved successfully"
 @csrf_exempt
 def accept_ticket(wa_id,name, ticket_id):
     
