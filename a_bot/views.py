@@ -46,7 +46,7 @@ def generate_response(response, wa_id, name):
     
     if not support_member:
         for help_message in help_messages:
-            if help_message in response.lower() or len(response) > 10:
+            if help_message in response.lower() or len(response) > 4:
                 response = handle_inquiry(wa_id, response, name)
                 return response
     return "Hello,golden greetings."    
