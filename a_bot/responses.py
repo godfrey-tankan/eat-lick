@@ -10,5 +10,6 @@ PENDING_MODE = "pending"
 CLOSED_MODE = "closed"
 OPEN_MODE = "open"
 WAITING_MODE = "waiting"
+NAMES_MODE = "providing_names"
 
 

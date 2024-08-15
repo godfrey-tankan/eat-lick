@@ -169,6 +169,20 @@ def is_valid_whatsapp_message(body):
         and body["entry"][0]["changes"][0]["value"]["messages"][0]
     )
 def handle_inquiry(wa_id, response, name):
+    inquirer_obj = Inquirer.objects.filter(phone_number=wa_id[0]).first()
+    if not inquirer_obj:
+        Inquirer.objects.create(phone_number=wa_id[0],user_mode=NAMES_MODE)
+        return f'helo{name}, please provide your first name and last name'
+    else:
+        if inquirer_obj.user_mode == NAMES_MODE:
+            names = response.split()
+            if len(names) < 2:
+                return 'Please provide your first name and last name'
+            inquirer_obj.username = response
+            inquirer_obj.user_mode = INQUIRY_MODE
+            inquirer_obj.save()
+            return f'Hello {names[0].title()}, What is your inquiry?'
+        
     try:
         open_inquiries = Ticket.objects.filter(status=OPEN_MODE,created_by=wa_id[0]).first()
     except Ticket.DoesNotExist:
