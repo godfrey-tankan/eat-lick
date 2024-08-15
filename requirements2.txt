@@ -21,7 +21,7 @@ gunicorn
 html5lib
 idna
 lxml
-mysqlclient
+mysqlclient==2.2.4
 numpy
 oscrypto
 packaging
@@ -40,7 +40,7 @@ python-dotenv
 pytz
 PyYAML
 qrcode
-reportlab
+reportlab==4.2.2
 requests
 six
 sqlparse
