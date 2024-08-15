@@ -362,9 +362,9 @@ def ticket_detail_view(request, ticket_id):
     logs = TicketLog.objects.filter(ticket=ticket).order_by('timestamp')
 
     context = {
-        'ticket': ticket,
-        'messages': messages,
-        'logs': logs,
+        'ticket': ticket or None,
+        'messages': messages or None,
+        'logs': logs or None,
     }
     return render(request, 'tickets/ticket_detail.html', context)
 

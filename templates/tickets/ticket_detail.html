@@ -15,17 +15,26 @@
           
           <h6 class="mt-4">Messages</h6>
           <div class="chat-box">
-            {% for message in messages %}
-              <div class="chat-message {% if message.inquirer %}inquirer-message{% else %}support-message{% endif %}">
-                <div class="message-content">
-                  {{ message.content }}
+            {% if messages != None %}
+              {% for message in messages %}
+                <div class="chat-message {% if message and message.inquirer %}inquirer-message{% else %}support-message{% endif %}">
+                  <div class="message-content">
+                    {{ message.content }}
+                  </div>
+                  <div class="message-meta">
+                    <small>{{ message.created_at|date:"d/m/Y H:i" }}</small>
+                    {% if  message.inquirer %}
+                    <small>{{ message.inquirer.username}}</small>
+                    {% else %}
+                    <small>{{ message.support_member.username }}</small>
+                    {% endif %}
+                    {% comment %} <small>{{ message.inquirer.username if  message.inquirer else message.support_member.username }}</small> {% endcomment %}
+                  </div>
                 </div>
-                <div class="message-meta">
-                  <small>{{ message.created_at|date:"d/m/Y H:i" }}</small>
-                  <small>{{ message.inquirer.username if message.inquirer else message.support_member.username }}</small>
-                </div>
-              </div>
-            {% endfor %}
+              {% endfor %}
+            {% else %}
+              <p>No messages yet.</p>
+            {% endif %}
           </div>
           
           <h6 class="mt-4">History</h6>
