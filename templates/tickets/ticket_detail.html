@@ -8,17 +8,25 @@
           <h6>Ticket #{{ ticket.id }} - {{ ticket.title }}</h6>
         </div>
         <div class="card-body">
-          <p>Status: {{ ticket.status }}</p>
-          <p>Description: {{ ticket.description }}</p>
-          <p>Created by: {{ ticket.created_by }}</p>
-          <p>Assigned to: {{ ticket.assigned_to }}</p>
+          <p><strong>Status:</strong> {{ ticket.status }}</p>
+          <p><strong>Description:</strong> {{ ticket.description }}</p>
+          <p><strong>Created by:</strong> {{ ticket.created_by }}</p>
+          <p><strong>Assigned to:</strong> {{ ticket.assigned_to }}</p>
           
           <h6 class="mt-4">Messages</h6>
-          <ul>
+          <div class="chat-box">
             {% for message in messages %}
-              <li>{{ message.created_at }}: {{ message.content }}</li>
+              <div class="chat-message {% if message.inquirer %}inquirer-message{% else %}support-message{% endif %}">
+                <div class="message-content">
+                  {{ message.content }}
+                </div>
+                <div class="message-meta">
+                  <small>{{ message.created_at|date:"d/m/Y H:i" }}</small>
+                  <small>{{ message.inquirer.username if message.inquirer else message.support_member.username }}</small>
+                </div>
+              </div>
             {% endfor %}
-          </ul>
+          </div>
           
           <h6 class="mt-4">History</h6>
           <ul>
