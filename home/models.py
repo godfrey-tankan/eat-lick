@@ -20,6 +20,7 @@ class Inquirer(models.Model):
     def __str__(self):
         return f"Inquirer: {self.username}"
 
+
 class SupportMember(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     username = models.CharField(max_length=255,null=True, blank=True,default='Support')
@@ -36,6 +37,14 @@ class SupportMember(models.Model):
         return f"Support Member: {self.username}"
 
 
+class Message(models.Model):
+    inquirer = models.ForeignKey(Inquirer, related_name='messages', on_delete=models.DO_NOTHING)
+    support_member = models.ForeignKey(SupportMember, related_name='messages', on_delete=models.DO_NOTHING)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message #{self.id} by {self.inquirer.username}"
 class Ticket(models.Model):
     STATUS_CHOICES = [
         ('open', 'open'),
