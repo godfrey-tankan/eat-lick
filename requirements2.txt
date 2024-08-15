@@ -21,7 +21,7 @@ gunicorn
 html5lib
 idna
 lxml
-mysqlclient==2.2.4
+mysqlclient
 numpy
 oscrypto
 packaging
