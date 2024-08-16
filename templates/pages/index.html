@@ -248,10 +248,15 @@
                                     <tr>
                                         <td>
                                             <div class="d-flex px-2 py-1">
+                                              <a href="{% url 'ticket' ticket.id %}" class="text-secondary text-xs font-weight-bold">
                                                 <div class="d-flex flex-column justify-content-center">
-                                                    <h6 class="mb-0 text-sm">{{ ticket.created_by.username|title }}</h6>
+                                                  <h6 class="mb-0 text-sm">{{ ticket.created_by.username|title }}</h6>
                                                 </div>
-                                            </div>
+                                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-secondary border border-light rounded-circle">
+                                                  <span class="text-xs font-weight-bold" >{{ticket.message_count}}</span>
+                                                </span>
+                                              </div>
+                                            </a>
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ ticket.description }}</p>
@@ -269,17 +274,14 @@
                                                 {% endif %}
                                             ">
                                                 {{ ticket.status|title }}
-                                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-secondary border border-light rounded-circle">
-                                                    <span class="text-xs font-weight-bold" >{{ticket.message_count}}</span>
-                                                </span>
-                                            </a>
-                                        </td>
-                                        <td class="align-middle text-center">
-                                            <span class="text-secondary text-xs font-weight-bold">{{ ticket.created_at|date:"d/m/Y" }}</span>
-                                        </td>
-                                        {% if ticket.assigned_to %}
-                                        <td class="align-middle text-center">
-                                            <a href="{% url 'tickets_by_assignee' ticket.assigned_to.id %}" class="text-secondary text-xs font-weight-bold">
+                                              </a>
+                                            </td>
+                                            <td class="align-middle text-center">
+                                              <span class="text-secondary text-xs font-weight-bold">{{ ticket.created_at|date:"d/m/Y" }}</span>
+                                            </td>
+                                            {% if ticket.assigned_to %}
+                                            <td class="align-middle text-center">
+                                              <a href="{% url 'tickets_by_assignee' ticket.assigned_to.id %}" class="text-secondary text-xs font-weight-bold">
                                                 {{ ticket.assigned_to.username }}
                                             </a>
                                         {% else %}
