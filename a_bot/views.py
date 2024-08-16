@@ -240,7 +240,7 @@ def handle_help(wa_id, response, name):
         if support_member:
             print('support member')
             try:
-                save_messages(open_inquiries.id,None,support_member,response)
+                Message.objects.create(ticket_id=open_inquiries,inquirer=None, support_member=support_member, content=response)
             except Exception as e:
                 print('error saving message')
             if response in resolve_ticket_responses:
@@ -253,7 +253,8 @@ def handle_help(wa_id, response, name):
             print('not support member')
             try:
                 inquirer = Inquirer.objects.filter(phone_number=wa_id[0]).first()
-                save_messages(open_inquiries.id,inquirer,None,response)
+                # save_messages(open_inquiries.id,inquirer,None,response)
+                Message.objects.create(ticket_id=open_inquiries,inquirer=inquirer, support_member=None, content=response)
             except Exception as e:
                 print('error saving message')
             if inquirer and inquirer.user_mode == CONFIRM_RESPONSE:
@@ -401,5 +402,5 @@ def web_messaging(ticket_id,message=None,is_broadcasting=False):
         data = get_text_message_input(ticket.assigned_to.phone_number, message, None)
         return send_message(data)
     ticket = Ticket.objects.filter(id=ticket_id).first()
-    data =get_text_message_input('263779586059', message, None)
+    data =get_text_message_input(ticket.created_by.phone_number, message, None)
     return send_message(data)

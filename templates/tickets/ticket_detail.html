@@ -61,7 +61,7 @@
           {% else %}
             <p>No messages yet.</p>
           {% endif %}
-          {% if ticket.assigned_to and ticket.assigned_to.id == user.id %}
+          {% if ticket.assigned_to and ticket.assigned_to.id == user.id and ticket.status != 'resolved' and ticket.status != 'closed'%}
             <div class="mt-4">
               <h6>Send a Message</h6>
               <form id="message-form" method="POST" action="{% url 'send_message' ticket.id %}">
@@ -132,7 +132,7 @@
       console.log('hovered'),
       function() {
         fetchMessages(); // Initial fetch on hover
-        fetchInterval = setInterval(fetchMessages, 5000);
+        fetchInterval = setInterval(fetchMessages, 6000);
       },
       function() {
         // Mouse leaves the container
