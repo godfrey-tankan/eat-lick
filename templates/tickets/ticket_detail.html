@@ -137,7 +137,8 @@
           // Scroll to the bottom of the chat box to make the last message visible
           var chatBox = document.getElementById('messages');
           var lastMessage = chatBox.lastElementChild;
-          lastMessage.scrollIntoView({ behavior: 'smooth' });
+          console.log(lastMessage);
+          window.scrollTo(0, lastMessage);
         },
         error: function(response) {
           console.log('Error:', response);
