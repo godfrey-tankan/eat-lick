@@ -368,7 +368,8 @@ def request_assistance_support_member(id):
         member.save()
     message = f'🔔 *{request_user.username}* is requesting assistance,please reply to assist. or type pass to skip this request.'
     broadcast_messages(None,None,message,request_user.phone_number)
-    return "You are now interacting with other support members,What do you need help with?"
+    data = get_text_message_input(request_user.phone_number, support_users_interaction, None)
+    return send_message(data)
 
 def assist_support_member(support_member_id, response):
     support_member = SupportMember.objects.filter(id=support_member_id).first()
@@ -376,7 +377,8 @@ def assist_support_member(support_member_id, response):
         if 'pass' in response.lower():
             support_member.user_status = HELPING_MODE
             support_member.save()
-            return "You have passed the request,you can now continue with your current task."
+            data = get_text_message_input(support_member.phone_number, passed_support_helping, None)
+            return send_message(data)
         broadcast_messages(None,None,response,support_member.phone_number)
     elif support_member.user_status == SUPPORT_MEMBER_ASSISTANCE_MODE:
         if response.lower() in thank_you_messages:
@@ -384,7 +386,8 @@ def assist_support_member(support_member_id, response):
             for member in support_members:
                 member.user_status = HELPING_MODE
                 member.save()
-            return "You are now back to helping mode, you're now chatting with the inquirer."
+            data = get_text_message_input(support_member.phone_number, back_to_helping_mode, None)
+            return send_message(data)
         broadcast_messages(None,None,response,support_member.phone_number)
     
 def mark_as_resolved( ticket_id,is_closed=False):

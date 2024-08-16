@@ -20,6 +20,9 @@ CONFIRM_RESPONSE ='confirming_response'
 SUPPORT_MEMBER_ASSISTANCE_MODE = "support_member_assistance"
 SUPPORT_MEMBER_ASSISTING_MODE="support_member_assisting"
 support_member_help_requests = ["#help","#assist","#support","#trouble"]
+back_to_helping_mode = "You are now back to helping mode, you're now chatting with the inquirer."
+passed_support_helping ="You have passed the request,you can now continue with your current task."
+support_users_interaction = "You are now interacting with other support members,What do you need help with?"
 
 
 
