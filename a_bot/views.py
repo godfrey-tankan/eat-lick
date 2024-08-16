@@ -31,9 +31,9 @@ def generate_response(response, wa_id, name):
         inquirer = Inquirer.objects.get(phone_number=wa_id[0])
     except Inquirer.DoesNotExist:
         inquirer = None
-    try:
+    if inquirer:
         check_ticket = Ticket.objects.filter(created_by=inquirer.id,status=PENDING_MODE).first()
-    except Ticket.DoesNotExist:
+    else:
         check_ticket = None
         
     if response.lower() in greeting_messages:
@@ -50,11 +50,11 @@ def generate_response(response, wa_id, name):
         return response
     
     if not support_member :
+        for thank_you_message in thank_you_messages:
+            if thank_you_message in response.lower():
+                return "You are welcome."
         for help_message in help_messages:
             if help_message in response.lower() or len(response) > 4:
-                for thank_you_message in thank_you_messages:
-                    if thank_you_message in response.lower():
-                        return "You are welcome."
                 response = handle_inquiry(wa_id, response, name)
                 return response
     return "Hello,golden greetings."    
