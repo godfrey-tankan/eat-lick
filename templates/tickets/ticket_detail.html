@@ -11,7 +11,7 @@
             {% endif %}
           </h6>
         </div>
-        <div class="card-body">
+        <div id="the-main-container" class="card-body">
           <p><strong>Status:</strong> {{ ticket.status }}</p>
           <p><strong>Origin Branch:</strong> {{ ticket.branch_opened }}</p>
           <p><strong>Description:</strong> {{ ticket.description }}</p>
@@ -100,50 +100,54 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
   $(document).ready(function() {
-    $('#message-form').on('submit', function(e) {
-      e.preventDefault(); // Prevent the default form submission
+    var fetchInterval;
+    var ticketId = '{{ ticket.id }}';  // Ensure this is set correctly
 
-      var formData = {
-        'message_content': $('#message-content').val(),
-        'csrfmiddlewaretoken': '{{ csrf_token }}'
-      };
-
+    function fetchMessages() {
       $.ajax({
-        type: 'POST',
-        url: $(this).attr('action'),
-        data: formData,
+        type: 'GET',
+        url: '{% url "ticket_detail" ticket.id %}',  // Ensure you have this URL mapped
         dataType: 'json',
         success: function(response) {
-          if (response.error) {
-            console.log('Error:', response.error);
-            return;
-          }
-
-          // Clear the textarea
-          $('#message-content').val('');
-
-          // Append the new message to the chat box
-          var newMessage = `
-            <div class="chat-message support-message">
-              <div class="message-content">${response.message_content}</div>
-              <div class="message-meta">
-                <small>${response.created_at}</small>
-                <small>${response.username}</small>
+          // Clear existing messages
+          $('#messages').empty();
+          
+          // Append new messages
+          $.each(response.messages, function(index, message) {
+            var messageHtml = `
+              <div class="chat-message ${message.inquirer ? 'inquirer-message' : 'support-message'}">
+                <div class="message-content">${message.content}</div>
+                <div class="message-meta">
+                  <small>${message.created_at}</small>
+                  <small>${message.username}</small>
+                </div>
               </div>
-            </div>
-          `;
-          $('#messages').append(newMessage);
+            `;
+            $('#messages').append(messageHtml);
+          });
 
-          // Scroll to the bottom of the chat box to make the last message visible
+          // Scroll to the bottom of the chat box
           var chatBox = document.getElementById('messages');
-          var lastMessage = chatBox.lastElementChild;
-          console.log(lastMessage);
-          window.scrollTo(0, lastMessage);
+          chatBox.scrollTop = chatBox.scrollHeight;
         },
         error: function(response) {
-          console.log('Error:', response);
+          console.log('Error fetching messages:', response);
         }
       });
-    });
+    }
+
+    $('#the-main-container').hover(
+      function() {
+        // Mouse enters the container
+        fetchInterval = setInterval(fetchMessages, 3000);
+      },
+      function() {
+        // Mouse leaves the container
+        clearInterval(fetchInterval);
+      }
+    );
+
+    // Initial fetch
+    fetchMessages();
   });
 </script>

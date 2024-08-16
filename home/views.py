@@ -373,7 +373,7 @@ def ticket_detail(request, pk):
 
 def ticket_detail_view(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
-    messages = Message.objects.filter(ticket_id=ticket_id).order_by('-created_at')
+    messages = Message.objects.filter(ticket_id=ticket_id).order_by('created_at')
     logs = TicketLog.objects.filter(ticket=ticket).order_by('timestamp')
     escalation_log_exists = logs.filter(changed_by__icontains='escalated').exists()
     context = {
