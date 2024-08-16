@@ -79,7 +79,11 @@
     </style>
 </head>
 <body>
-    <h5>Weekly Report ({{ start_date }} to {{ end_date }})</h5>
+    <h4>Weekly Report ({{ start_date }} to {{ end_date }})</h4>
+    <div class="branch-stats">
+        <p>Branch with Most Inquiries: <strong>{{ branch_most_inquiries.branch_opened}} ({{ branch_most_inquiries.tickets }} inquiries)</strong></p>
+        <p>Total Inquiries: <strong>{{ total_inquiries }}</strong></p>
+    </div>
 
     <div class="statistics">
         <p>Total Opened Tickets: <strong>{{ total_opened }}</strong></p>
@@ -142,10 +146,7 @@
         <p>Day with Most Resolved Tickets: <strong>{{ day_most_resolved.created_at__date }} ({{ day_most_resolved.resolved }} tickets)</strong></p>
     </div>
 
-    <div class="branch-stats">
-        <p>Branch with Most Inquiries: <strong>{{ branch_most_inquiries.branch_opened}} ({{ branch_most_inquiries.tickets }} inquiries)</strong></p>
-        <p>Total Inquiries: <strong>{{ total_inquiries }}</strong></p>
-    </div>
+   
 
     <div class="footer">
         &copy; 2024 ict support
