@@ -371,6 +371,7 @@ def request_assistance_support_member(id):
 
 def assist_support_member(support_member_id, response):
     support_member = SupportMember.objects.filter(id=support_member_id).first()
+    support_members = SupportMember.objects.all()
     if support_member.user_status == SUPPORT_MEMBER_ASSISTING_MODE:
         if 'pass' in response.lower():
             support_member.user_status = HELPING_MODE
@@ -379,11 +380,11 @@ def assist_support_member(support_member_id, response):
             return send_message(data)
         broadcast_messages(None,None,response,None)
     elif support_member.user_status == SUPPORT_MEMBER_ASSISTANCE_MODE:
-        if response.lower() in thank_you_messages:
-            support_members = SupportMember.objects.all()
-            for member in support_members:
-                member.user_status = HELPING_MODE
-                member.save()
+        for thank_you_message in thank_you_messages:
+            if thank_you_message in response.lower():
+                for member in support_members:
+                    member.user_status = HELPING_MODE
+                    member.save()
             data = get_text_message_input(support_member.phone_number, back_to_helping_mode, None)
             return send_message(data)
         broadcast_messages(None,None,response,None)
