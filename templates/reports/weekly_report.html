@@ -6,11 +6,11 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 10px;
             color: #333;
             background-color: #f4f4f9;
             position: relative;
-            padding-bottom: 50px; /* Space for footer */
+            padding-bottom: 10px; /* Space for footer */
         }
 
         h1, h2 {
@@ -23,13 +23,13 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 10px 0;
             background-color: #fff;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         th, td {
-            padding: 12px;
+            padding: 9px;
             text-align: left;
             border: 1px solid #ddd;
         }
@@ -49,8 +49,8 @@
         }
 
         .statistics, .branch-stats {
-            margin: 20px 0;
-            padding: 15px;
+            margin: 10px 0;
+            padding: 8px;
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -84,7 +84,7 @@
         <p>Branch with Most Inquiries: <strong>{{ branch_most_inquiries.branch_opened}} ({{ branch_most_inquiries.tickets }} inquiries)</strong></p>
         <p>Total Inquiries: <strong>{{ total_inquiries }}</strong></p>
     {% comment %} </div> {% endcomment %}
-    <h2>Overal Inquiries Statistics</h2>
+    <h2>Overall Inquiries Statistics</h2>
     <div class="statistics">
         <p>Total Opened Tickets: <strong>{{ total_opened }}</strong></p>
         <p>Total Pending Tickets: <strong>{{ total_pending }}</strong></p>
@@ -139,7 +139,8 @@
             {% endfor %}
         </tbody>
     </table>
-    
+
+    <h2>Highest Daily Volumes</h2>
     <div class="statistics">
         <p>Day with Most Opened Tickets: <strong>{{ day_most_opened.created_at__date }} ({{ day_most_opened.opened }} tickets)</strong></p>
         <p>Day with Most Pending Tickets: <strong>{{ day_most_pending.created_at__date }} ({{ day_most_pending.pending_tickets }} tickets)</strong></p>
