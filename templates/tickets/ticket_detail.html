@@ -112,7 +112,14 @@
         type: 'POST',
         url: $(this).attr('action'),
         data: formData,
+        dataType: 'json', // Ensure the response is treated as JSON
         success: function(response) {
+          // Check if there's an error
+          if (response.error) {
+            console.log('Error:', response.error);
+            return;
+          }
+
           // Clear the textarea
           $('#message-content').val('');
 
@@ -139,4 +146,3 @@
     });
   });
 </script>
-
