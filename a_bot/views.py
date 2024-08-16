@@ -246,13 +246,19 @@ def handle_help(wa_id, response, name):
                 save_messages(open_inquiries.id,inquirer.id,None,response)
             except Exception as e:
                 print('error saving message')
+            if inquirer and inquirer.user_mode == CONFIRM_RESPONSE:
+                if '1' in response:
+                    return mark_as_resolved(open_inquiries.id)
+                elif '2' in response:
+                    return mark_as_resolved(open_inquiries.id,True)
+                
             for message in thank_you_messages:
                 if message in response.lower():
                     print('matched')
-                    support_ob = SupportMember.objects.filter(phone_number=open_inquiries.assigned_to.phone_number).first()
-                    if support_ob:
-                        support_ob.user_mode = CONFIRM_RESPONSE
-                        support_ob.save()
+                    if inquirer:
+                        inquirer.user_mode = CONFIRM_RESPONSE
+                        inquirer.save()
+                        return is_inquirer_helped.format(inquirer.username.split()[0].title(),open_inquiries.description[:10])
                         
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
                     send_message(data)
@@ -329,12 +335,31 @@ def accept_ticket(wa_id,name, ticket_id):
     else:
         return "Ticket not available or already assigned"
 
-def mark_as_resolved( ticket_id):
+def mark_as_resolved( ticket_id,is_closed=False):
     naive_datetime = datetime.now()
     aware_datetime = timezone.make_aware(naive_datetime)
+    if is_closed:
+        ticket = Ticket.objects.get(id=ticket_id)
+        ticket.status = CLOSED_MODE
+        ticket.closed_at = aware_datetime
+        ticket.save()
+        TicketLog.objects.create(
+            ticket=ticket,
+            status=CLOSED_MODE,
+            changed_by=ticket.assigned_to
+        )
+        support_member = SupportMember.objects.filter(id=ticket.assigned_to.id).first()
+        support_member.user_mode = ACCEPT_TICKET_MODE
+        support_member.user_status = ACCEPT_TICKET_MODE
+        support_member.save()
+        message=f"ticket *#{ticket.id}* has been closed ❌."
+        reply = f'Your inquiry has been closed.'
+        data = get_text_message_input(ticket.created_by, reply, None)
+        send_message(data)
+        return broadcast_messages(None,ticket,message)
+    
     ticket = Ticket.objects.get(id=ticket_id)
     ticket.status = RESOLVED_MODE
-    ticket.closed_at = aware_datetime
     ticket.resolved_at = aware_datetime
     ticket.save()
     TicketLog.objects.create(
