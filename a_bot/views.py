@@ -360,9 +360,10 @@ def request_assistance_support_member(id):
     for member in support_members:
         if member.id != request_user.id:
             member.user_status = SUPPORT_MEMBER_ASSISTING_MODE
+            member.save()
         else:
             member.user_status = SUPPORT_MEMBER_ASSISTANCE_MODE
-        member.save()
+            member.save()
     message = f'🔔 *{request_user.username}* is requesting assistance,please reply to assist. or type pass to skip this request.'
     broadcast_messages(None,None,message,request_user.phone_number)
     data = get_text_message_input(request_user.phone_number, support_users_interaction, None)
