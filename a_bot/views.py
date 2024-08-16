@@ -29,12 +29,16 @@ def generate_response(response, wa_id, name):
         support_member = None
     try:
         inquirer = Inquirer.objects.get(phone_number=wa_id[0])
+    except Inquirer.DoesNotExist:
+        inquirer = None
+    try:
         check_ticket = Ticket.objects.filter(created_by=inquirer.id,status=PENDING_MODE).first()
     except Ticket.DoesNotExist:
         check_ticket = None
         
     if response.lower() in greeting_messages:
         time_of_day = get_greeting()
+        name = inquirer.username.split()[0] if inquirer else name
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     
     if support_member and support_member.user_mode == HELPING_MODE or check_ticket:
@@ -217,7 +221,6 @@ def handle_inquiry(wa_id, response, name):
     )
     with contextlib.suppress(SupportMember.DoesNotExist):
         broadcast_messages(name,ticket)
-
     return 'Thank you for contacting us. A support member will be assisting you shortly.'
 
 def handle_help(wa_id, response, name):
