@@ -11,7 +11,7 @@
           <p><strong>Status:</strong> {{ ticket.status }}</p>
           <p><strong>Origin Branch:</strong> {{ ticket.branch_opened }}</p>
           <p><strong>Description:</strong> {{ ticket.description }}</p>
-          <p><strong>Created by:</strong> {{ inquirer.username }}</p>
+          <p><strong>Created by:</strong> {{ ticket.created_by.username|title }}</p>
           <p><strong>Assigned to:</strong> {{ ticket.assigned_to }}</p>
           
           <h6 class="mt-4">Messages</h6>

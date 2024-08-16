@@ -28,7 +28,8 @@ def generate_response(response, wa_id, name):
     except SupportMember.DoesNotExist:
         support_member = None
     try:
-        check_ticket = Ticket.objects.filter(created_by=wa_id[0],status=PENDING_MODE).last()
+        inquirer = Inquirer.objects.get(phone_number=wa_id[0])
+        check_ticket = Ticket.objects.filter(created_by=inquirer.id,status=PENDING_MODE).first()
     except Ticket.DoesNotExist:
         check_ticket = None
         
@@ -194,22 +195,22 @@ def handle_inquiry(wa_id, response, name):
             inquirer_obj.save()
             return 'Please provide your branch'
     try:
-        open_inquiries = Ticket.objects.filter(status=OPEN_MODE,created_by=wa_id[0]).first()
+        open_inquiries = Ticket.objects.filter(status=OPEN_MODE,created_by=inquirer_obj.id).first()
     except Ticket.DoesNotExist:
-        open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=wa_id[0]).first()
+        open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj.id).first()
     if open_inquiries:
         return "Your inquiry is already being attended to."
     ticket = Ticket.objects.create(
         title=f"Inquiry from {name}",
         description=response,
-        created_by=wa_id[0], 
+        created_by=inquirer_obj, 
         branch_opened =inquirer_obj.branch,
         status=OPEN_MODE
     )
     TicketLog.objects.create(
         ticket=ticket,
         status=OPEN_MODE,
-        changed_by=wa_id[0]
+        changed_by=inquirer_obj
     )
     with contextlib.suppress(SupportMember.DoesNotExist):
         broadcast_messages(name,ticket)
@@ -218,8 +219,9 @@ def handle_inquiry(wa_id, response, name):
 
 def handle_help(wa_id, response, name):
     support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
+    inquirer = Inquirer.objects.filter(phone_number=wa_id[0]).first()
     try:
-        open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=wa_id[0]).last()
+        open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer).first()
     except Ticket.DoesNotExist:
         open_inquiries = None
     if support_member:
@@ -237,7 +239,7 @@ def handle_help(wa_id, response, name):
                 print('error saving message')
             if response in close_ticket_responses:
                 return mark_as_resolved(open_inquiries.id)
-            data = get_text_message_input(open_inquiries.created_by, response, None)
+            data = get_text_message_input(open_inquiries.created_by.phone_number, response, None)
             return send_message(data)
         else:
             print('not support member')
@@ -354,7 +356,7 @@ def mark_as_resolved( ticket_id,is_closed=False):
         support_member.save()
         message=f"ticket *#{ticket.id}* has been closed ❌."
         reply = f'Your inquiry has been closed.'
-        data = get_text_message_input(ticket.created_by, reply, None)
+        data = get_text_message_input(ticket.created_by.phone_number, reply, None)
         send_message(data)
         return broadcast_messages(None,ticket,message)
     
@@ -373,6 +375,6 @@ def mark_as_resolved( ticket_id,is_closed=False):
     support_member.save()
     message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."
     reply = f'Your inquiry *{ticket.description[:10]}*... has been marked as resolved'
-    data = get_text_message_input(ticket.created_by, reply, None)
+    data = get_text_message_input(ticket.created_by.phone_number, reply, None)
     send_message(data)
     return broadcast_messages(None,ticket,message)
