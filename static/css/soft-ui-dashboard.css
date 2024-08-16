@@ -7930,6 +7930,39 @@ textarea.form-control-lg {
 .rounded-circle, .avatar.rounded-circle img {
   border-radius: 50% !important; }
 
+.semi-rounded{
+  border-radius: 10% !important;
+  color:#fff;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+.text-black{
+  color: #000;
+}
+
+.ticket-messages {
+  font-weight: bolder;
+  display: inline-block;
+}
+.username-class h6:hover {
+  color: #1d4ed8;
+}
+.assigned-user a:hover{
+  color: #000;
+  text-transform: uppercase;
+  font-size: large;
+}
+.username-class:hover .ticket-messages {
+  animation: shake 1s;
+  
+}
+
 .rounded-pill {
   border-radius: 50rem !important; }
 

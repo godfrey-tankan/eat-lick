@@ -81,7 +81,7 @@
                       <div class="d-flex flex-column justify-content-center">
                         <h6 class="mb-0 text-sm">
                           {% comment %} <a href="#" class="open-popup" data-creater="{{ticket.created_by}}" data-description="{{ ticket.description }}">{{ ticket.created_by }}</a> {% endcomment %}
-                          <a href="{% url 'ticket_detail' ticket.id %}">{{ ticket.created_by }}</a>
+                          <a href="{% url 'ticket_detail' ticket.id %}">{{ ticket.created_by.username }}</a>
                         </h6>
                       </div>
                     </div>

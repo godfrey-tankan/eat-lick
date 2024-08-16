@@ -235,26 +235,28 @@
                         <div class="table-responsive p-0">
                             <table class="table align-items-center mb-0">
                                 <thead>
-                                    <tr>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Opened By</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description</th>
-                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Created At</th>
-                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Assigned to</th>
+                                    <tr class='text-black'>
+                                        <th class="text-black text-uppercase  text-xxs font-weight-bolder ">Opened By</th>
+                                        <th class="text-black text-uppercase  text-xxs font-weight-bolder ps-2">Description</th>
+                                        <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder">Status</th>
+                                        <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder">Created At</th>
+                                        <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder opacity-7">Assigned to</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for ticket in tickets %}
                                     <tr>
-                                        <td>
+                                        <td class='username-class'>
                                             <div class="d-flex px-2 py-1">
-                                              <a href="{% url 'ticket' ticket.id %}" class="text-secondary text-xs font-weight-bold">
+                                              <a href="{% url 'ticket_detail' ticket.id %}" class="text-secondary text-xs font-weight-bold">
                                                 <div class="d-flex flex-column justify-content-center">
-                                                  <h6 class="mb-0 text-sm">{{ ticket.created_by.username|title }}</h6>
+                                                  <h6 class="mb-0 text-sm">{{ ticket.created_by.username|title }}
+
+                                                    <span class=" start-100 translate-middle p-1 bg-secondary border border-light semi-rounded">
+                                                      <span class="text-xs " ><span class='ticket-messages'>{{ticket.message_count}}</span> messages</span>
+                                                    </span>
+                                                  </h6>
                                                 </div>
-                                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-secondary border border-light rounded-circle">
-                                                  <span class="text-xs font-weight-bold" >{{ticket.message_count}}</span>
-                                                </span>
                                               </div>
                                             </a>
                                         </td>
@@ -280,10 +282,11 @@
                                               <span class="text-secondary text-xs font-weight-bold">{{ ticket.created_at|date:"d/m/Y" }}</span>
                                             </td>
                                             {% if ticket.assigned_to %}
-                                            <td class="align-middle text-center">
+                                            <td class="align-middle text-center assigned-user">
                                               <a href="{% url 'tickets_by_assignee' ticket.assigned_to.id %}" class="text-secondary text-xs font-weight-bold">
                                                 {{ ticket.assigned_to.username }}
                                             </a>
+                                        </td>
                                         {% else %}
                                         <td class="align-middle text-center">
                                             <span class="text-secondary text-xs font-weight-bold">Unassigned</span>
