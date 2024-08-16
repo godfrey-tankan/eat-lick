@@ -35,8 +35,11 @@ def generate_response(response, wa_id, name):
         check_ticket = Ticket.objects.filter(created_by=inquirer.id,status=PENDING_MODE).first()
     else:
         check_ticket = None
-    if support_member and response.lower() in support_member_help_requests:
-        return request_assistance_support_member(support_member)
+    if support_member:
+        if response.lower() in support_member_help_requests:
+            return request_assistance_support_member(support_member)
+        return 'not help request response'
+ 
     if support_member and support_member.user_status == SUPPORT_MEMBER_ASSISTING_MODE or support_member.user_status == SUPPORT_MEMBER_ASSISTANCE_MODE:
         return assist_support_member(support_member, response)
         
