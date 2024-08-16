@@ -41,10 +41,6 @@ def send_message(request, ticket_id):
                 created_at=timezone.now()
             )
             web_messaging(ticket.id, message_content)
-            return JsonResponse({
-                'message_content': new_message.content,
-                'created_at': new_message.created_at.strftime('%d/%m/%Y %H:%M'),
-                'username': new_message.support_member.username  # Assuming `SupportMember` has a OneToOne relationship with `User`
-            })
+            return redirect('ticket_detail', ticket_id=ticket.id)
     
     return JsonResponse({'error': 'Invalid request or support member not found'}, status=400)

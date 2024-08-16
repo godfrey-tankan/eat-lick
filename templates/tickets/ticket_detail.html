@@ -112,9 +112,8 @@
         type: 'POST',
         url: $(this).attr('action'),
         data: formData,
-        dataType: 'json', // Ensure the response is treated as JSON
+        dataType: 'json',
         success: function(response) {
-          // Check if there's an error
           if (response.error) {
             console.log('Error:', response.error);
             return;
@@ -135,9 +134,10 @@
           `;
           $('#messages').append(newMessage);
 
-          // Scroll to the bottom of the chat box
+          // Scroll to the bottom of the chat box to make the last message visible
           var chatBox = document.getElementById('messages');
-          chatBox.scrollTop = chatBox.scrollHeight;
+          var lastMessage = chatBox.lastElementChild;
+          lastMessage.scrollIntoView({ behavior: 'smooth' });
         },
         error: function(response) {
           console.log('Error:', response);
