@@ -74,13 +74,13 @@
             {% else %}
               <p>No messages yet.</p>
               {% if ticket.assigned_to.id == user.id%}
-                <form method="POST" action="{% url 'send_message' ticket.id %}">
-                  {% csrf_token %}
-                  <div class="form-group"  >
-                    <input name="message_content" type='text' class="form-control" rows="1" placeholder="Type your message..."/>
-                  </div>
-                  <button type="submit" class="btn btn-primary">Send</button>
-                </form>
+              <form id="message-form" method="POST" action="{% url 'send_message' ticket.id %}">
+                {% csrf_token %}
+                <div class="form-group">
+                  <textarea id="message-content" name="message_content" class="form-control" rows="3" placeholder="Type your message..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send</button>
+              </form>
                 {% endif %}
             {% endif %}
           </div>

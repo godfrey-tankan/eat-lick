@@ -44,7 +44,7 @@ def send_message(request, ticket_id):
             return JsonResponse({
                 'message_content': new_message.content,
                 'created_at': new_message.created_at.strftime('%d/%m/%Y %H:%M'),
-                'username': new_message.support_member.username 
+                'username': new_message.support_member.username  # Assuming `SupportMember` has a OneToOne relationship with `User`
             })
     
     return JsonResponse({'error': 'Invalid request or support member not found'}, status=400)
