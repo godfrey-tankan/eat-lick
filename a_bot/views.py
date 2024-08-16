@@ -35,6 +35,10 @@ def generate_response(response, wa_id, name):
         check_ticket = Ticket.objects.filter(created_by=inquirer.id,status=PENDING_MODE).first()
     else:
         check_ticket = None
+    if support_member and response.lower() in support_member_help_requests:
+        return request_assistance_support_member(support_member)
+    if support_member and support_member.user_status == SUPPORT_MEMBER_ASSISTING_MODE or support_member.user_status == SUPPORT_MEMBER_ASSISTANCE_MODE:
+        return assist_support_member(support_member, response)
         
     if response.lower() in greeting_messages:
         time_of_day = get_greeting()
@@ -42,12 +46,10 @@ def generate_response(response, wa_id, name):
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     
     if support_member and support_member.user_mode == HELPING_MODE or check_ticket:
-        response = handle_help(wa_id, response, name)
-        return response
+        return handle_help(wa_id, response, name)
 
     if support_member and support_member.user_mode == ACCEPT_TICKET_MODE:
-        response=accept_ticket(wa_id,name, response)
-        return response
+        return accept_ticket(wa_id,name, response)
     
     if not support_member :
         for thank_you_message in thank_you_messages:
@@ -55,8 +57,7 @@ def generate_response(response, wa_id, name):
                 return "You are welcome."
         for help_message in help_messages:
             if help_message in response.lower() or len(response) > 4:
-                response = handle_inquiry(wa_id, response, name)
-                return response
+                return handle_inquiry(wa_id, response, name)
     return "Hello,golden greetings."    
 
 def get_text_message_input(recipient, text,media,template=False):
@@ -280,23 +281,26 @@ def handle_help(wa_id, response, name):
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
                     return send_message(data)
     return "You have no open inquiries"
-def broadcast_messages(name,ticket=None,message=None):
+def broadcast_messages(name,ticket=None,message=None,phone_number=None):
     support_members = SupportMember.objects.all()
     for support_member in support_members:
         user_mobile = support_member.phone_number
-        if message:
-            message=message
+        if user_mobile == phone_number:
+            ...
         else:
-            pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id).first()
-            if not pending_ticket:
-                support_member.user_mode = ACCEPT_TICKET_MODE
-                message=accept_ticket_response.format(name,ticket.id, ticket.description)
-                support_member.save()
-        try:
-            data = get_text_message_input(user_mobile, message, None)
-            response = send_message(data)
-        except Exception as e:
-            response = "error sending messages"
+            if message:
+                message=message
+            else:
+                pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id).first()
+                if not pending_ticket:
+                    support_member.user_mode = ACCEPT_TICKET_MODE
+                    message=accept_ticket_response.format(name,ticket.id, ticket.description)
+                    support_member.save()
+            try:
+                data = get_text_message_input(user_mobile, message, None)
+                response = send_message(data)
+            except Exception as e:
+                response = "error sending messages"
     return response
 def save_messages(ticket_id,inquirer=None, support_member=None, content=None):
     Message.objects.create(ticket_id=ticket_id,inquirer=inquirer, support_member=support_member, content=content)
@@ -346,7 +350,34 @@ def accept_ticket(wa_id,name, ticket_id):
     else:
         return "Ticket not available or already assigned"
 
+def request_assistance_support_member(support_member):
+    support_members = SupportMember.objects.all()
+    for member in support_members:
+        if member.id != support_member.id:
+            member.user_status = SUPPORT_MEMBER_ASSISTING_MODE
+        else:
+            member.user_mode = SUPPORT_MEMBER_ASSISTANCE_MODE
+        member.save()
+    message = f'🔔 *{support_member.username}* is requesting assistance,please reply to assist. or type pass to skip this request.'
+    broadcast_messages(None,None,message,support_member.phone_number)
+    return "You are now interacting with other support members,What do you need help with?"
 
+def assist_support_member(support_member, response):
+    if support_member.user_status == SUPPORT_MEMBER_ASSISTING_MODE:
+        if 'pass' in response.lower():
+            support_member.user_status = HELPING_MODE
+            support_member.save()
+            return "You have passed the request,you can now continue with your current task."
+        broadcast_messages(None,None,response,support_member.phone_number)
+    elif support_member.user_status == SUPPORT_MEMBER_ASSISTANCE_MODE:
+        if response.lower() in thank_you_messages:
+            support_members = SupportMember.objects.all()
+            for member in support_members:
+                member.user_status = HELPING_MODE
+                member.save()
+            return "You are now back to helping mode, you're now chatting with the inquirer."
+        broadcast_messages(None,None,response,support_member.phone_number)
+    
 def mark_as_resolved( ticket_id,is_closed=False):
     naive_datetime = datetime.now()
     aware_datetime = timezone.make_aware(naive_datetime)
@@ -399,6 +430,7 @@ def web_messaging(ticket_id,message=None,is_broadcasting=False):
         support_member = SupportMember.objects.filter(id=ticket.assigned_to.id).first()
         support_member.user_mode = HELPING_MODE
         support_member.user_status = HELPING_MODE
+        support_member.save()
         data = get_text_message_input(ticket.assigned_to.phone_number, message, None)
         return send_message(data)
     ticket = Ticket.objects.filter(id=ticket_id).first()

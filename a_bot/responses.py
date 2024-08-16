@@ -18,8 +18,8 @@ NAMES_MODE = "providing_names"
 BRANCH_MODE = "providing_branch"
 CONFIRM_RESPONSE ='confirming_response'
 SUPPORT_MEMBER_ASSISTANCE_MODE = "support_member_assistance"
-SUPPORT_MEMBER_ASSISTANCING_MODE="support_member_assistancing"
-support_member_help_requests = ["#help","#assist","#support","#can you","#can you help","#is not","#a problem","#an issue","#error","#fault","#mistake","#wrong","#fail","#trouble"]
+SUPPORT_MEMBER_ASSISTING_MODE="support_member_assisting"
+support_member_help_requests = ["#help","#assist","#support","#trouble"]
 
 
 
