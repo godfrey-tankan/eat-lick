@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" id='the-main-container'>
   <div class="row">
     <div class="col-12">
       <div class="card mb-4">
@@ -11,7 +11,7 @@
             {% endif %}
           </h6>
         </div>
-        <div id="the-main-container" class="card-body">
+        <div  class="card-body">
           <p><strong>Status:</strong> {{ ticket.status }}</p>
           <p><strong>Origin Branch:</strong> {{ ticket.branch_opened }}</p>
           <p><strong>Description:</strong> {{ ticket.description }}</p>
@@ -40,8 +40,8 @@
             
           {% endif %}
           <h6 class="mt-4">Messages</h6>
+          {% if messages %}
           <div id="messages" class="chat-box">
-            {% if messages %}
               {% for message in messages %}
                 <div class="chat-message {% if message.inquirer %}inquirer-message{% else %}support-message{% endif %}">
                   <div class="message-content">
@@ -57,9 +57,10 @@
                   </div>
                 </div>
               {% endfor %}
-            {% endif %}
           </div>
-          
+          {% else %}
+            <p>No messages yet.</p>
+          {% endif %}
           {% if ticket.assigned_to and ticket.assigned_to.id == user.id %}
             <div class="mt-4">
               <h6>Send a Message</h6>
@@ -71,18 +72,8 @@
                 <button type="submit" class="btn btn-primary">Send</button>
               </form>
             </div>
-            {% else %}
-              <p>No messages yet.</p>
-              {% if ticket.assigned_to.id == user.id%}
-              <form id="message-form" method="POST" action="{% url 'send_message' ticket.id %}">
-                {% csrf_token %}
-                <div class="form-group">
-                  <textarea id="message-content" name="message_content" class="form-control" rows="3" placeholder="Type your message..."></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Send</button>
-              </form>
-                {% endif %}
-            {% endif %}
+          
+          {% endif %}
           </div>
           
           <h6 class="mt-4">History</h6>
@@ -96,17 +87,18 @@
     </div>
   </div>
 </div>
-{% endblock content %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+  console.log('Script loaded');
   $(document).ready(function() {
     var fetchInterval;
     var ticketId = '{{ ticket.id }}';  // Ensure this is set correctly
-
+    console.log('Ticket ID:', ticketId);
     function fetchMessages() {
+      console.log('Fetching messages...');
       $.ajax({
         type: 'GET',
-        url: '{% url "ticket_detail" ticket.id %}',  // Ensure you have this URL mapped
+        url: '{% url "fetch_messages" ticket.id %}',  // Ensure you have this URL mapped
         dataType: 'json',
         success: function(response) {
           // Clear existing messages
@@ -135,11 +127,13 @@
         }
       });
     }
-
+    console.log('Hovering');
     $('#the-main-container').hover(
+      console.log('hovered'),
       function() {
         // Mouse enters the container
-        fetchInterval = setInterval(fetchMessages, 3000);
+        fetchMessages(); // Initial fetch on hover
+        fetchInterval = setInterval(fetchMessages, 5000);
       },
       function() {
         // Mouse leaves the container
@@ -151,3 +145,4 @@
     fetchMessages();
   });
 </script>
+{% endblock content %}

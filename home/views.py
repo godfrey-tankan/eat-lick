@@ -372,6 +372,7 @@ def ticket_detail(request, pk):
     return render(request, 'tickets/ticket_detail.html', {'ticket': ticket, 'form': form})
 
 def ticket_detail_view(request, ticket_id):
+    print('called automatically..................')
     ticket = get_object_or_404(Ticket, id=ticket_id)
     messages = Message.objects.filter(ticket_id=ticket_id).order_by('created_at')
     logs = TicketLog.objects.filter(ticket=ticket).order_by('timestamp')
