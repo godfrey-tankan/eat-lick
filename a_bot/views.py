@@ -45,9 +45,12 @@ def generate_response(response, wa_id, name):
         response=accept_ticket(wa_id,name, response)
         return response
     
-    if not support_member:
+    if not support_member :
         for help_message in help_messages:
             if help_message in response.lower() or len(response) > 4:
+                for thank_you_message in thank_you_messages:
+                    if thank_you_message in response.lower():
+                        return "You are welcome."
                 response = handle_inquiry(wa_id, response, name)
                 return response
     return "Hello,golden greetings."    
@@ -260,7 +263,7 @@ def handle_help(wa_id, response, name):
                     if inquirer:
                         inquirer.user_mode = CONFIRM_RESPONSE
                         inquirer.save()
-                        return is_inquirer_helped.format(inquirer.username.split()[0].title(),open_inquiries.description[:10])
+                        return is_inquirer_helped.format(inquirer.username.split()[0].title(),open_inquiries.description)
                         
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
                     send_message(data)
@@ -374,7 +377,7 @@ def mark_as_resolved( ticket_id,is_closed=False):
     support_member.user_status = ACCEPT_TICKET_MODE
     support_member.save()
     message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."
-    reply = f'Your inquiry *{ticket.description[:10]}*... has been marked as resolved'
+    reply = f'Your inquiry *{ticket.description}* has been marked as resolved'
     data = get_text_message_input(ticket.created_by.phone_number, reply, None)
     send_message(data)
     return broadcast_messages(None,ticket,message)

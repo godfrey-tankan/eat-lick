@@ -22,6 +22,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from a_bot.logout import logout_view
 from home.report import *
+from home.global_search import global_search
 
 urlpatterns = [
     path('', include('home.urls')),
@@ -36,6 +37,7 @@ urlpatterns = [
     path("admins/", admin.site.urls),
     path("", include('admin_soft.urls')),
     path('webhook/', webhook, name='webhook'),
+    path('search/', global_search, name='global_search'),
 ]
 urlpatterns += [
     path('tickets/edit/<int:pk>/', TicketEditView.as_view(), name='ticket-edit'),

@@ -26,4 +26,4 @@ def global_search(request):
         'tickets': tickets,
         'query': query,
     }
-    return render(request, 'search_results.html', context)
+    return render(request, 'search/search_results.html', context)
