@@ -35,7 +35,7 @@ def send_message(request, ticket_id):
         message_content = request.POST.get('message_content')
         if message_content:
             new_message = Message.objects.create(
-                ticket=ticket,
+                ticket_id=ticket,
                 content=message_content,
                 support_member=support_member,
                 created_at=timezone.now()
