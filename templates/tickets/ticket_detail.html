@@ -92,13 +92,13 @@
   console.log('Script loaded');
   $(document).ready(function() {
     var fetchInterval;
-    var ticketId = '{{ ticket.id }}';  // Ensure this is set correctly
+    var ticketId = '{{ ticket.id }}';  
     console.log('Ticket ID:', ticketId);
     function fetchMessages() {
       console.log('Fetching messages...');
       $.ajax({
         type: 'GET',
-        url: '{% url "fetch_messages" ticket.id %}',  // Ensure you have this URL mapped
+        url: '{% url "fetch_messages" ticket.id %}',  
         dataType: 'json',
         success: function(response) {
           // Clear existing messages
@@ -131,7 +131,6 @@
     $('#the-main-container').hover(
       console.log('hovered'),
       function() {
-        // Mouse enters the container
         fetchMessages(); // Initial fetch on hover
         fetchInterval = setInterval(fetchMessages, 5000);
       },
@@ -140,8 +139,6 @@
         clearInterval(fetchInterval);
       }
     );
-
-    // Initial fetch
     fetchMessages();
   });
 </script>

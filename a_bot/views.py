@@ -388,6 +388,10 @@ def mark_as_resolved( ticket_id,is_closed=False):
     send_message(data)
     return broadcast_messages(None,ticket,message)
 def web_messaging(ticket_id,message=None,is_broadcasting=False):
+    if message in resolve_ticket_responses:
+        return mark_as_resolved(ticket_id)
+    if message in close_ticket_responses:
+        return mark_as_resolved(ticket_id,True)
     if is_broadcasting:
         ticket = Ticket.objects.filter(id=ticket_id).first()
         message =f'Hello {ticket.assigned_to.username}\nInquiry *#{ticket.id}*:\n- {ticket.description}\n\nhas been escalated to you,you can start helping the inquirer now.'
