@@ -104,25 +104,25 @@ DB_PASS     = os.getenv('DB_PASS'     , None)
 DB_HOST     = os.getenv('DB_HOST'     , None)
 DB_PORT     = os.getenv('DB_PORT'     , None)
 DB_NAME     = os.getenv('DB_NAME'     , None)
-
+# DATABASE SWITCHING BETWEEN LOCAL AND PRODUCTION ENVIRONMENTS
 # if DB_ENGINE and DB_NAME and DB_USERNAME:
-# DATABASES = { 
-#     'default': {
-#     'ENGINE'  : 'django.db.backends.mysql', 
-#     'NAME'    : 'customer_support',
-#     'USER'    : 'simon',
-#     'PASSWORD': 'simonmusabayana',
-#     'HOST'    : '198.12.221.104',
-#     'PORT'    : '3306',
-#     }, 
-# }
-# else:
-DATABASES = {
+DATABASES = { 
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'db.sqlite3',
-    }
+    'ENGINE'  : 'django.db.backends.mysql', 
+    'NAME'    : 'customer_support',
+    'USER'    : 'simon',
+    'PASSWORD': 'simonmusabayana',
+    'HOST'    : '198.12.221.104',
+    'PORT'    : '3306',
+    }, 
 }
+# else:
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': 'db.sqlite3',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators

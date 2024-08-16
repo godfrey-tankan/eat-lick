@@ -40,12 +40,10 @@
             
           {% endif %}
           <h6 class="mt-4">Messages</h6>
-          <div id="chat-box" class="chat-box">
+          <div id="messages" class="chat-box">
             {% if messages %}
               {% for message in messages %}
-                <div 
-                  class="chat-message {% if message.inquirer %}inquirer-message{% else %}support-message{% endif %}"
-                >
+                <div class="chat-message {% if message.inquirer %}inquirer-message{% else %}support-message{% endif %}">
                   <div class="message-content">
                     {{ message.content }}
                   </div>
@@ -59,20 +57,32 @@
                   </div>
                 </div>
               {% endfor %}
-              {% if ticket.assigned_to and ticket.assigned_to.id == user.id %}
-                <div class="mt-4">
-                  <h6>Send a Message</h6>
-                  <form method="POST" action="{% url 'send_message' ticket.id %}">
-                    {% csrf_token %}
-                    <div class="form-group" id='messages'>
-                      <input name="message_content" type='text' class="form-control" rows="1" placeholder="Type your message..."/>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Send</button>
-                  </form>
+            {% endif %}
+          </div>
+          
+          {% if ticket.assigned_to and ticket.assigned_to.id == user.id %}
+            <div class="mt-4">
+              <h6>Send a Message</h6>
+              <form id="message-form" method="POST" action="{% url 'send_message' ticket.id %}">
+                {% csrf_token %}
+                <div class="form-group">
+                  <textarea id="message-content" name="message_content" class="form-control" rows="3" placeholder="Type your message..."></textarea>
                 </div>
-              {% endif %}
+                <button type="submit" class="btn btn-primary">Send</button>
+              </form>
+            </div>
+          {% endif %}
             {% else %}
               <p>No messages yet.</p>
+              {% if ticket.assigned_to.id == user.id%}
+                <form method="POST" action="{% url 'send_message' ticket.id %}">
+                  {% csrf_token %}
+                  <div class="form-group"  >
+                    <input name="message_content" type='text' class="form-control" rows="1" placeholder="Type your message..."/>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Send</button>
+                </form>
+                {% endif %}
             {% endif %}
           </div>
           
@@ -88,9 +98,45 @@
   </div>
 </div>
 {% endblock content %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  window.onload = function() {
-    var chatBox = document.getElementById('chat-box');
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
+  $(document).ready(function() {
+    $('#message-form').on('submit', function(e) {
+      e.preventDefault(); // Prevent the default form submission
+
+      var formData = {
+        'message_content': $('#message-content').val(),
+        'csrfmiddlewaretoken': '{{ csrf_token }}'
+      };
+
+      $.ajax({
+        type: 'POST',
+        url: $(this).attr('action'),
+        data: formData,
+        success: function(response) {
+          // Clear the textarea
+          $('#message-content').val('');
+
+          // Append the new message to the chat box
+          var newMessage = `
+            <div class="chat-message support-message">
+              <div class="message-content">${response.message_content}</div>
+              <div class="message-meta">
+                <small>${response.created_at}</small>
+                <small>${response.username}</small>
+              </div>
+            </div>
+          `;
+          $('#messages').append(newMessage);
+
+          // Scroll to the bottom of the chat box
+          var chatBox = document.getElementById('messages');
+          chatBox.scrollTop = chatBox.scrollHeight;
+        },
+        error: function(response) {
+          console.log('Error:', response);
+        }
+      });
+    });
+  });
 </script>

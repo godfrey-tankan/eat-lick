@@ -2,6 +2,8 @@ from django.shortcuts import get_object_or_404, redirect, render, HttpResponse
 from .models import Ticket, SupportMember, Message,TicketLog
 from django.contrib.auth.decorators import login_required
 from a_bot.views import web_messaging
+from django.http import JsonResponse
+from django.utils import timezone
 
 @login_required
 def escalate_ticket(request, ticket_id):
@@ -19,16 +21,8 @@ def escalate_ticket(request, ticket_id):
                 status=ticket.status
             )
             
-            if assign_to.id == request.user:
-                
-                message_content = request.POST.get('message_content')
-                if message_content:
-                    Message.objects.create(
-                        ticket=ticket,
-                        content=message_content,
-                        support_member=request.user.id
-                    )
-
+            web_messaging(ticket.id,None,True)
+                    
         return redirect('ticket_detail', ticket_id=ticket.id)
     return redirect('ticket_list')
 
@@ -40,13 +34,17 @@ def send_message(request, ticket_id):
     if support_member and request.method == 'POST':
         message_content = request.POST.get('message_content')
         if message_content:
-            Message.objects.create(
-                ticket_id=ticket,
+            new_message = Message.objects.create(
+                ticket=ticket,
                 content=message_content,
-                support_member=support_member
+                support_member=support_member,
+                created_at=timezone.now()
             )
-            web_messaging(ticket.id,message_content)
-        
-
-    return render(request, 'ticktes/ticket_detail.html', {'ticket': ticket,'messages':Message.objects.filter(ticket_id=ticket)})
-
+            web_messaging(ticket.id, message_content)
+            return JsonResponse({
+                'message_content': new_message.content,
+                'created_at': new_message.created_at.strftime('%d/%m/%Y %H:%M'),
+                'username': new_message.support_member.username 
+            })
+    
+    return JsonResponse({'error': 'Invalid request or support member not found'}, status=400)

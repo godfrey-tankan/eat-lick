@@ -11,7 +11,7 @@ from django.views.generic import UpdateView
 from django.contrib.auth.decorators import login_required
 from django.views.generic import DeleteView
 from django.urls import reverse_lazy
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Exists, OuterRef
 from django.views.decorators.http import require_GET
 from datetime import datetime, timedelta
 from django.utils.timezone import now
@@ -100,8 +100,18 @@ def index(request):
 #     tickets = Ticket.objects.order_by('-created_at')[:10].prefetch_related(
 #     Prefetch('messages', queryset=Message.objects.order_by('created_at'))
 # )
-    tickets = Ticket.objects.order_by('-created_at')[:10].annotate(message_count=Count('messages'))
-        
+
+    escalated_subquery = TicketLog.objects.filter(
+        ticket_id=OuterRef('pk'),
+        changed_by__icontains='escalated'
+    ).values('id')
+
+    tickets = Ticket.objects.order_by('-created_at')[:10].annotate(
+            message_count=Count('messages'),
+            is_escalated=Exists(escalated_subquery)
+    )
+
+    
     try:
         request_user_support_member = SupportMember.objects.get(user=request.user.id)
         request_user_tickets = all_tickets.filter(assigned_to=request_user_support_member)

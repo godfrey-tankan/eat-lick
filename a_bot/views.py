@@ -253,7 +253,7 @@ def handle_help(wa_id, response, name):
             print('not support member')
             try:
                 inquirer = Inquirer.objects.filter(phone_number=wa_id[0]).first()
-                save_messages(open_inquiries.id,inquirer.id,None,response)
+                save_messages(open_inquiries.id,inquirer,None,response)
             except Exception as e:
                 print('error saving message')
             if inquirer and inquirer.user_mode == CONFIRM_RESPONSE:
@@ -297,7 +297,7 @@ def broadcast_messages(name,ticket=None,message=None):
         except Exception as e:
             response = "error sending messages"
     return response
-def save_messages(ticket_id,inquirer, support_member, content):
+def save_messages(ticket_id,inquirer=None, support_member=None, content=None):
     Message.objects.create(ticket_id=ticket_id,inquirer=inquirer, support_member=support_member, content=content)
 @csrf_exempt
 def accept_ticket(wa_id,name, ticket_id):
@@ -345,10 +345,6 @@ def accept_ticket(wa_id,name, ticket_id):
     else:
         return "Ticket not available or already assigned"
 
-def web_messaging(ticket_id,message=None):
-    ticket = Ticket.objects.filter(id=ticket_id).first()
-    data =get_text_message_input('263779586059', message, None)
-    return send_message(data)
 
 def mark_as_resolved( ticket_id,is_closed=False):
     naive_datetime = datetime.now()
@@ -391,3 +387,15 @@ def mark_as_resolved( ticket_id,is_closed=False):
     data = get_text_message_input(ticket.created_by.phone_number, reply, None)
     send_message(data)
     return broadcast_messages(None,ticket,message)
+def web_messaging(ticket_id,message=None,is_broadcasting=False):
+    if is_broadcasting:
+        ticket = Ticket.objects.filter(id=ticket_id).first()
+        message =f'Hello {ticket.assigned_to.username}\nInquiry *#{ticket.id}*:\n- {ticket.description}\n\nhas been escalated to you,you can start helping the inquirer now.'
+        support_member = SupportMember.objects.filter(id=ticket.assigned_to.id).first()
+        support_member.user_mode = HELPING_MODE
+        support_member.user_status = HELPING_MODE
+        data = get_text_message_input(ticket.assigned_to.phone_number, message, None)
+        return send_message(data)
+    ticket = Ticket.objects.filter(id=ticket_id).first()
+    data =get_text_message_input('263779586059', message, None)
+    return send_message(data)

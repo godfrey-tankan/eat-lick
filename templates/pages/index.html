@@ -285,7 +285,11 @@
                                             <td class="align-middle text-center assigned-user">
                                               <a href="{% url 'tickets_by_assignee' ticket.assigned_to.id %}" class="text-xs font-weight-bold">
                                                 {{ ticket.assigned_to.username }}
+                                                
                                             </a>
+                                            {% if ticket.is_escalated %}
+                                              <span class='escaleted-ticket'>escalated</span>
+                                            {% endif %}
                                         </td>
                                         {% else %}
                                         <td class="align-middle text-center">
