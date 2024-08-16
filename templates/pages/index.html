@@ -226,75 +226,78 @@
 
       <div class="container-fluid py-4">
         <div class="row">
-          <div class="col-12">
-            <div class="card mb-4">
-              <div class="card-header pb-0">
-                <h6>Tickets Table</h6>
-              </div>
-              <div class="card-body px-0 pt-0 pb-2">
-                <div class="table-responsive p-0">
-                  <table class="table align-items-center mb-0">
-                    <thead>
-                      <tr>
-                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Opened By</th>
-                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Created At</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Assigned to</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for ticket in tickets %}
-                      <tr>
-                        <td>
-                          <div class="d-flex px-2 py-1">
-                            <div class="d-flex flex-column justify-content-center">
-                              <h6 class="mb-0 text-sm">{{ ticket.created_by }}</h6>
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <p class="text-xs font-weight-bold mb-0">{{ ticket.description }}</p>
-                        </td>
-                        <td class="align-middle text-center text-sm">
-                          <a href="{% url 'ticket_list_by_status' ticket.status %}" class="badge badge-sm" style="background-color: 
-                            {% if ticket.status == 'open' %}
-                              lightgreen
-                            {% elif ticket.status == 'resolved' %}
-                              green
-                            {% elif ticket.status == 'pending' %}
-                              orange
-                            {% elif ticket.status == 'closed' %}
-                              red
-                            {% endif %}
-                          ">{{ ticket.status|title }}</a>
-                        </td>
-                        <td class="align-middle text-center">
-                          <span class="text-secondary text-xs font-weight-bold">{{ ticket.created_at|date:"d/m/Y" }}</span>
-                        </td>
-                        {% if ticket.assigned_to %}
-                          <td class="align-middle text-center">
-                            <a href="{% url 'tickets_by_assignee' ticket.assigned_to.id%}" class="text-secondary text-xs font-weight-bold">
-                                {{ ticket.assigned_to.username }}
-                            </a>
-                        {% else %}
-                          <td class="align-middle text-center">
-                            <span class="text-secondary text-xs font-weight-bold">Unassigned</span>
-                          </td>
-                        {% endif %}
-                      </td>
-
-
-                      </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header pb-0">
+                        <h6>Tickets Table</h6>
+                    </div>
+                    <div class="card-body px-0 pt-0 pb-2">
+                        <div class="table-responsive p-0">
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Opened By</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Created At</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Assigned to</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ticket in tickets %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex px-2 py-1">
+                                                <div class="d-flex flex-column justify-content-center">
+                                                    <h6 class="mb-0 text-sm">{{ ticket.created_by.username|title }}</h6>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ ticket.description }}</p>
+                                        </td>
+                                        <td class="align-middle text-center text-sm position-relative">
+                                            <a href="{% url 'ticket_list_by_status' ticket.status %}" class="badge badge-sm position-relative" style="background-color: 
+                                                {% if ticket.status == 'open' %}
+                                                    lightgreen
+                                                {% elif ticket.status == 'resolved' %}
+                                                    green
+                                                {% elif ticket.status == 'pending' %}
+                                                    orange
+                                                {% elif ticket.status == 'closed' %}
+                                                    red
+                                                {% endif %}
+                                            ">
+                                                {{ ticket.status|title }}
+                                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-secondary border border-light rounded-circle">
+                                                    <span class="text-xs font-weight-bold" >0</span>
+                                                </span>
+                                            </a>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ ticket.created_at|date:"d/m/Y" }}</span>
+                                        </td>
+                                        {% if ticket.assigned_to %}
+                                        <td class="align-middle text-center">
+                                            <a href="{% url 'tickets_by_assignee' ticket.assigned_to.id %}" class="text-secondary text-xs font-weight-bold">
+                                                {{ ticket.assigned_to.username }}
+                                            </a>
+                                        {% else %}
+                                        <td class="align-middle text-center">
+                                            <span class="text-secondary text-xs font-weight-bold">Unassigned</span>
+                                        </td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
+    </div>
+    
             
         {% comment %} <div class="row mt-4">
         <div class="col-lg-7 mb-lg-0 mb-4">

@@ -57,9 +57,9 @@ class Ticket(models.Model):
 
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
-    created_by = models.CharField(max_length=255, null=True, blank=True)
+    created_by = models.ForeignKey(Inquirer, related_name='tickets', on_delete=models.DO_NOTHING, null=True, blank=True)
     branch_opened = models.CharField(max_length=20, null=True, blank=True)
-    assigned_to = models.ForeignKey(SupportMember, related_name='assigned_tickets', on_delete=models.SET_NULL, null=True, blank=True)
+    assigned_to = models.ForeignKey(SupportMember, related_name='assigned_tickets', on_delete=models.DO_NOTHING, null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

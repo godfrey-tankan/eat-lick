@@ -360,12 +360,10 @@ def ticket_detail_view(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
     messages = Message.objects.filter(ticket_id=ticket_id)
     logs = TicketLog.objects.filter(ticket=ticket).order_by('timestamp')
-    inquirer=Inquirer.objects.filter(phone_number=ticket.created_by).first()
     context = {
         'ticket': ticket or None,
         'messages': messages or None,
         'logs': logs or None,
-        'inquirer':inquirer or None
     }
     return render(request, 'tickets/ticket_detail.html', context)
 
