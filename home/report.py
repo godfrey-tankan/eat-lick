@@ -32,6 +32,7 @@ def generate_weekly_report(request):
     day_most_opened = daily_counts.order_by('-opened').first()
     day_most_closed = daily_counts.order_by('-closed').first()
     day_most_resolved = daily_counts.order_by('-resolved').first()
+    day_most_pending = daily_counts.order_by('-pending_tickets').first()
 
     for member in support_members:
         tickets_for_member = tickets.filter(assigned_to=member.id)
@@ -81,6 +82,7 @@ def generate_weekly_report(request):
         'daily_counts': daily_counts,
         'day_most_opened': day_most_opened,
         'day_most_closed': day_most_closed,
+        'day_most_pending': day_most_pending,
         'day_most_resolved': day_most_resolved,
         'branch_most_inquiries': branch_most_inquiries,
         'total_inquiries': total_inquiries,
