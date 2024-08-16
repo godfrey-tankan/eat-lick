@@ -36,6 +36,42 @@
     </div>
     {% endif %}
 
+    {% if support_members %}
+    <div class="card mb-4">
+        <div class="card-header pb-0">
+            <h6>Support Members</h6>
+        </div>
+        <div class="card-body">
+            <table class="table align-items-center">
+                <thead>
+                    <tr>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Username</th>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">MObile</th>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Branch</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for support_member in support_members %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'support_users_list'%}">{{ support_member.username }}</a>
+                        </td>
+                        <td>
+                            <a href="{% url 'support_users_list'%}">{{ support_member.phone_number }}</a>
+                        </td>
+                        <td>{{ support_member.branch }}</td>
+                        <td>
+                            <a href="{% url 'edit_support_member' support_member.id %}" class="btn btn-primary btn-sm">Edit</a>
+                            <a href="{% url 'edit_support_member' support_member.id %}" class="btn btn-danger btn-sm">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
     {% if tickets %}
     <div class="card mb-4">
         <div class="card-header pb-0">
@@ -45,22 +81,32 @@
             <table class="table align-items-center">
                 <thead>
                     <tr>
-                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ticket ID</th>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Opened By</th>
                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Description</th>
                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for ticket in tickets %}
                     <tr>
-                        <td><a href="{% url 'ticket_detail' ticket.id %}">#{{ ticket.id }}</a></td>
-                        <td>{{ ticket.description }}</td>
-                        <td>{{ ticket.status }}</td>
+                        <td><a href="{% url 'ticket_detail' ticket.id %}">{{ ticket.created_by.username }}</a></td>
+                        <td><a href="{% url 'ticket_detail' ticket.id %}">{{ ticket.description }}</a></td>
                         <td>
-                            <a href="{% url 'edit_ticket' ticket.id %}" class="btn btn-primary btn-sm">Edit</a>
-                            <a href="{% url 'delete_ticket' ticket.id %}" class="btn btn-danger btn-sm">Delete</a>
-                        </td>
+                            <a href="{% url 'ticket_list_by_status' ticket.status %}" class="badge badge-sm position-relative" style="background-color: 
+                                {% if ticket.status == 'open' %}
+                                    lightgreen
+                                {% elif ticket.status == 'resolved' %}
+                                    green
+                                {% elif ticket.status == 'pending' %}
+                                    orange
+                                {% elif ticket.status == 'closed' %}
+                                    red
+                                {% endif %}
+                            ">
+                                {{ ticket.status|title }}
+                              </a>
+                            </td>
+                        
                     </tr>
                     {% endfor %}
                 </tbody>
