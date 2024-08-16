@@ -38,10 +38,7 @@ def generate_response(response, wa_id, name):
     if support_member:
         if response.lower() in support_member_help_requests:
             return request_assistance_support_member(support_member.id)
-        if support_member.user_status in [
-            SUPPORT_MEMBER_ASSISTING_MODE,
-            SUPPORT_MEMBER_ASSISTANCE_MODE,
-        ]:
+        if support_member.user_status == SUPPORT_MEMBER_ASSISTING_MODE or support_member.user_status == SUPPORT_MEMBER_ASSISTANCE_MODE:
             return assist_support_member(support_member.id,response)
 
         if support_member.user_mode == HELPING_MODE or check_ticket:
