@@ -14,5 +14,6 @@ OPEN_MODE = "open"
 WAITING_MODE = "waiting"
 NAMES_MODE = "providing_names"
 BRANCH_MODE = "providing_branch"
+CONFIRM_RESPONSE ='confirming_response'
 
 

@@ -193,7 +193,6 @@ def handle_inquiry(wa_id, response, name):
             inquirer_obj.user_mode=BRANCH_MODE
             inquirer_obj.save()
             return 'Please provide your branch'
-        
     try:
         open_inquiries = Ticket.objects.filter(status=OPEN_MODE,created_by=wa_id[0]).first()
     except Ticket.DoesNotExist:
@@ -250,6 +249,11 @@ def handle_help(wa_id, response, name):
             for message in thank_you_messages:
                 if message in response.lower():
                     print('matched')
+                    support_ob = SupportMember.objects.filter(phone_number=open_inquiries.assigned_to.phone_number).first()
+                    if support_ob:
+                        support_ob.user_mode = CONFIRM_RESPONSE
+                        support_ob.save()
+                        
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
                     send_message(data)
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number,inquirer_helped_assumed_messages , None)
@@ -285,7 +289,6 @@ def accept_ticket(wa_id,name, ticket_id):
         ticket_id = int(ticket_id)
     except Exception as e:
         return "Invalid ticket id"
-
     support_team_mobiles =[support_member.phone_number for support_member in SupportMember.objects.all()]
     if wa_id[0] not in support_team_mobiles:
         return "You are not authorized to accept tickets"
