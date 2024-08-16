@@ -345,6 +345,11 @@ def accept_ticket(wa_id,name, ticket_id):
     else:
         return "Ticket not available or already assigned"
 
+def web_messaging(ticket_id,message=None):
+    ticket = Ticket.objects.filter(id=ticket_id).first()
+    data =get_text_message_input('263779586059', message, None)
+    return send_message(data)
+
 def mark_as_resolved( ticket_id,is_closed=False):
     naive_datetime = datetime.now()
     aware_datetime = timezone.make_aware(naive_datetime)

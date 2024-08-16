@@ -5,7 +5,11 @@
     <div class="col-12">
       <div class="card mb-4">
         <div class="card-header pb-0">
-          <h6>Ticket #{{ ticket.id }} - {{ ticket.title }}</h6>
+          <h6>Ticket #{{ ticket.id }} - {{ ticket.title }} 
+            {% if escalated %}
+            <span class='escaleted-ticket'>escalated</span>
+            {% endif %}
+          </h6>
         </div>
         <div class="card-body">
           <p><strong>Status:</strong> {{ ticket.status }}</p>
@@ -14,25 +18,59 @@
           <p><strong>Created by:</strong> {{ ticket.created_by.username|title }}</p>
           <p><strong>Assigned to:</strong> {{ ticket.assigned_to }}</p>
           
+          <!-- Escalate Section -->
+          {% if ticket.status != 'resolved' and ticket.status != 'closed'  %}
+            <h6 class="mt-4">Escalate Ticket</h6>
+            <form method="POST" action="{% url 'escalate_ticket' ticket.id %}">
+              {% csrf_token %}
+              <div class="form-group">
+                <label for="assign_to">Assign to:</label>
+                <select id="assign_to" name="assign_to" class="form-control">
+                  <option value="">Select a support member</option>
+                  {% for member in support_members %}
+                    <option value="{{ member.id }}" {% if member.id == ticket.assigned_to.id %}selected{% endif %}>{{ member.username }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary">Escalate</button>
+            </form>
+            
+            <!-- Show message input if assigned to self -->
+            
+            
+          {% endif %}
           <h6 class="mt-4">Messages</h6>
-          <div class="chat-box">
-            {% if messages != None %}
+          <div id="chat-box" class="chat-box">
+            {% if messages %}
               {% for message in messages %}
-                <div class="chat-message {% if message and message.inquirer %}inquirer-message{% else %}support-message{% endif %}">
+                <div 
+                  class="chat-message {% if message.inquirer %}inquirer-message{% else %}support-message{% endif %}"
+                >
                   <div class="message-content">
                     {{ message.content }}
                   </div>
                   <div class="message-meta">
                     <small>{{ message.created_at|date:"d/m/Y H:i" }}</small>
-                    {% if  message.inquirer %}
-                    <small>{{ message.inquirer.username}}</small>
+                    {% if message.inquirer %}
+                    <small>{{ message.inquirer.username }}</small>
                     {% else %}
                     <small>{{ message.support_member.username }}</small>
                     {% endif %}
-                    {% comment %} <small>{{ message.inquirer.username if  message.inquirer else message.support_member.username }}</small> {% endcomment %}
                   </div>
                 </div>
               {% endfor %}
+              {% if ticket.assigned_to and ticket.assigned_to.id == user.id %}
+                <div class="mt-4">
+                  <h6>Send a Message</h6>
+                  <form method="POST" action="{% url 'send_message' ticket.id %}">
+                    {% csrf_token %}
+                    <div class="form-group" id='messages'>
+                      <input name="message_content" type='text' class="form-control" rows="1" placeholder="Type your message..."/>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send</button>
+                  </form>
+                </div>
+              {% endif %}
             {% else %}
               <p>No messages yet.</p>
             {% endif %}
@@ -50,3 +88,9 @@
   </div>
 </div>
 {% endblock content %}
+<script>
+  window.onload = function() {
+    var chatBox = document.getElementById('chat-box');
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+</script>

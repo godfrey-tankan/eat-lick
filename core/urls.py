@@ -23,6 +23,7 @@ from django.conf.urls.static import static
 from a_bot.logout import logout_view
 from home.report import *
 from home.global_search import global_search
+from home.escalate_ticket import escalate_ticket, send_message
 
 urlpatterns = [
     path('', include('home.urls')),
@@ -38,6 +39,8 @@ urlpatterns = [
     path("", include('admin_soft.urls')),
     path('webhook/', webhook, name='webhook'),
     path('search/', global_search, name='global_search'),
+    path('escalate/<int:ticket_id>/', escalate_ticket, name='escalate_ticket'),
+    path('send-message/<int:ticket_id>/', send_message, name='send_message'),
 ]
 urlpatterns += [
     path('tickets/edit/<int:pk>/', TicketEditView.as_view(), name='ticket-edit'),

@@ -365,10 +365,13 @@ def ticket_detail_view(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
     messages = Message.objects.filter(ticket_id=ticket_id)
     logs = TicketLog.objects.filter(ticket=ticket).order_by('timestamp')
+    escalation_log_exists = logs.filter(changed_by__icontains='escalated').exists()
     context = {
         'ticket': ticket or None,
         'messages': messages or None,
+        'support_members': SupportMember.objects.all() or None,
         'logs': logs or None,
+        'escalated': escalation_log_exists
     }
     return render(request, 'tickets/ticket_detail.html', context)
 

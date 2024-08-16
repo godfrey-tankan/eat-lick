@@ -415,15 +415,17 @@ fieldset {
   background-color: #f9f9f9;
   padding: 15px;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   margin-top: 15px;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .chat-message {
   padding: 10px;
   border-radius: 8px;
   margin-bottom: 10px;
-  max-width: 60%;
+  max-width: max-content;
   position: relative;
 }
 
@@ -471,6 +473,18 @@ fieldset {
   border-style: solid;
   border-color: transparent transparent transparent #c8e6c9;
 }
+
+.escaleted-ticket{
+  color:#ea580c;
+  padding: 4px;
+  font-size: 12px;
+  border: 1px solid #facc15;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+
+
 
 /* CUSOM CSS END======================================================================================================================== */
 
