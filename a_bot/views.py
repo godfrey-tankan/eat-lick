@@ -385,8 +385,8 @@ def assist_support_member(support_member_id, response):
                 for member in support_members:
                     member.user_status = HELPING_MODE
                     member.save()
-            data = get_text_message_input(support_member.phone_number, back_to_helping_mode, None)
-            return send_message(data)
+                data = get_text_message_input(support_member.phone_number, back_to_helping_mode, None)
+                return send_message(data)
         broadcast_messages(None,None,response,support_member.phone_number)
     
 def mark_as_resolved( ticket_id,is_closed=False):
