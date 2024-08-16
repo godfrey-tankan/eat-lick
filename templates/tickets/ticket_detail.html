@@ -66,7 +66,7 @@
               <form id="message-form" method="POST" action="{% url 'send_message' ticket.id %}">
                 {% csrf_token %}
                 <div class="form-group">
-                  <textarea id="message-content" name="message_content" class="form-control" rows="3" placeholder="Type your message..."></textarea>
+                  <textarea id="message-content" type="submit" name="message_content" class="form-control" rows="3" placeholder="Type your message..."></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary">Send</button>
               </form>
