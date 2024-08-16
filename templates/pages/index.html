@@ -283,7 +283,7 @@
                                             </td>
                                             {% if ticket.assigned_to %}
                                             <td class="align-middle text-center assigned-user">
-                                              <a href="{% url 'tickets_by_assignee' ticket.assigned_to.id %}" class="text-secondary text-xs font-weight-bold">
+                                              <a href="{% url 'tickets_by_assignee' ticket.assigned_to.id %}" class="text-xs font-weight-bold">
                                                 {{ ticket.assigned_to.username }}
                                             </a>
                                         </td>
