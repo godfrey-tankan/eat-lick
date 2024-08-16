@@ -35,7 +35,7 @@
         }
 
         th {
-            background-color: grey;
+            background-color: #000;
             color: #fff;
             font-weight: 600;
         }
@@ -48,30 +48,19 @@
             background-color: #e1e1e1;
         }
 
-        .statistics {
+        .statistics, .branch-stats {
             margin: 20px 0;
-            padding: 10px;
+            padding: 15px;
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
 
-        .statistics p {
-            font-size: 1.2em;
+        .statistics p, .branch-stats p {
+            font-size: 1.1em;
             margin: 5px 0;
             color: #555;
-        }
-
-        .header {
-            background-color: #007bff;
-            color: #fff;
-            text-align: center;
-        }
-
-        .header th {
-            font-size: 1.1em;
-            padding: 10px;
         }
 
         .total-row {
@@ -90,20 +79,22 @@
     </style>
 </head>
 <body>
-    <h1>Weekly Report ({{ start_date }} to {{ end_date }})</h1>
+    <h5>Weekly Report ({{ start_date }} to {{ end_date }})</h5>
 
     <div class="statistics">
         <p>Total Opened Tickets: <strong>{{ total_opened }}</strong></p>
+        <p>Total Pending Tickets: <strong>{{ total_pending }}</strong></p>
         <p>Total Closed Tickets: <strong>{{ total_closed }}</strong></p>
         <p>Total Resolved Tickets: <strong>{{ total_resolved }}</strong></p>
     </div>
 
     <h2>Support Member Statistics</h2>
     <table>
-        <thead class="header">
+        <thead>
             <tr>
                 <th>Support Member</th>
                 <th>Resolved Tickets</th>
+                <th>Pending Tickets</th>
                 <th>Closed Tickets</th>
                 <th>Average Time to Resolve</th>
             </tr>
@@ -113,6 +104,7 @@
             <tr>
                 <td>{{ data.member }}</td>
                 <td>{{ data.resolved_count }}</td>
+                <td>{{ data.pending_count }}</td>
                 <td>{{ data.closed_count }}</td>
                 <td>{{ data.average_time }}</td>
             </tr>
@@ -122,11 +114,12 @@
     
     <h2>Daily Ticket Counts</h2>
     <table>
-        <thead class="header">
+        <thead>
             <tr>
                 <th>Date</th>
                 <th>Opened Tickets</th>
                 <th>Closed Tickets</th>
+                <th>Pending Tickets</th>
                 <th>Resolved Tickets</th>
             </tr>
         </thead>
@@ -136,6 +129,7 @@
                 <td>{{ data.created_at__date }}</td>
                 <td>{{ data.opened }}</td>
                 <td>{{ data.closed }}</td>
+                <td>{{ data.pending_tickets }}</td>
                 <td>{{ data.resolved }}</td>
             </tr>
             {% endfor %}
@@ -146,6 +140,11 @@
         <p>Day with Most Opened Tickets: <strong>{{ day_most_opened.created_at__date }} ({{ day_most_opened.opened }} tickets)</strong></p>
         <p>Day with Most Closed Tickets: <strong>{{ day_most_closed.created_at__date }} ({{ day_most_closed.closed }} tickets)</strong></p>
         <p>Day with Most Resolved Tickets: <strong>{{ day_most_resolved.created_at__date }} ({{ day_most_resolved.resolved }} tickets)</strong></p>
+    </div>
+
+    <div class="branch-stats">
+        <p>Branch with Most Inquiries: <strong>{{ branch_most_inquiries.branch_opened}} ({{ branch_most_inquiries.tickets }} inquiries)</strong></p>
+        <p>Total Inquiries: <strong>{{ total_inquiries }}</strong></p>
     </div>
 
     <div class="footer">
