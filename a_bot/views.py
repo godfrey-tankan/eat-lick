@@ -37,23 +37,27 @@ def generate_response(response, wa_id, name):
         check_ticket = None
     if support_member:
         if response.lower() in support_member_help_requests:
-            return request_assistance_support_member(support_member)
-        return 'not help request response'
- 
-    if support_member and support_member.user_status == SUPPORT_MEMBER_ASSISTING_MODE or support_member.user_status == SUPPORT_MEMBER_ASSISTANCE_MODE:
-        return assist_support_member(support_member, response)
-        
+            return request_assistance_support_member(support_member.id)
+        if support_member.user_status in [
+            SUPPORT_MEMBER_ASSISTING_MODE,
+            SUPPORT_MEMBER_ASSISTANCE_MODE,
+        ]:
+            return assist_support_member(support_member.id,response)
+
+        if support_member.user_mode == HELPING_MODE or check_ticket:
+            return handle_help(wa_id, response, name)
+
+        if support_member.user_mode == ACCEPT_TICKET_MODE:
+            return accept_ticket(wa_id,name, response)
+
+        return 'hello! how can i help you today?'
+
     if response.lower() in greeting_messages:
         time_of_day = get_greeting()
         name = inquirer.username.split()[0] if inquirer else name
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
-    
-    if support_member and support_member.user_mode == HELPING_MODE or check_ticket:
-        return handle_help(wa_id, response, name)
 
-    if support_member and support_member.user_mode == ACCEPT_TICKET_MODE:
-        return accept_ticket(wa_id,name, response)
-    
+
     if not support_member :
         for thank_you_message in thank_you_messages:
             if thank_you_message in response.lower():
@@ -353,19 +357,21 @@ def accept_ticket(wa_id,name, ticket_id):
     else:
         return "Ticket not available or already assigned"
 
-def request_assistance_support_member(support_member):
+def request_assistance_support_member(id):
+    request_user = SupportMember.objects.filter(id=id).first()
     support_members = SupportMember.objects.all()
     for member in support_members:
-        if member.id != support_member.id:
+        if member.id != request_user.id:
             member.user_status = SUPPORT_MEMBER_ASSISTING_MODE
         else:
             member.user_mode = SUPPORT_MEMBER_ASSISTANCE_MODE
         member.save()
-    message = f'🔔 *{support_member.username}* is requesting assistance,please reply to assist. or type pass to skip this request.'
-    broadcast_messages(None,None,message,support_member.phone_number)
+    message = f'🔔 *{request_user.username}* is requesting assistance,please reply to assist. or type pass to skip this request.'
+    broadcast_messages(None,None,message,request_user.phone_number)
     return "You are now interacting with other support members,What do you need help with?"
 
-def assist_support_member(support_member, response):
+def assist_support_member(support_member_id, response):
+    support_member = SupportMember.objects.filter(id=support_member_id).first()
     if support_member.user_status == SUPPORT_MEMBER_ASSISTING_MODE:
         if 'pass' in response.lower():
             support_member.user_status = HELPING_MODE
