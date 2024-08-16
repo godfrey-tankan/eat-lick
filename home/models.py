@@ -37,15 +37,6 @@ class SupportMember(models.Model):
         return f"Support Member: {self.username}"
 
 
-class Message(models.Model):
-    inquirer = models.ForeignKey(Inquirer, related_name='messages', on_delete=models.DO_NOTHING, null=True, blank=True)
-    support_member = models.ForeignKey(SupportMember, related_name='messages', on_delete=models.DO_NOTHING, null=True, blank=True)
-    ticket_id = models.IntegerField(null=True, blank=True)
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Message #{self.id} by {self.inquirer.username}"
 class Ticket(models.Model):
     STATUS_CHOICES = [
         ('open', 'open'),
@@ -130,3 +121,12 @@ class FAQ(models.Model):
 
     def __str__(self):
         return f"FAQ: {self.question}"
+class Message(models.Model):
+    inquirer = models.ForeignKey(Inquirer, related_name='messages', on_delete=models.DO_NOTHING, null=True, blank=True)
+    support_member = models.ForeignKey(SupportMember, related_name='messages', on_delete=models.DO_NOTHING, null=True, blank=True)
+    ticket_id = models.ForeignKey(Ticket, related_name='messages', on_delete=models.DO_NOTHING, null=True, blank=True)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message #{self.id}"

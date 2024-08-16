@@ -19,6 +19,7 @@ from django.views.generic import ListView
 from django.db.models import ExpressionWrapper, F, DurationField
 from django.db.models.functions import Coalesce
 from .decorators import staff_required
+from django.db.models import Prefetch
 
 class TicketListCreateView(generics.ListCreateAPIView):
     queryset = Ticket.objects.all()
@@ -96,7 +97,11 @@ def index(request):
     ).filter(
         resolved_tickets_count__gt=1
     )
-    tickets = Ticket.objects.order_by('-created_at')[:10]
+#     tickets = Ticket.objects.order_by('-created_at')[:10].prefetch_related(
+#     Prefetch('messages', queryset=Message.objects.order_by('created_at'))
+# )
+    tickets = Ticket.objects.order_by('-created_at')[:10].annotate(message_count=Count('messages'))
+        
     try:
         request_user_support_member = SupportMember.objects.get(user=request.user.id)
         request_user_tickets = all_tickets.filter(assigned_to=request_user_support_member)

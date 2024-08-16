@@ -37,3 +37,9 @@ class InquirerAdmin(admin.ModelAdmin):
     list_display = ['id','username', 'is_active','phone_number']
     search_fields = ['username']
     list_filter = ['is_active','is_deleted']
+
+@admin.register(Message)
+class MessageAdmin(admin.ModelAdmin):
+    list_display = ['id','inquirer']
+    search_fields = ['inquirer']
+    list_filter = ['created_at']
