@@ -9,11 +9,29 @@
             <h6>Users</h6>
         </div>
         <div class="card-body">
-            <ul>
-                {% for user in users %}
-                <li>{{ user.username }} ({{ user.email }})</li>
-                {% endfor %}
-            </ul>
+            <table class="table align-items-center">
+                <thead>
+                    <tr>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Username</th>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Email</th>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'user_list'%}">{{ user.username }}</a>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <a href="{% url 'edit_user' user.id %}" class="btn btn-primary btn-sm">Edit</a>
+                            <a href="{% url 'edit_user' user.id %}" class="btn btn-danger btn-sm">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
     {% endif %}
@@ -24,11 +42,29 @@
             <h6>Tickets</h6>
         </div>
         <div class="card-body">
-            <ul>
-                {% for ticket in tickets %}
-                <li>#{{ ticket.id }} - {{ ticket.description }} (Status: {{ ticket.status }})</li>
-                {% endfor %}
-            </ul>
+            <table class="table align-items-center">
+                <thead>
+                    <tr>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ticket ID</th>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Description</th>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                    <tr>
+                        <td><a href="{% url 'ticket_detail' ticket.id %}">#{{ ticket.id }}</a></td>
+                        <td>{{ ticket.description }}</td>
+                        <td>{{ ticket.status }}</td>
+                        <td>
+                            <a href="{% url 'edit_ticket' ticket.id %}" class="btn btn-primary btn-sm">Edit</a>
+                            <a href="{% url 'delete_ticket' ticket.id %}" class="btn btn-danger btn-sm">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
     {% endif %}
