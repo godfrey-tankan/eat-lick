@@ -243,8 +243,10 @@ def handle_help(wa_id, response, name):
                 save_messages(open_inquiries.id,None,support_member,response)
             except Exception as e:
                 print('error saving message')
-            if response in close_ticket_responses:
+            if response in resolve_ticket_responses:
                 return mark_as_resolved(open_inquiries.id)
+            if response in close_ticket_responses:
+                return mark_as_resolved(open_inquiries.id,True)
             data = get_text_message_input(open_inquiries.created_by.phone_number, response, None)
             return send_message(data)
         else:
