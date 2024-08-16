@@ -1,0 +1,40 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h6>Search Results for "{{ query }}"</h6>
+
+    {% if users %}
+    <div class="card mb-4">
+        <div class="card-header pb-0">
+            <h6>Users</h6>
+        </div>
+        <div class="card-body">
+            <ul>
+                {% for user in users %}
+                <li>{{ user.username }} ({{ user.email }})</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if tickets %}
+    <div class="card mb-4">
+        <div class="card-header pb-0">
+            <h6>Tickets</h6>
+        </div>
+        <div class="card-body">
+            <ul>
+                {% for ticket in tickets %}
+                <li>#{{ ticket.id }} - {{ ticket.description }} (Status: {{ ticket.status }})</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not users and not tickets %}
+    <p>No results found.</p>
+    {% endif %}
+</div>
+{% endblock content %}
