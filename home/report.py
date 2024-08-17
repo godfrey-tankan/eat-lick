@@ -473,12 +473,13 @@ def generate_branch_report(request):
 @csrf_exempt
 def generate_support_member_report(request):
     if request.method == 'GET':
-        return JsonResponse({'message':'GET request not allowed'}, status=405)
-    # Get start and end dates from the request or set default dates
+        return JsonResponse({'message': 'GET request not allowed'}, status=405)
+    
     data = json.loads(request.body)
     start_date = data.get('start_date', '2001-01-01')
     end_date = data.get('end_date', '2050-12-31')
     support_member_id = data.get('support_member')
+    
     try:
         start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
@@ -488,10 +489,12 @@ def generate_support_member_report(request):
 
     support_member = SupportMember.objects.get(id=support_member_id)
     tickets = Ticket.objects.filter(created_at__range=[start_date, end_date], assigned_to=support_member)
+    
     if tickets:
         branch_stats = tickets.values('branch_opened').annotate(
             tickets=Count('id')
         ).order_by('branch_opened')
+        
         ticket_counts = tickets.values('branch_opened').annotate(
             open_count=Count('id', filter=Q(status='open')),
             pending_count=Count('id', filter=Q(status='pending')),
@@ -502,7 +505,6 @@ def generate_support_member_report(request):
         branch_most_inquiries = branch_stats.first()
         total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
 
-
         resolved_tickets = tickets.filter(status='resolved')
         closed_tickets = tickets.filter(status='closed')
         pending_tickets = tickets.filter(status='pending')
@@ -511,7 +513,6 @@ def generate_support_member_report(request):
         total_closed = tickets.filter(status='closed').count()
         total_resolved = tickets.filter(status='resolved').count()
         total_pending = tickets.filter(status='pending').count()
-        
         
         total_resolved_count = resolved_tickets.count()
         total_closed_count = closed_tickets.count()
@@ -525,16 +526,19 @@ def generate_support_member_report(request):
                 total_time += ticket.resolved_at - ticket.created_at
                 resolved_ticket_count += 1
         
-
+        total_assigned = total_opened + total_pending + total_closed + total_resolved
+        resolved_percentage = (total_resolved / total_assigned * 100) if total_assigned > 0 else 0
+        closed_percentage = (total_closed / total_assigned * 100) if total_assigned > 0 else 0
+        
         report_data = [
             {
-            'member': support_member.username,
-            'resolved_count': total_resolved_count,
-            'pending_count': pending_tickets_count,
-            'closed_count': total_closed_count,
-            'total_time': total_time
-        }
-            ]
+                'member': support_member.username,
+                'resolved_count': total_resolved_count,
+                'pending_count': pending_tickets_count,
+                'closed_count': total_closed_count,
+                'total_time': total_time
+            }
+        ]
 
         context = {
             'support_member': support_member.username,
@@ -550,12 +554,11 @@ def generate_support_member_report(request):
             'report_data': report_data,
             'start_date': start_date,
             'end_date': end_date,
-            'total_opened': tickets.filter(status='open').count(),
-            'total_pending': tickets.filter(status='pending').count(),
-            'total_closed': tickets.filter(status='closed').count(),
-            'total_resolved': tickets.filter(status='resolved').count(),
+            'total_assigned': total_assigned,
+            'resolved_percentage': resolved_percentage,
+            'closed_percentage': closed_percentage
         }
-        
+
         html_string = render_to_string('reports/support_member_report.html', context)
         pdf_file = HTML(string=html_string).write_pdf()
 
@@ -572,15 +575,14 @@ def generate_support_member_report(request):
             'tickets': [],
             'ticket_counts': [],
             'branch_stats': [],
-            'branch_most_inquiries': [],
+            'branch_most_inquiries': None,
             'total_inquiries': 0,
             'report_data': [],
             'start_date': start_date,
             'end_date': end_date,
-            'total_opened': 0,
-            'total_pending': 0,
-            'total_closed': 0,
-            'total_resolved': 0,
+            'total_assigned': 0,
+            'resolved_percentage': 0,
+            'closed_percentage': 0
         }
         
         html_string = render_to_string('reports/support_member_report.html', context)

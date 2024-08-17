@@ -73,16 +73,18 @@
 <body>
     <h2>Report of <span style='color:blue;font-weight:bolder;'>{{support_member|upper}}</span> from ({{ start_date }} to {{ end_date }})</h2>
     <p>Branch Most Assigned: <strong>{{ branch_most_inquiries.branch_opened}} ({{ branch_most_inquiries.tickets }} inquiries)</strong></p>
-    <p>Inquiries: <strong>{{ total_inquiries }}</strong></p>
+    <p>Total Tickets Assigned: <strong>{{ total_inquiries }}</strong></p>
 
     <h2>Assigned Tickets Summary</h2>
     <table>
         <thead>
             <tr>
-                <th>Opened Tickets</th>
-                <th>Pending Tickets</th>
-                <th>Closed Tickets</th>
-                <th>Resolved Tickets</th>
+                <th>Opened </th>
+                <th>Pending</th>
+                <th>Closed</th>
+                <th>Resolved</th>
+                <th>(%)closed</th>
+                <th>(%)resolved</th>
             </tr>
         </thead>
         <tbody>
@@ -91,6 +93,8 @@
                 <td>{{ total_pending }}</td>
                 <td>{{ total_closed }}</td>
                 <td>{{ total_resolved }}</td>
+                <td>{{ resolved_percentage }}%</td>
+                <td>{{ resolved_percentage }}%</td>
             </tr>
         </tbody>
     </table>
