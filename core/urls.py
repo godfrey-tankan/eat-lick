@@ -43,6 +43,7 @@ urlpatterns = [
     path('search/', global_search, name='global_search'),
     path('escalate/<int:ticket_id>/', escalate_ticket, name='escalate_ticket'),
     path('send-message/<int:ticket_id>/', send_message, name='send_message'),
+    path('get/support-members/', support_member_suggestions, name='support_member_suggestions'),
 ]
 urlpatterns += [
     path('tickets/edit/<int:pk>/', TicketEditView.as_view(), name='ticket-edit'),

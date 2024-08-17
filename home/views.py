@@ -4,7 +4,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import *
-from .serializers import TicketSerializer, TicketLogSerializer, CommentSerializer, FAQSerializer
+from .serializers import *
 from django.shortcuts import render, get_object_or_404, redirect
 from .forms import *
 from django.views.generic import UpdateView
@@ -20,6 +20,7 @@ from django.db.models import ExpressionWrapper, F, DurationField
 from django.db.models.functions import Coalesce
 from .decorators import staff_required
 from django.db.models import Prefetch
+from rest_framework.decorators import api_view
 
 class TicketListCreateView(generics.ListCreateAPIView):
     queryset = Ticket.objects.all()
@@ -385,6 +386,12 @@ def ticket_detail_view(request, ticket_id):
         'escalated': escalation_log_exists
     }
     return render(request, 'tickets/ticket_detail.html', context)
+
+@api_view(['GET'])
+def support_member_suggestions(request):
+    members = SupportMember.objects.filter(is_active=True, is_deleted=False)
+    serializer = SupportMemberSerializer(members, many=True)
+    return Response(serializer.data)
 
 def ticket_create(request):
     if request.method == 'POST':
