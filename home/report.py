@@ -289,11 +289,26 @@ def generate_overall_report(request):
 
 def generate_branch_report(request):
     tickets = Ticket.objects.filter(branch_opened='harare')
-    
+    branch_stats = tickets.values('branch_opened').annotate(
+            tickets=Count('id')
+        ).order_by('branch_opened')
+    ticket_counts = tickets.values('branch_opened').annotate(
+        open_count=Count('id', filter=Q(status='open')),
+        pending_count=Count('id', filter=Q(status='pending')),
+        closed_count=Count('id', filter=Q(status='closed')),
+        resolved_count=Count('id', filter=Q(status='resolved'))
+    )
+
+    total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
+
     report_data = []
     for ticket in tickets:
         report_data.append({
             'title': ticket.title,
+            'branch': ticket.branch_opened,
+            'total_inquiries': total_inquiries,
+            ''
+            'ticket_counts': ticket_counts,
             'description': ticket.description,
             'created_by': ticket.created_by.username if ticket.created_by else 'N/A',
             'assigned_to': ticket.assigned_to.username if ticket.assigned_to else 'N/A',

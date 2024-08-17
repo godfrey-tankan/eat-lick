@@ -4,18 +4,24 @@
     <meta charset="UTF-8">
     <title>Branch Report</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 10px;
-            color: #333;
-            background-color: #f4f4f9;
-            position: relative;
-            padding-bottom: 10px;
+        @page {
+            size: A4;
+            margin: 5px;
         }
-        h1, h2 {
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            color: #333;
+            background-color:#f3f4f6;
+            box-sizing: border-box;
+        }
+        h1, h2, h3 {
             text-align: center;
             color: #000;
-            margin-bottom: 20px;
+            margin: 10px 0;
             font-weight: 300;
         }
         table {
@@ -23,15 +29,15 @@
             border-collapse: collapse;
             margin: 10px 0;
             background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
         th, td {
-            padding: 9px;
+            padding: 10px;
             text-align: left;
             border: 1px solid #ddd;
         }
         th {
-            background-color: #000;
+            background-color: #333;
             color: #fff;
             font-weight: 600;
         }
@@ -42,33 +48,52 @@
             background-color: #e1e1e1;
         }
         .statistics {
-            margin: 10px 0;
-            padding: 8px;
+            margin: 10px;
+            padding: 10px;
             background-color: #fff;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
         .statistics p {
-            font-size: 1.1em;
+            font-size: 1em;
             margin: 5px 0;
             color: #555;
         }
         .footer {
             position: absolute;
-            bottom: -15%;
+            bottom: 0;
             width: 100%;
             text-align: center;
-            color: #c2c2c2;
-            font-size: 1em;
+            color: #888;
+            font-size: 0.8em;
         }
     </style>
 </head>
 <body>
-    <h2>Branch Report ({{ start_date }} to {{ end_date }})</h2>
-    <div class="statistics">
-        <p>Branch: <strong>{{ branch }}</strong></p>
-    </div>
+    <h2>{{branch|upper}} Branch Report ({{ start_date }} to {{ end_date }})</h2>
+
+    <h2>{{branch|title}} Tickets Summary</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Opened Tickets</th>
+                <th>Pending Tickets</th>
+                <th>Closed Tickets</th>
+                <th>Resolved Tickets</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in ticket_counts %}
+            <tr>
+                <td>{{ ticket.open_count }}</td>
+                <td>{{ ticket.pending_count }}</td>
+                <td>{{ ticket.closed_count }}</td>
+                <td>{{ ticket.resolved_count }}</td>
+            
+            </tr>
+        </tbody>
+    </table>
 
     <h2>Tickets</h2>
     <table>
