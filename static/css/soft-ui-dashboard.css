@@ -588,6 +588,22 @@ fieldset {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.suggestions-container {
+  height: 100px;
+  overflow-y: auto; /* Makes the container scrollable */
+  border: 1px solid #ccc; /* Optional: to give a border to the container */
+  padding: 5px;
+}
+
+.suggestions-list option {
+  cursor: pointer;
+}
+
+
+
+
+
 /* CUSOM CSS END======================================================================================================================== */
 
 
