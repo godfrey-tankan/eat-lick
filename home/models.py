@@ -25,7 +25,7 @@ class SupportMember(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     username = models.CharField(max_length=255,null=True, blank=True,default='Support')
     phone_number = models.CharField(max_length=15, null=True, blank=True)
-    user_mode = models.CharField(max_length=20, null=True, blank=True)
+    user_mode = models.CharField(max_length=20, null=True, blank=True,default='Support')
     user_status = models.CharField(max_length=20, null=True, blank=True)
     branch = models.CharField(max_length=20, null=True, blank=True)
     is_active = models.BooleanField(default=True)

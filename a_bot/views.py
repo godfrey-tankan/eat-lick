@@ -36,6 +36,10 @@ def generate_response(response, wa_id, name,message_type,message_id):
         check_ticket = Ticket.objects.filter(created_by=inquirer.id,status=PENDING_MODE).first()
     else:
         check_ticket = None
+    if response.lower() in greeting_messages:
+        time_of_day = get_greeting()
+        name = inquirer.username.split()[0] if inquirer else name
+        return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     if support_member:
         if response.lower() in support_member_help_requests:
             return request_assistance_support_member(support_member.id)
@@ -53,10 +57,6 @@ def generate_response(response, wa_id, name,message_type,message_id):
 
         return 'hello! how can i help you today?'
 
-    if response.lower() in greeting_messages:
-        time_of_day = get_greeting()
-        name = inquirer.username.split()[0] if inquirer else name
-        return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
 
 
     if not support_member :
