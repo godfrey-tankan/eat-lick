@@ -689,47 +689,90 @@ $(document).ready(function() {
 });
 
 document.getElementById('report-form').addEventListener('submit', function(e) {
-    e.preventDefault(); // Prevent the default form submission behavior
-    const submitButton = document.getElementById('submit-button');
-    submitButton.disabled = true;
+  e.preventDefault(); // Prevent the default form submission behavior
+  const submitButton = document.getElementById('submit-button');
+  submitButton.disabled = true;
 
-    // Add loader
-    const loader = document.createElement('div');
-    loader.className = 'loader';
-    submitButton.appendChild(loader);
+  // Add loader
+  const loader = document.createElement('div');
+  loader.className = 'loader';
+  submitButton.appendChild(loader);
 
-    // Gather form data
-    const reportType = document.getElementById('report-type').value;
-    const startDate = document.getElementById('start-date').value;
-    const endDate = document.getElementById('end-date').value;
-    const supportMemberId = document.getElementById('support-member-suggestions').value;
-    const branchId = document.getElementById('branch-suggestions').value;
+  // Gather form data
+  const reportType = document.getElementById('report-type').value;
+  const startDate = document.getElementById('start-date').value;
+  const endDate = document.getElementById('end-date').value;
+  const supportMemberId = document.getElementById('support-member-suggestions').value;
+  const branchId = document.getElementById('branch-suggestions').value;
 
-    let reportUrl;
+  let reportUrl;
 
-    // Determine the correct URL based on the report type
-    if (reportType === 'support_member') {
-        reportUrl = `generate_support_member_report/?start_date=${startDate}&end_date=${endDate}&support_member=${supportMemberId}`;
-    } else if (reportType === 'branch') {
-        reportUrl = `generate_branch_report/?start_date=${startDate}&end_date=${endDate}&branch=${branchId}`;
-    } else if (reportType === 'weekly') {
-        reportUrl = `generate_weekly_report/?start_date=${startDate}&end_date=${endDate}`;
-    } else if (reportType === 'overall') {
-        reportUrl = `generate_overall_report/?start_date=${startDate}&end_date=${endDate}`;
-    } else if (reportType === 'monthly') {
-        reportUrl = `generate_monthly_report/?start_date=${startDate}&end_date=${endDate}`;
-    }
+  // Determine the correct URL based on the report type
+  if (reportType === 'support_member') {
+      reportUrl = '/generate_support_member_report/';
+  } else if (reportType === 'branch') {
+      reportUrl = '/generate_branch_report/';
+  } else if (reportType === 'weekly') {
+      reportUrl = '/generate_weekly_report/';
+  } else if (reportType === 'overall') {
+      reportUrl = '/generate_overall_report/';
+  } else if (reportType === 'monthly') {
+      reportUrl = '/generate_monthly_report/';
+  } else {
+      alert('Invalid report type selected!');
+      submitButton.disabled = false;
+      loader.remove();
+      return;
+  }
 
-    // Redirect to the report generation URL
-    submitButton.disabled = false;
-    loader.remove();
-    if (reportUrl) {
-        window.location.href = reportUrl;
-        console.log(reportUrl);
-    } else {
-        alert('Invalid report type selected!');
-    }
+  // Create the data object to send in the request body
+  const requestData = {
+      report_type: reportType,
+      start_date: startDate,
+      end_date: endDate,
+      support_member: supportMemberId,
+      branch: branchId
+  };
+
+  // Send the POST request to the server
+  fetch(reportUrl, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken') // Ensure you include the CSRF token
+      },
+      body: JSON.stringify(requestData)
+  })
+  .then(response => response.json())
+  .then(data => {
+      // Handle the response from the server
+      console.log('Report generated:', data);
+      // Redirect or display the report as needed
+  })
+  .catch(error => {
+      console.error('Error generating report:', error);
+  })
+  .finally(() => {
+      submitButton.disabled = false;
+      loader.remove();
+  });
 });
+
+// Function to get the CSRF token from cookies
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+          }
+      }
+  }
+  return cookieValue;
+}
   </script>
   {% comment %} <script>
     var ctx = document.getElementById("chart-bars").getContext("2d");
