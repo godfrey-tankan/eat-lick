@@ -127,6 +127,8 @@ def index(request):
         request_user_resolved_tickets_count = 0
         request_user_closed_tickets_count = 0
         request_user_pending_tickets_count = 0
+        request_user_tickets=None
+        request_user_support_member=None
     
 
     context = {
@@ -375,7 +377,6 @@ def ticket_detail(request, pk):
     return render(request, 'tickets/ticket_detail.html', {'ticket': ticket, 'form': form})
 
 def ticket_detail_view(request, ticket_id):
-    print('called automatically..................')
     ticket = get_object_or_404(Ticket, id=ticket_id)
     messages = Message.objects.filter(ticket_id=ticket_id).order_by('created_at')
     logs = TicketLog.objects.filter(ticket=ticket).order_by('timestamp')
