@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Overall Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            color: #333;
+            background-color: #f4f4f9;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #000;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 9px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #000;
+            color: #fff;
+            font-weight: 600;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tbody tr:hover {
+            background-color: #e1e1e1;
+        }
+        .statistics {
+            margin: 10px 0;
+            padding: 8px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .statistics p {
+            font-size: 1.1em;
+            margin: 5px 0;
+            color: #555;
+        }
+        .footer {
+            position: absolute;
+            bottom: -15%;
+            width: 100%;
+            text-align: center;
+            color: #c2c2c2;
+            font-size: 1em;
+        }
+    </style>
+</head>
+<body>
+    <h2>Overall Report ({{ start_date }} to {{ end_date }})</h2>
+    <div class="statistics">
+        <p>Total Tickets: <strong>{{ total_tickets }}</strong></p>
+        <p>Total Opened Tickets: <strong>{{ total_opened }}</strong></p>
+        <p>Total Pending Tickets: <strong>{{ total_pending }}</strong></p>
+        <p>Total Closed Tickets: <strong>{{ total_closed }}</strong></p>
+        <p>Total Resolved Tickets: <strong>{{ total_resolved }}</strong></p>
+    </div>
+
+    <h2>Ticket Details</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Created By</th>
+                <th>Assigned To</th>
+                <th>Branch</th>
+                <th>Created At</th>
+                <th>Resolved At</th>
+                <th>Closed At</th>
+                <th>Time to Resolve</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in report_data %}
+            <tr>
+                <td>{{ ticket.title }}</td>
+                <td>{{ ticket.status }}</td>
+                <td>{{ ticket.created_by }}</td>
+                <td>{{ ticket.assigned_to }}</td>
+                <td>{{ ticket.branch_opened }}</td>
+                <td>{{ ticket.created_at }}</td>
+                <td>{{ ticket.resolved_at }}</td>
+                <td>{{ ticket.closed_at }}</td>
+                <td>{{ ticket.time_to_resolve }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        &copy; 2024 ict support
+    </div>
+</body>
+</html>
