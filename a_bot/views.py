@@ -158,10 +158,63 @@ def process_whatsapp_message(body):
             # Resend the image back to the requester
             data = get_image_message_input(phone_number_id, image_data)
             send_message(data)
-    
+        elif message_type == "audio":
+                audio_id = message["audio"]["id"]
+                audio_data = download_media(audio_id, "audio")
+                data = get_audio_message_input(phone_number_id, audio_data)
+                send_message(data)
+        
+        elif message_type == "document":
+            document_id = message["document"]["id"]
+            document_filename = message["document"]["filename"]
+            document_data = download_media(document_id, "document")
+            data = get_document_message_input(phone_number_id, document_filename, document_data)
+            send_message(data)
+        
     except Exception as e:
         print(f"Error processing message: {e}")
         ...
+
+def download_media(media_id, media_type):
+    access_token = 'YOUR_ACCESS_TOKEN'
+    url = f"https://graph.facebook.com/v12.0/{media_id}"
+
+    params = {
+        'access_token': access_token
+    }
+
+    response = requests.get(url, params=params)
+    
+    if response.status_code == 200:
+        return response.content  # This is the media content
+    else:
+        print(f"Error downloading {media_type}: {response.status_code} - {response.text}")
+        return None
+
+def get_document_message_input(phone_number_id, document_filename, document_data):
+    data = {
+        "messaging_product": "whatsapp",
+        "to": phone_number_id,
+        "type": "document",
+        "document": {
+            "link": "https://github.com/godfrey-tankan/My_projects/raw/main/Agatha%20Agatha%20Christie%20-%20Cards%20on%20the%20Table_%20A%20Hercule%20Poirot%20Mystery.pdf",  # Host the document or find a way to re-upload it
+            "filename": document_filename,
+            "caption": f"Here is the document you sent: {document_filename}"
+        }
+    }
+    return data
+
+def get_audio_message_input(phone_number_id, audio_data):
+    data = {
+        "messaging_product": "whatsapp",
+        "to": phone_number_id,
+        "type": "audio",
+        "audio": {
+            "link": "https://path_to_your_audio_hosting_service",  # Host the audio or find a way to re-upload it
+            "caption": "Here is the audio you sent!"
+        }
+    }
+    return data
 
 def download_image(image_id):
     # Define your access token and the URL to download the image
