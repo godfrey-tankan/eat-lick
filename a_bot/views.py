@@ -23,7 +23,7 @@ def get_greeting():
     else:
         return "evening"
 
-def generate_response(response, wa_id, name):
+def generate_response(response, wa_id, name,message_type,message_id):
     try:
         support_member = SupportMember.objects.get(phone_number=wa_id[0])
     except SupportMember.DoesNotExist:
@@ -39,8 +39,11 @@ def generate_response(response, wa_id, name):
     if support_member:
         if response.lower() in support_member_help_requests:
             return request_assistance_support_member(support_member.id)
-        if support_member.user_status == SUPPORT_MEMBER_ASSISTING_MODE or support_member.user_status == SUPPORT_MEMBER_ASSISTANCE_MODE:
-            return assist_support_member(support_member.id,response)
+        if support_member.user_status in [
+            SUPPORT_MEMBER_ASSISTING_MODE,
+            SUPPORT_MEMBER_ASSISTANCE_MODE,
+        ]:
+            return assist_support_member(support_member.id,response,message_type,message_id)
 
         if support_member.user_mode == HELPING_MODE or check_ticket:
             return handle_help(wa_id, response, name)
@@ -130,8 +133,6 @@ def send_message(data,template=False):
 
 def process_whatsapp_message(body):
     data = body
-    print(data)
-    
     try:
         phone_number_id = [contact['wa_id'] for contact in data['entry'][0]['changes'][0]['value']['contacts']]
     except Exception as e:
@@ -141,29 +142,32 @@ def process_whatsapp_message(body):
         profile_name = data['entry'][0]['changes'][0]['value']['contacts'][0]['profile']['name']
     except Exception as e:
         profile_name = "User"
-    
-    try:
-        message = body["entry"][0]["changes"][0]["value"]["messages"][0]
-        message_type = message["type"]
 
-        if message_type == "text":
-            message_body = message["text"]["body"]
-            response = generate_response(message_body, phone_number_id, profile_name)
-            data = get_text_message_input(phone_number_id, response, None, False)
-            send_message(data)
-        
-        elif message_type == "image":
-            image_id = message["image"]["id"]
-            
-        elif message_type == "audio":
-            audio_id = message["audio"]["id"]
-        
-        elif message_type == "document":
-            document_id = message["document"]["id"]
-        
+    try:
+        process_message_file_type(
+            body, phone_number_id, profile_name
+        )
     except Exception as e:
         print(f"Error processing message: {e}")
         ...
+
+def process_message_file_type(body, phone_number_id, profile_name):
+    message = body["entry"][0]["changes"][0]["value"]["messages"][0]
+    message_type = message["type"]
+    message_id = None
+    if message_type == "audio":
+        message_id = message["audio"]["id"]
+
+    elif message_type == "document":
+        message_id = message["document"]["id"]
+
+    elif message_type == "image":
+        message_id = message["image"]["id"]
+
+    message_body = message["text"]["body"]
+    response = generate_response(message_body, phone_number_id, profile_name,message_type,message_id)
+    data = get_text_message_input(phone_number_id, response, None, False)
+    return send_message(data)
 
 def get_audio_message_input(phone_number_id, audio_id):
     return json.dumps(
@@ -399,7 +403,7 @@ def request_assistance_support_member(id):
     data = get_text_message_input(request_user.phone_number, support_users_interaction, None)
     return send_message(data)
 
-def assist_support_member(support_member_id, response):
+def assist_support_member(support_member_id, response,message_type,message_id):
     support_member = SupportMember.objects.filter(id=support_member_id).first()
     support_members = SupportMember.objects.all()
     if support_member.user_status == SUPPORT_MEMBER_ASSISTING_MODE:
