@@ -15,7 +15,7 @@
             padding: 0;
             font-family: Arial, sans-serif;
             color: #333;
-            background-color: #f4f4f9;
+            background-color: #f1f5f9;
             box-sizing: border-box;
         }
         h1, h2, h3 {
@@ -74,6 +74,29 @@
     <h2>Monthly Report ({{ start_date }} to {{ end_date }})</h2>
     <p>Branch with Most Inquiries: <strong>{{ branch_most_inquiries.branch_opened}} ({{ branch_most_inquiries.tickets }} inquiries)</strong></p>
     <p>Inquiries: <strong>{{ total_inquiries }}</strong></p>
+    
+    
+
+    <h2>Tickets Summary</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Opened Tickets</th>
+                <th>Pending Tickets</th>
+                <th>Closed Tickets</th>
+                <th>Resolved Tickets</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ total_opened }}</td>
+                <td>{{ total_pending }}</td>
+                <td>{{ total_closed }}</td>
+                <td>{{ total_resolved }}</td>
+            </tr>
+        </tbody>
+    </table>
+
     <h2>Branch Statistics</h2>
     <table>
         <thead>
@@ -97,15 +120,9 @@
             {% endfor %}
         </tbody>
     </table>
-    <div class="statistics">
-        <p>Total Tickets for the Month: <strong>{{ total_tickets }}</strong></p>
-        <p>Total Opened Tickets: <strong>{{ total_opened }}</strong></p>
-        <p>Total Pending Tickets: <strong>{{ total_pending }}</strong></p>
-        <p>Total Closed Tickets: <strong>{{ total_closed }}</strong></p>
-        <p>Total Resolved Tickets: <strong>{{ total_resolved }}</strong></p>
-    </div>
-
-    <h2>Support Member Statistics</h2>
+  
+    
+        <h2>Support Member Statistics</h2>
     <table>
         <thead>
             <tr>
