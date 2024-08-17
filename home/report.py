@@ -287,8 +287,8 @@ def generate_overall_report(request):
     response['Content-Disposition'] = 'attachment; filename="overall_report.pdf"'
     return response
 
-def generate_branch_report(request, branch_name):
-    tickets = Ticket.objects.filter(branch_opened=branch_name)
+def generate_branch_report(request):
+    tickets = Ticket.objects.filter(branch_opened='harare')
     
     report_data = []
     for ticket in tickets:
@@ -307,13 +307,13 @@ def generate_branch_report(request, branch_name):
             'time_to_resolve': ticket.get_time_to_resolve(),
         })
     
-    context = {'report_data': report_data, 'branch_name': branch_name}
+    context = {'report_data': report_data, 'branch_name': 'branch_name'}
     
     html_string = render_to_string('reports/branch_report.html', context)
     pdf_file = HTML(string=html_string).write_pdf()
 
     response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{branch_name}_report.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="{'branch_name'}_report.pdf"'
     return response
 
 def generate_support_member_report(request):
