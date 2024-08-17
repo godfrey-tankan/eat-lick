@@ -615,16 +615,52 @@
 document.getElementById('close-popup').addEventListener('click', function() {
     document.getElementById('report-popup').style.display = 'none';
 });
+
+//Support member searching on report....
 document.getElementById('report-type').addEventListener('change', function() {
   const selectedType = this.value;
   const searchSection = document.getElementById('support-member-search');
 
   if (selectedType === 'support_member') {
       searchSection.style.display = 'block';
+      fetchSuggestions(); // Start fetching suggestions
   } else {
       searchSection.style.display = 'none';
+      stopFetchingSuggestions(); // Stop fetching suggestions
   }
 });
+
+let fetchInterval;
+
+function fetchSuggestions() {
+  fetch('/get/support-members/')
+      .then(response => response.json())
+      .then(data => {
+          const suggestionsList = document.getElementById('support-member-suggestions');
+          suggestionsList.innerHTML = ''; // Clear existing suggestions
+
+          data.forEach(member => {
+              const li = document.createElement('li');
+              li.textContent = member.username;
+              li.onclick = () => {
+                  document.getElementById('support-member').value = member.username;
+                  suggestionsList.innerHTML = ''; // Clear suggestions
+              };
+              suggestionsList.appendChild(li);
+          });
+      })
+      .catch(error => console.error('Error fetching support members:', error));
+  
+  // Fetch every second
+  fetchInterval = setInterval(fetchSuggestions, 3000);
+}
+
+function stopFetchingSuggestions() {
+  clearInterval(fetchInterval);
+  document.getElementById('support-member-suggestions').innerHTML = ''; // Clear suggestions
+}
+
+
 $(document).ready(function() {
   $('#support-member').select2({
       placeholder: 'Type to search...',
