@@ -136,3 +136,10 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message #{self.content[:20]}"
+
+class Branch(models.Model):
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=20)
+
+    def __str__(self):
+        return f"Branch: {self.name}"
