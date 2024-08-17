@@ -54,7 +54,7 @@ urlpatterns += [
     path('tickets/delete/<int:pk>/', TicketDeleteView.as_view(), name='ticket-delete'),
     path('ticket/<int:ticket_id>/', ticket_detail_view, name='ticket_detail'),
     path('ticket/<int:ticket_id>/fetch-messages/', fetch_messages, name='fetch_messages'),
-    path('seng-img/', forward_message, name='forward_message'),
+    path('send-img/', forward_message, name='forward_message'),
 
     path('comments/', CommentListCreateView.as_view(), name='comment-list-create'),
     path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),

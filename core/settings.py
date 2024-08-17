@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
+    'cloudinary_storage',
+    'cloudinary',
     "home",
     "a_bot",
     "rest_framework",
@@ -153,8 +154,22 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = 'media/'
+if DEBUG:
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+else:
+    MEDIA_ROOT = BASE_DIR / 'media' 
+    
+
+# cloudinary_storage.storage.MediaCloudinaryStorage
+# cloudinary_storage.storage.RawMediaCloudinaryStorage 
+# cloudinary_storage.storage.VideoMediaCloudinaryStorage
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUD_NAME'),
+    'API_KEY': os.getenv('CLOUD_API_KEY'),
+    'API_SECRET': os.getenv('CLOUD_API_SECRET'),
+}
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/

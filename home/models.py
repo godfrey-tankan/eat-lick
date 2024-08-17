@@ -124,9 +124,15 @@ class FAQ(models.Model):
 class Message(models.Model):
     inquirer = models.ForeignKey(Inquirer, related_name='messages', on_delete=models.DO_NOTHING, null=True, blank=True)
     support_member = models.ForeignKey(SupportMember, related_name='messages', on_delete=models.DO_NOTHING, null=True, blank=True)
+    image_message = models.ImageField(upload_to='images/', null=True, blank=True)
+    image_name = models.CharField(max_length=255, null=True, blank=True)
+    audio_message = models.FileField(upload_to='audio/', null=True, blank=True)
+    audio_name = models.CharField(max_length=255, null=True, blank=True)
+    document_message = models.FileField(upload_to='documents/', null=True, blank=True)
+    document_name = models.CharField(max_length=255, null=True, blank=True)
     ticket_id = models.ForeignKey(Ticket, related_name='messages', on_delete=models.DO_NOTHING, null=True, blank=True)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Message #{self.id}"
+        return f"Message #{self.content[:20]}"

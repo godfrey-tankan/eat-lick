@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from home.models import *
 from .responses import *
+from django.core.files.base import ContentFile
 from django.utils import timezone
 
 def get_greeting():
@@ -153,61 +154,18 @@ def process_whatsapp_message(body):
         
         elif message_type == "image":
             image_id = message["image"]["id"]
-            # Download the image using its ID
-            image_data = download_image(image_id)
-            # Resend the image back to the requester
-            data = get_image_message_input(phone_number_id, image_data)
-            return send_message(data)
+            
         elif message_type == "audio":
-            # audio_id = message["audio"]["id"]
-            # audio_data = download_media(audio_id, "audio")
-            # data = get_audio_message_input(phone_number_id, audio_data)
-            data = get_text_message_input(phone_number_id, "I am sorry, I cannot process audio messages at the moment.", None)
-            return send_message(data)
+            audio_id = message["audio"]["id"]
         
         elif message_type == "document":
             document_id = message["document"]["id"]
-            document_filename = message["document"]["filename"]
-            # document_data = download_media(document_id, "document")
-            data = get_document_message_input(phone_number_id, document_filename, None)
-            return send_message(data)
         
     except Exception as e:
         print(f"Error processing message: {e}")
         ...
 
-def download_media(media_id, media_type):
-    access_token = 'YOUR_ACCESS_TOKEN'
-    url = f"https://graph.facebook.com/v12.0/{media_id}"
-
-    params = {
-        'access_token': access_token
-    }
-
-    response = requests.get(url, params=params)
-    
-    if response.status_code == 200:
-        return response.content  # This is the media content
-    else:
-        print(f"Error downloading {media_type}: {response.status_code} - {response.text}")
-        return None
-
-def get_document_message_input(phone_number_id, document_filename, document_data):
-    return json.dumps(
-        {
-            "messaging_product": "whatsapp",
-            "recipient_type": "individual",
-            "to": phone_number_id,
-            "type": "document",
-            "document": {
-                "link": "https://github.com/godfrey-tankan/My_projects/raw/main/Agatha%20Agatha%20Christie%20-%20Cards%20on%20the%20Table_%20A%20Hercule%20Poirot%20Mystery.pdf",  # Host the document or find a way to re-upload it
-                "filename": document_filename,
-                "caption": f"Here is the document you sent: {document_filename}"
-            },
-        }
-    )
-
-def get_audio_message_input(phone_number_id, audio_data):
+def get_audio_message_input(phone_number_id, audio_id):
     return json.dumps(
         {
             "messaging_product": "whatsapp",
@@ -215,43 +173,13 @@ def get_audio_message_input(phone_number_id, audio_data):
             "to": phone_number_id,
             "type": "audio",
             "audio": {
-                "link": "https://path_to_your_audio_hosting_service",  # Host the audio or find a way to re-upload it
-                "caption": "Here is the audio you sent!"
+                'id':f'{audio_id}',
+                "caption": "New audio message"
             },
         }
     )
 
-def download_image(image_id):
-    # Define your access token and the URL to download the image
-    access_token = settings.ACCESS_TOKEN
-    url = f"https://graph.facebook.com/v12.0/{image_id}"
 
-    params = {
-        'access_token': access_token
-    }
-
-    response = requests.get(url, params=params)
-    
-    if response.status_code == 200:
-        return response.content  # This is the image content
-    else:
-        print(f"Error downloading image: {response.status_code} - {response.text}")
-        return None
-
-def get_image_message_input(phone_number_id, image_data):
-    # Create the message payload to send the image back to the user
-    return json.dumps(
-        {
-            "messaging_product": "whatsapp",
-            "recipient_type": "individual",
-            "to": phone_number_id,
-            "type": "image",
-            "image": {
-                "link": "https://clava.co.zw/assets/images/ai.png",  # Host the image or find a way to re-upload it
-                "caption": "Here is the image you sent!"
-            },
-        }
-    )
 
 def send_message_template(recepient):
     return json.dumps(
@@ -491,24 +419,23 @@ def assist_support_member(support_member_id, response):
                 return send_message(data)
         broadcast_messages(None,None,response,support_member.phone_number)
     
-def send_image_message(recipient, image_url):
+def get_image_message(recipient, image_id):
     return json.dumps(
         {
             "messaging_product": "whatsapp",
             "recipient_type": "individual",
-            "to": '263779586059',
+            "to": recipient,
             "type": "image",
             "image": {
-                "link": 'https://clava.co.zw/assets/images/ai.png',
+                # "link": f'{image_name}',
+                'id':f'{image_id}'
             },
         }
     )
 def forward_message(request):
     print('forwarding message.........>>>>>>')
-    # data = send_image_message('263779586059','https://clava.co.zw/assets/images/ai.png')
-    data = get_text_message_input('263779586059','https://clava.co.zw/assets/images/ai.png',None)
-    return send_message(data)
-def send_document_message(recipient, document_url):
+    
+def get_document_message(recipient, document_id, caption=None):
     return json.dumps(
         {
             "messaging_product": "whatsapp",
@@ -516,8 +443,8 @@ def send_document_message(recipient, document_url):
             "to": recipient,
             "type": "document",
             "document": {
-                "link": document_url,
-                "filename": "example.pdf",
+                "id": document_id,
+                "filename": f"{caption}",
             },
         }
     )
