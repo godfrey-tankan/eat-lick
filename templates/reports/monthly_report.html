@@ -66,6 +66,31 @@
 </head>
 <body>
     <h2>Monthly Report ({{ start_date }} to {{ end_date }})</h2>
+    <p>Branch with Most Inquiries: <strong>{{ branch_most_inquiries.branch_opened}} ({{ branch_most_inquiries.tickets }} inquiries)</strong></p>
+    <p>Inquiries: <strong>{{ total_inquiries }}</strong></p>
+    <h2>Branch Statistics</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Branch</th>
+                <th>Opened Tickets</th>
+                <th>Pending Tickets</th>
+                <th>Closed Tickets</th>
+                <th>Resolved Tickets</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for branch in ticket_counts %}
+            <tr>
+                <td>{{ branch.branch_opened }}</td>
+                <td>{{ branch.open_count }}</td>
+                <td>{{ branch.pending_count }}</td>
+                <td>{{ branch.closed_count }}</td>
+                <td>{{ branch.resolved_count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     <div class="statistics">
         <p>Total Tickets for the Month: <strong>{{ total_tickets }}</strong></p>
         <p>Total Opened Tickets: <strong>{{ total_opened }}</strong></p>

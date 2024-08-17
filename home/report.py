@@ -5,6 +5,7 @@ from datetime import timedelta,datetime
 from django.utils.timezone import now
 from .models import Ticket, SupportMember, Inquirer
 from django.db.models import Count, Q
+from .helpers import get_current_month_dates
 
 def generate_weekly_report(request):
     today = now().date()
@@ -97,17 +98,22 @@ def generate_weekly_report(request):
 
 def generate_monthly_report(request):
     # Get start and end dates from the request or set default dates
-    start_date = request.GET.get('start_date', '2001-01-01')
-    end_date = request.GET.get('end_date', '2050-12-31')
-    try:
-        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-    except ValueError:
-        start_date = datetime(2001, 1, 1).date()
-        end_date = datetime(2050, 12, 31).date()
+    start_date, end_date = get_current_month_dates()
 
     tickets = Ticket.objects.filter(created_at__range=[start_date, end_date])
     support_members = SupportMember.objects.all()
+    branch_stats = tickets.values('branch_opened').annotate(
+        tickets=Count('id')
+    ).order_by('branch_opened')
+    ticket_counts = tickets.values('branch_opened').annotate(
+        open_count=Count('id', filter=Q(status='open')),
+        pending_count=Count('id', filter=Q(status='pending')),
+        closed_count=Count('id', filter=Q(status='closed')),
+        resolved_count=Count('id', filter=Q(status='resolved'))
+    )
+
+    branch_most_inquiries = branch_stats.first()
+    total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
 
     report_data = []
 
@@ -159,6 +165,10 @@ def generate_monthly_report(request):
         })
 
     context = {
+        'branch_stats': branch_stats,
+        'ticket_counts': ticket_counts,
+        'branch_most_inquiries': branch_most_inquiries,
+        'total_inquiries': total_inquiries,
         'report_data': report_data,
         'start_date': start_date,
         'end_date': end_date,
