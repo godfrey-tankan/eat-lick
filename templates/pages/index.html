@@ -141,12 +141,12 @@
   
                   <div class="report-form-group">
                       <label for="start-date">Start Date:</label>
-                      <input type="date" id="start-date" class="report-datetime-picker" name="start_date" required>
+                      <input type="date" id="start-date" class="report-datetime-picker" name="start_date">
                   </div>
   
                   <div class="report-form-group">
                       <label for="end-date">End Date:</label>
-                      <input type="date" id="end-date" class="report-datetime-picker" name="end_date" required>
+                      <input type="date" id="end-date" class="report-datetime-picker" name="end_date">
                   </div>
   
                   <button id="submit-button" type="submit" class="btn btn-primary">Generate</button>
@@ -726,18 +726,15 @@ document.getElementById('report-form').addEventListener('submit', function(e) {
       reportUrl = `/generate_monthly_report/?start_date=${startDate}&end_date=${endDate}`;
   }
 
+  console.log('this is the report url', reportUrl,'reportType',reportType);
   // Redirect to the report generation URL
-  setTimeout(function() {
-      submitButton.disabled = false;
-      loader.remove();
-      document.getElementById('report-popup').style.display = 'none';
-
-      if (reportUrl) {
-          window.location.href = reportUrl;
-      } else {
-          alert('Invalid report type selected!');
-      }
-  }, 3000); // Simulated delay
+  submitButton.disabled = false;
+  loader.remove();
+  if (reportUrl) {
+      window.location.href = reportUrl;
+  } else {
+      alert('Invalid report type selected!');
+  }
 });
   </script>
   {% comment %} <script>
