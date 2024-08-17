@@ -599,7 +599,7 @@
 
   {% comment %} REPORT JS START {% endcomment %}
   document.getElementById('generate-report-button').addEventListener('click', function() {
-    document.getElementById('report-popup').style.display = 'flex';
+    document.getElementById('report-popup').style.display = 'block';
 });
 
 document.getElementById('close-popup').addEventListener('click', function() {
@@ -624,7 +624,6 @@ document.getElementById('report-form').addEventListener('submit', function(e) {
         alert('Report generated!');
     }, 3000); // Simulated delay
 });
-
   </script>
   {% comment %} <script>
     var ctx = document.getElementById("chart-bars").getContext("2d");
