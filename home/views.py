@@ -103,7 +103,7 @@ def index(request):
 # )
 
     escalated_subquery = TicketLog.objects.filter(
-        ticket_id=OuterRef('pk'),
+        ticket=OuterRef('pk'),
         changed_by__icontains='escalated'
     ).values('id')
 

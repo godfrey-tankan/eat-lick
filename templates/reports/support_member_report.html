@@ -103,26 +103,29 @@
     <table>
         <thead>
             <tr>
-                <th>Title</th>
+                <th>Messages</th>
                 <th>Status</th>
                 <th>Created By</th>
                 <th>Branch</th>
                 <th>Created At</th>
                 <th>Resolved At</th>
-                <th>Closed At</th>
                 <th>Time to Resolve</th>
             </tr>
         </thead>
         <tbody>
             {% for ticket in tickets %}
             <tr>
-                <td>{{ ticket.title }}</td>
-                <td>{{ ticket.status }}</td>
+                <td><span class="text-xs " ><span class='ticket-messages'>{{ticket.message_count}}</span> messages</span></td>
+                <td>{{ ticket.status }}
+                    {% if ticket.is_escalated %}
+                        <span class='escaleted-ticket' style='color:green;'>
+                            escalated</span>
+                    {% endif %}
+                </td>
                 <td>{{ ticket.created_by.username }}</td>
                 <td>{{ ticket.branch_opened }}</td>
                 <td>{{ ticket.created_at }}</td>
                 <td>{{ ticket.resolved_at }}</td>
-                <td>{{ ticket.closed_at }}</td>
                 <td>{{ ticket.get_time_to_resolve }}</td>
             </tr>
             {% endfor %}

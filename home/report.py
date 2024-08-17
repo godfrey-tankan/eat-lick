@@ -3,8 +3,8 @@ from django.template.loader import render_to_string
 from weasyprint import HTML
 from datetime import timedelta,datetime
 from django.utils.timezone import now
-from .models import Ticket, SupportMember, Inquirer, Branch
-from django.db.models import Count, Q
+from .models import Ticket, SupportMember, Inquirer, Branch, TicketLog
+from django.db.models import Count, Q,OuterRef,Exists
 from .helpers import get_current_month_dates
 import json
 from django.http import JsonResponse
@@ -488,20 +488,30 @@ def generate_support_member_report(request):
         end_date = datetime(2050, 12, 31).date()
 
     support_member = SupportMember.objects.get(id=support_member_id)
-    tickets = Ticket.objects.filter(created_at__range=[start_date, end_date], assigned_to=support_member)
+    escalated_subquery = TicketLog.objects.filter(
+        ticket=OuterRef('pk'),
+        changed_by__icontains='escalated'
+    ).values('id')
+    tickets = Ticket.objects.filter(created_at__range=[start_date, end_date], assigned_to=support_member).annotate(
+        message_count=Count('messages'),
+            is_escalated=Exists(escalated_subquery)
+    )
     
     if tickets:
         branch_stats = tickets.values('branch_opened').annotate(
             tickets=Count('id')
         ).order_by('branch_opened')
         
+        
         ticket_counts = tickets.values('branch_opened').annotate(
             open_count=Count('id', filter=Q(status='open')),
             pending_count=Count('id', filter=Q(status='pending')),
             closed_count=Count('id', filter=Q(status='closed')),
-            resolved_count=Count('id', filter=Q(status='resolved'))
+            resolved_count=Count('id', filter=Q(status='resolved')),
+            message_count=Count('messages'),
+            is_escalated=Exists(escalated_subquery)
         )
-
+    
         branch_most_inquiries = branch_stats.first()
         total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
 
