@@ -689,9 +689,9 @@ $(document).ready(function() {
 });
 
 
-
 document.getElementById('report-form').addEventListener('submit', function(e) {
   e.preventDefault(); // Prevent the default form submission behavior
+
   const submitButton = document.getElementById('submit-button');
   submitButton.disabled = true;
 
@@ -701,15 +701,12 @@ document.getElementById('report-form').addEventListener('submit', function(e) {
   submitButton.appendChild(loader);
 
   // Gather form data
-  const reportType = document.getElementById('report-type').value;
-  const startDate = document.getElementById('start-date').value;
-  const endDate = document.getElementById('end-date').value;
-  const supportMemberId = document.getElementById('support-member-suggestions').value;
-  const branchId = document.getElementById('branch-suggestions').value;
+  const formData = new FormData(this);
 
   let reportUrl;
 
   // Determine the correct URL based on the report type
+  const reportType = formData.get('report_type');
   if (reportType === 'support_member') {
       reportUrl = '/generate_support_member_report/';
   } else if (reportType === 'branch') {
@@ -727,23 +724,13 @@ document.getElementById('report-form').addEventListener('submit', function(e) {
       return;
   }
 
-  // Create the data object to send in the request body
-  const requestData = {
-      report_type: reportType,
-      start_date: startDate,
-      end_date: endDate,
-      support_member: supportMemberId,
-      branch: branchId
-  };
-
-  // Send the POST request to the server
+  // Send the POST request to the server with form data
   fetch(reportUrl, {
       method: 'POST',
       headers: {
-          'Content-Type': 'application/json',
           'X-CSRFToken': getCookie('csrftoken') // Ensure you include the CSRF token
       },
-      body: JSON.stringify(requestData)
+      body: formData // Send the form data directly
   })
   .then(response => {
       if (response.ok) {
@@ -773,7 +760,7 @@ function getCookie(name) {
       const cookies = document.cookie.split(';');
       for (let i = 0; i < cookies.length; i++) {
           const cookie = cookies[i].trim();
-          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          if (cookie.startsWith(name + '=')) {
               cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
               break;
           }

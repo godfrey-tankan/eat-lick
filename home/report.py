@@ -7,9 +7,16 @@ from .models import Ticket, SupportMember, Inquirer, Branch
 from django.db.models import Count, Q
 from .helpers import get_current_month_dates
 import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
+
+@csrf_exempt
 def generate_weekly_report(request):
-    print('weekly report requested........')
+    if request.method == 'GET':
+        print('weekly GET report requested........')
+        return JsonResponse({'message':'GET request not allowed'}, status=405)
+    print('weekly POST report requested........')
     today = now().date()
     start_date = today - timedelta(days=today.weekday() + 7)
     end_date = start_date + timedelta(days=6)
@@ -98,8 +105,12 @@ def generate_weekly_report(request):
     response['Content-Disposition'] = 'attachment; filename="weekly_report.pdf"'
     return response
 
+@csrf_exempt
 def generate_monthly_report(request):
-    print('monthly report requested........')
+    if request.method == 'GET':
+        print('MOnthly GET report requested........')
+        return JsonResponse({'message':'GET request not allowed'}, status=405)
+    print('monthly POST report requested........')
     data = json.loads(request.body)
     start_date = data.get('start_date',datetime.now().date())
     # Get start and end dates from the request or set default dates
@@ -195,7 +206,11 @@ def generate_monthly_report(request):
     response['Content-Disposition'] = 'attachment; filename="monthly_report.pdf"'
     return response
 
+@csrf_exempt
 def generate_overall_report(request):
+    if request.method == 'GET':
+        print('Overall GET report requested........')
+        return JsonResponse({'message':'GET request not allowed'}, status=405)
     print('overall report requested........')
     today = now().date()
     data = json.loads(request.body)
@@ -298,8 +313,11 @@ def generate_overall_report(request):
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="overall_report.pdf"'
     return response
-
+@csrf_exempt
 def generate_branch_report(request):
+    if request.method == 'GET':
+        print('Branch GET report requested........')
+        return JsonResponse({'message':'GET request not allowed'}, status=405)
     print('branch reported requested........')
     data = json.loads(request.body)
     start_date = data.get('start_date', '2001-01-01')
@@ -361,7 +379,11 @@ def generate_branch_report(request):
     response['Content-Disposition'] = f'attachment; filename="{'branch_name'}_report.pdf"'
     return response
 
+@csrf_exempt
 def generate_support_member_report(request):
+    if request.method == 'GET':
+        print('SPM GET report requested........')
+        return JsonResponse({'message':'GET request not allowed'}, status=405)
     print('support member report requested........')
     # Get start and end dates from the request or set default dates
     data = json.loads(request.body)
@@ -378,7 +400,6 @@ def generate_support_member_report(request):
     support_member = SupportMember.objects.get(id=support_member_id)
     tickets = Ticket.objects.filter(created_at__range=[start_date, end_date], assigned_to=support_member)
 
-    report_data = []
     branch_stats = tickets.values('branch_opened').annotate(
         tickets=Count('id')
     ).order_by('branch_opened')
@@ -416,13 +437,15 @@ def generate_support_member_report(request):
             resolved_ticket_count += 1
     
 
-    report_data.append({
+    report_data = [
+        {
         'member': support_member.username,
         'resolved_count': total_resolved_count,
         'pending_count': pending_tickets_count,
         'closed_count': total_closed_count,
         'total_time': total_time
-    })
+    }
+        ]
 
     context = {
         'support_member': support_member.username,
