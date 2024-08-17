@@ -636,105 +636,99 @@ document.getElementById('close-popup').addEventListener('click', function() {
     document.getElementById('report-popup').style.display = 'none';
 });
 
-//Support member searching on report....
+// Support member searching on report
 document.getElementById('report-type').addEventListener('change', function(e) {
-  const selectedType = this.value;
-  const searchSection = document.getElementById('support-member-search');
-  const branchSearch = document.getElementById('branch-search');
-  const supportMemberSearch = document.getElementById('support-member-search');
+    const selectedType = this.value;
+    const searchSection = document.getElementById('support-member-search');
+    const branchSearch = document.getElementById('branch-search');
 
-
-
-  if (selectedType === 'support_member') {
-      searchSection.style.display = 'block';
-      branchSearch.style.display = 'none';
-  } else if (selectedType === 'branch') {
-    branchSearch.style.display = 'block';
-    supportMemberSearch.style.display = 'none';
-  }
-  else {
-      searchSection.style.display = 'none';
-    supportMemberSearch.style.display = 'none';
-  }
+    if (selectedType === 'support_member') {
+        searchSection.style.display = 'block';
+        branchSearch.style.display = 'none';
+    } else if (selectedType === 'branch') {
+        branchSearch.style.display = 'block';
+        searchSection.style.display = 'none';
+    } else {
+        searchSection.style.display = 'none';
+        branchSearch.style.display = 'none';
+    }
 });
 
 document.getElementById('support-member').addEventListener('input', function() {
-  const input = this.value.toLowerCase();
-  const suggestions = document.querySelectorAll('#support-member-suggestions option');
+    const input = this.value.toLowerCase();
+    const suggestions = document.querySelectorAll('#support-member-suggestions option');
 
-  suggestions.forEach(option => {
-      const text = option.value.toLowerCase();
-      if (text.includes(input)) {
-          option.style.display = ''; // Show option if it matches the input
-      } else {
-          option.style.display = 'none'; // Hide option if it doesn't match the input
-      }
-  });
+    suggestions.forEach(option => {
+        const text = option.textContent.toLowerCase();
+        if (text.includes(input)) {
+            option.style.display = ''; // Show option if it matches the input
+        } else {
+            option.style.display = 'none'; // Hide option if it doesn't match the input
+        }
+    });
 });
 
 document.getElementById('support-member-suggestions').addEventListener('click', function(event) {
-  const selectedOption = event.target;
-  if (selectedOption.tagName.toLowerCase() === 'option') {
-      document.getElementById('support-member').value = selectedOption.value;
-  }
+    const selectedOption = event.target;
+    if (selectedOption.tagName.toLowerCase() === 'option') {
+        document.getElementById('support-member').value = selectedOption.textContent;
+    }
 });
 
 document.getElementById('branch-suggestions').addEventListener('click', function(event) {
-  const selectedOption = event.target;
-  if (selectedOption.tagName.toLowerCase() === 'option') {
-      document.getElementById('branch').value = selectedOption.value;
-  }
+    const selectedOption = event.target;
+    if (selectedOption.tagName.toLowerCase() === 'option') {
+        document.getElementById('branch').value = selectedOption.textContent;
+    }
 });
 
 $(document).ready(function() {
-  $('#support-member').select2({
-      placeholder: 'Type to search...',
-      // Data source or options can be loaded here
-  });
+    $('#support-member').select2({
+        placeholder: 'Type to search...',
+    });
 });
 
 document.getElementById('report-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const submitButton = document.getElementById('submit-button');
-  submitButton.disabled = true;
+    e.preventDefault(); // Prevent the default form submission behavior
+    const submitButton = document.getElementById('submit-button');
+    submitButton.disabled = true;
 
-  // Add loader
-  const loader = document.createElement('div');
-  loader.className = 'loader';
-  submitButton.appendChild(loader);
+    // Add loader
+    const loader = document.createElement('div');
+    loader.className = 'loader';
+    submitButton.appendChild(loader);
 
-  // Gather form data
-  const reportType = document.getElementById('report-type').value;
-  const startDate = document.getElementById('start-date').value;
-  const endDate = document.getElementById('end-date').value;
-  const supportMemberId = document.getElementById('support-member-suggestions').value;
-  const branchId = document.getElementById('branch-suggestions').value;
+    // Gather form data
+    const reportType = document.getElementById('report-type').value;
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    const supportMemberId = document.getElementById('support-member-suggestions').value;
+    const branchId = document.getElementById('branch-suggestions').value;
 
-  let reportUrl;
+    let reportUrl;
 
-  // Determine the correct URL based on the report type
-  if (reportType === 'support_member') {
-      reportUrl = `/generate_support_member_report/?start_date=${startDate}&end_date=${endDate}&support_member=${supportMemberId}`;
-  } else if (reportType === 'branch') {
-      reportUrl = `/generate_branch_report/?start_date=${startDate}&end_date=${endDate}&branch=${branchId}`;
-  } else if (reportType === 'weekly') {
-      reportUrl = `/generate_weekly_report/?start_date=${startDate}&end_date=${endDate}`;
-  } else if (reportType === 'overall') {
-      reportUrl = `/generate_overall_report/?start_date=${startDate}&end_date=${endDate}`;
+    // Determine the correct URL based on the report type
+    if (reportType === 'support_member') {
+        reportUrl = `generate_support_member_report/?start_date=${startDate}&end_date=${endDate}&support_member=${supportMemberId}`;
+    } else if (reportType === 'branch') {
+        reportUrl = `generate_branch_report/?start_date=${startDate}&end_date=${endDate}&branch=${branchId}`;
+    } else if (reportType === 'weekly') {
+        reportUrl = `generate_weekly_report/?start_date=${startDate}&end_date=${endDate}`;
+    } else if (reportType === 'overall') {
+        reportUrl = `generate_overall_report/?start_date=${startDate}&end_date=${endDate}`;
+    } else if (reportType === 'monthly') {
+        reportUrl = `generate_monthly_report/?start_date=${startDate}&end_date=${endDate}`;
+    }
 
-  }else if (reportType === 'monthly') {
-      reportUrl = `/generate_monthly_report/?start_date=${startDate}&end_date=${endDate}`;
-  }
-
-  console.log('this is the report url', reportUrl,'reportType',reportType);
-  // Redirect to the report generation URL
-  submitButton.disabled = false;
-  loader.remove();
-  if (reportUrl) {
-      window.location.href = reportUrl;
-  } else {
-      alert('Invalid report type selected!');
-  }
+    // Redirect to the report generation URL
+    submitButton.disabled = false;
+    loader.remove();
+    if (reportUrl) {
+        window.location.href = reportUrl;
+        console.log(reportUrl);
+    } else {
+        alert('Invalid report type selected!');
+    }
 });
   </script>
   {% comment %} <script>
