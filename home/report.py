@@ -552,8 +552,8 @@ def generate_support_member_report(request):
             'branch_most_inquiries': branch_most_inquiries,
             'total_inquiries': total_inquiries,
             'report_data': report_data,
-            'start_date': start_date,
-            'end_date': end_date,
+            'start_date': None if '2001' in str(start_date) else start_date,
+            'end_date': None if '2050' in str(end_date) else end_date,
             'total_assigned': total_assigned,
             'resolved_percentage': round(resolved_percentage,2),
             'closed_percentage': round(closed_percentage,2)
