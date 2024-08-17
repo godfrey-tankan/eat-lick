@@ -598,6 +598,9 @@ fieldset {
 
 .suggestions-list option {
   cursor: pointer;
+  padding: 20px;
+  color: #333;
+  margin-bottom: 10px;
 }
 
 
