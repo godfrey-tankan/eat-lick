@@ -141,6 +141,7 @@ def index(request):
         "resolved_tickets_percentage": calculate_percentage(resolved_tickets_count),
         "active_support_members": active_support_members or 0,
         'tickets': tickets,
+        'support_members': SupportMember.objects.all(),
         'request_user_tickets_count': request_user_tickets_count,
         'request_user_open_tickets_count': request_user_open_tickets_count,
         'request_user_resolved_tickets_count': request_user_resolved_tickets_count,

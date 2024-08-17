@@ -116,7 +116,13 @@
                   <div id="support-member-search" class="report-form-group" style="display: none;">
                     <label for="support-member">Search Support Member:</label>
                     <input type="text" id="support-member" class="report-search-input" placeholder="Type to search...">
-                    <ul id="support-member-suggestions" class="suggestions-list"></ul> <!-- List for suggestions -->
+                    <ul id="support-member-suggestions" class="suggestions-list">
+                      {% if support_members%}
+                        {% for member in support_members %}
+                          <li>{{ member.username }}  {{member.phone_number}}</li>
+                        {% endfor %}
+                      {% endif %}
+                    </ul> <!-- List for suggestions -->
                 </div>
       
                   <div class="report-form-group">
@@ -617,16 +623,14 @@ document.getElementById('close-popup').addEventListener('click', function() {
 });
 
 //Support member searching on report....
-document.getElementById('report-type').addEventListener('change', function() {
+document.getElementById('report-type').addEventListener('change', function(e) {
   const selectedType = this.value;
   const searchSection = document.getElementById('support-member-search');
 
   if (selectedType === 'support_member') {
       searchSection.style.display = 'block';
-      fetchSuggestions(); // Start fetching suggestions
   } else {
       searchSection.style.display = 'none';
-      stopFetchingSuggestions(); // Stop fetching suggestions
   }
 });
 
@@ -650,9 +654,10 @@ function fetchSuggestions() {
           });
       })
       .catch(error => console.error('Error fetching support members:', error));
+      return;
   
   // Fetch every second
-  fetchInterval = setInterval(fetchSuggestions, 3000);
+  fetchInterval = setInterval(fetchSuggestions, 10000);
 }
 
 function stopFetchingSuggestions() {
