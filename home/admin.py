@@ -10,10 +10,10 @@ class TicketAdmin(admin.ModelAdmin):
     search_fields = ['title', 'status']
     list_filter = ['status', 'created_at', 'updated_at']
 
-@admin.register(TicketLog)
-class TicketLogAdmin(admin.ModelAdmin):
-    list_display = ['ticket','id']
-    search_fields = ['ticket', 'action']
+# @admin.register(TicketLog)
+# class TicketLogAdmin(admin.ModelAdmin):
+#     list_display = ['ticket','id']
+#     search_fields = ['ticket', 'action']
 
 # @admin.register(Comment)
 # class CommentAdmin(admin.ModelAdmin):
@@ -42,11 +42,11 @@ class InquirerAdmin(admin.ModelAdmin):
     search_fields = ['username']
     list_filter = ['is_active',]
 
-@admin.register(Message)
-class MessageAdmin(admin.ModelAdmin):
-    list_display = ['id','inquirer']
-    search_fields = ['inquirer']
-    list_filter = ['created_at']
+# @admin.register(Message)
+# class MessageAdmin(admin.ModelAdmin):
+#     list_display = ['id','inquirer']
+#     search_fields = ['inquirer']
+#     list_filter = ['created_at']
 
 @admin.register(Branch)
 class BranchAdmin(admin.ModelAdmin):
