@@ -721,6 +721,9 @@ document.getElementById('report-form').addEventListener('submit', function(e) {
       reportUrl = `/generate_weekly_report/?start_date=${startDate}&end_date=${endDate}`;
   } else if (reportType === 'overall') {
       reportUrl = `/generate_overall_report/?start_date=${startDate}&end_date=${endDate}`;
+
+  }else if (reportType === 'monthly') {
+      reportUrl = `/generate_monthly_report/?start_date=${startDate}&end_date=${endDate}`;
   }
 
   // Redirect to the report generation URL
