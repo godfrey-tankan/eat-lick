@@ -71,7 +71,7 @@
     </style>
 </head>
 <body>
-    <h2>Report of ({{ start_date }} as at {{ today }})</h2>
+    <h2>Report of <span style='color:blue;font-weight:bolder;'>{{support_member|upper}}</span> from ({{ start_date }} to {{ end_date }})</h2>
     <p>Branch Most Assigned: <strong>{{ branch_most_inquiries.branch_opened}} ({{ branch_most_inquiries.tickets }} inquiries)</strong></p>
     <p>Inquiries: <strong>{{ total_inquiries }}</strong></p>
 
@@ -114,12 +114,12 @@
             <tr>
                 <td>{{ ticket.title }}</td>
                 <td>{{ ticket.status }}</td>
-                <td>{{ ticket.created_by }}</td>
+                <td>{{ ticket.created_by.username }}</td>
                 <td>{{ ticket.branch_opened }}</td>
                 <td>{{ ticket.created_at }}</td>
                 <td>{{ ticket.resolved_at }}</td>
                 <td>{{ ticket.closed_at }}</td>
-                <td>{{ ticket.average_time }}</td>
+                <td>{{ ticket.get_time_to_resolve }}</td>
             </tr>
             {% endfor %}
         </tbody>

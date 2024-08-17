@@ -328,7 +328,7 @@ def generate_support_member_report(request):
         start_date = datetime(2001, 1, 1).date()
         end_date = datetime(2050, 12, 31).date()
 
-    support_member = SupportMember.objects.get(id=1)
+    support_member = SupportMember.objects.get(id=2)
     tickets = Ticket.objects.filter(created_at__range=[start_date, end_date], assigned_to=support_member)
 
     report_data = []
@@ -346,10 +346,10 @@ def generate_support_member_report(request):
     total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
 
 
-    tickets_for_member = tickets.filter(assigned_to=support_member.id)
-    resolved_tickets = tickets_for_member.filter(status='resolved')
-    closed_tickets = tickets_for_member.filter(status='closed')
-    pending_tickets = tickets_for_member.filter(status='pending')
+    resolved_tickets = tickets.filter(status='resolved')
+    closed_tickets = tickets.filter(status='closed')
+    pending_tickets = tickets.filter(status='pending')
+    
     total_opened = tickets.filter(status='open').count()
     total_closed = tickets.filter(status='closed').count()
     total_resolved = tickets.filter(status='resolved').count()
@@ -368,15 +368,13 @@ def generate_support_member_report(request):
             total_time += ticket.resolved_at - ticket.created_at
             resolved_ticket_count += 1
     
-    average_time_hours = (total_time.total_seconds() / 3600) / resolved_ticket_count if resolved_ticket_count > 0 else 0
-    average_time = f"{average_time_hours:.2f} hours"
-    
+
     report_data.append({
         'member': support_member.username,
         'resolved_count': total_resolved_count,
         'pending_count': pending_tickets_count,
         'closed_count': total_closed_count,
-        'average_time': average_time
+        'total_time': total_time
     })
 
     context = {
