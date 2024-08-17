@@ -130,9 +130,9 @@ def send_message(data,template=False):
 def process_whatsapp_message(body):
     data = body
     print(data)
+    
     try:
-        # phone_number_id = data['entry'][0]['changes'][0]['value']['metadata']['phone_number_id']
-        phone_number_id =  [contact['wa_id'] for contact in data['entry'][0]['changes'][0]['value']['contacts']]
+        phone_number_id = [contact['wa_id'] for contact in data['entry'][0]['changes'][0]['value']['contacts']]
     except Exception as e:
         phone_number_id = ""
 
@@ -140,17 +140,58 @@ def process_whatsapp_message(body):
         profile_name = data['entry'][0]['changes'][0]['value']['contacts'][0]['profile']['name']
     except Exception as e:
         profile_name = "User"
+    
     try:
         message = body["entry"][0]["changes"][0]["value"]["messages"][0]
-        message_body = message["text"]["body"]
+        message_type = message["type"]
+
+        if message_type == "text":
+            message_body = message["text"]["body"]
+            response = generate_response(message_body, phone_number_id, profile_name)
+            data = get_text_message_input(phone_number_id, response, None, False)
+            send_message(data)
+        
+        elif message_type == "image":
+            image_id = message["image"]["id"]
+            # Download the image using its ID
+            image_data = download_image(image_id)
+            # Resend the image back to the requester
+            data = get_image_message_input(phone_number_id, image_data)
+            send_message(data)
+    
     except Exception as e:
-        message_body = "hello there, how can i help you today?"
-    try:
-        response = generate_response(message_body, phone_number_id, profile_name)
-        data = get_text_message_input(phone_number_id, response,None,False)
-        send_message(data)
-    except Exception as e:
+        print(f"Error processing message: {e}")
         ...
+
+def download_image(image_id):
+    # Define your access token and the URL to download the image
+    access_token = settings.ACCESS_TOKEN
+    url = f"https://graph.facebook.com/v12.0/{image_id}"
+
+    params = {
+        'access_token': access_token
+    }
+
+    response = requests.get(url, params=params)
+    
+    if response.status_code == 200:
+        return response.content  # This is the image content
+    else:
+        print(f"Error downloading image: {response.status_code} - {response.text}")
+        return None
+
+def get_image_message_input(phone_number_id, image_data):
+    # Create the message payload to send the image back to the user
+    data = {
+        "messaging_product": "whatsapp",
+        "to": phone_number_id,
+        "type": "image",
+        "image": {
+            "link": "https://clava.co.zw/assets/images/ai.png",  # You need to host the image or find a way to re-upload it
+            "caption": "Here is the image you sent!"
+        }
+    }
+    return data
 
 def send_message_template(recepient):
     return json.dumps(
