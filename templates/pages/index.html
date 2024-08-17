@@ -101,56 +101,54 @@
         <div id="report-popup" class="report-popup-form">
           <div class="report-popup-content">
               <span id="close-popup" class="report-popup-close">&times;</span>
-              <form id="report-form">
-                  <div class="report-form-group">
-                      <label for="report-type">Report Type:</label>
-                      <select id="report-type" class="report-select" name="report_type">
-                          <option value="overall">Overall</option>
-                          <option value="branch">Branch</option>
-                          <option value="support_member">Support Member</option>
-                          <option value="weekly">Weekly</option>
-                          <option value="monthly">Monthly</option>
+              <div class="report-form-group">
+                  <label for="report-type">Report Type:</label>
+                  <select id="report-type" class="report-select">
+                      <option value="overall">Overall</option>
+                      <option value="branch">Branch</option>
+                      <option value="support_member">Support Member</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                  </select>
+              </div>
+      
+              <div id="branch-search" class="report-form-group" style="display: none;">
+                  <label for="branch">Search Branch:</label>
+                  <div id="branch-suggestions-container" class="suggestions-container">
+                      <select id="branch-suggestions" class="suggestions-list">
+                          {% if branches %}
+                              {% for branch in branches %}
+                                  <option value="{{ branch.name }}">{{ branch.name }}</option>
+                              {% endfor %}
+                          {% endif %}
                       </select>
                   </div>
-  
-                  <div id="branch-search" class="report-form-group" style="display: none;">
-                    <label for="branch">Search Branch:</label>
-                    <div id="branch-suggestions-container" class="suggestions-container">
-                        <select id="branch-suggestions" class="suggestions-list">
-                            {% if branches %}
-                                {% for branch in branches %}
-                                    <option value="{{ branch.name }}">{{ branch.name }}</option>
-                                {% endfor %}
-                            {% endif %}
-                        </select>
-                    </div>
-                </div>
-                
-                <div id="support-member-search" class="report-form-group" style="display: none;">
-                    <label for="support-member">Search Support Member:</label>
-                    <div id="suggestions-container" class="suggestions-container">
-                        <select id="support-member-suggestions" class="suggestions-list">
-                            {% if support_members %}
-                                {% for member in support_members %}
-                                    <option value="{{ member.id }}">{{ member.username }}  {{ member.phone_number }}</option>
-                                {% endfor %}
-                            {% endif %}
-                        </select>
-                    </div>
-                </div>
-  
-                  <div class="report-form-group">
-                      <label for="start-date">Start Date:</label>
-                      <input type="date" id="start-date" class="report-datetime-picker" name="start_date">
+              </div>
+      
+              <div id="support-member-search" class="report-form-group" style="display: none;">
+                  <label for="support-member">Search Support Member:</label>
+                  <div id="suggestions-container" class="suggestions-container">
+                      <select id="support-member-suggestions" class="suggestions-list">
+                          {% if support_members %}
+                              {% for member in support_members %}
+                                  <option value="{{ member.id }}">{{ member.username }} {{ member.phone_number }}</option>
+                              {% endfor %}
+                          {% endif %}
+                      </select>
                   </div>
-  
-                  <div class="report-form-group">
-                      <label for="end-date">End Date:</label>
-                      <input type="date" id="end-date" class="report-datetime-picker" name="end_date">
-                  </div>
-  
-                  <button id="submit-button" type="submit" class="btn btn-primary">Generate</button>
-              </form>
+              </div>
+      
+              <div class="report-form-group">
+                  <label for="start-date">Start Date:</label>
+                  <input type="date" id="start-date" class="report-datetime-picker">
+              </div>
+      
+              <div class="report-form-group">
+                  <label for="end-date">End Date:</label>
+                  <input type="date" id="end-date" class="report-datetime-picker">
+              </div>
+      
+              <button id="submit-button" class="btn btn-primary">Generate</button>
           </div>
       </div>
         {% comment %} <div class="col-12 mb-4">
@@ -416,359 +414,350 @@
 
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+
+        const submitButton = document.getElementById('submit-button');
+    
+    submitButton.addEventListener('click', function(e) {
+        e.preventDefault(); // Prevent the default form submission behavior
+
+        // Gather form data
+        const reportType = document.getElementById('report-type').value;
+        const startDate = document.getElementById('start-date').value;
+        const endDate = document.getElementById('end-date').value;
+        const supportMemberId = document.getElementById('support-member-suggestions')?.value || '';
+        const branchId = document.getElementById('branch-suggestions')?.value || '';
+
+        let url;
+
+        if (reportType === 'support_member') {
+            url = '/generate_support_member_report/';
+        } else if (reportType === 'branch') {
+            url = '/generate_branch_report/';
+        } else if (reportType === 'weekly') {
+            url = '/generate_weekly_report/';
+        } else if (reportType === 'overall') {
+            url = '/generate_overall_report/';
+        } else if (reportType === 'monthly') {
+            url = '/generate_monthly_report/';
+        }
+
+        if (url) {
+            axios.post(url, {
+                start_date: startDate,
+                end_date: endDate,
+                support_member: supportMemberId,
+                branch: branchId,
+                report_type: reportType
+            }, {
+                responseType: 'blob' // Important to set response type to blob for file downloads
+            })
+            .then(response => {
+                // Create a new Blob object using the response data
+                const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'report.pdf'); // Customize the filename if needed
+
+                // Append the link to the body
+                document.body.appendChild(link);
+                link.click();
+
+                // Clean up
+                link.parentNode.removeChild(link);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        } else {
+            console.log('Invalid report type');
+        }
+    });
+
+
+
+        fetch('/get-chart-data/')
+            .then(response => response.json())
+            .then(data => {
+                // Bar Chart (Weekly Data)
+                var ctx = document.getElementById("chart-bars").getContext("2d");
+    
+                new Chart(ctx, {
+                  type: "bar",
+                  data: {
+                    labels: data.labels_weekly,
+                    datasets: [{
+                      label: "Resolved",
+                      tension: 0.4,
+                      borderWidth: 0,
+                      borderRadius: 4,
+                      borderSkipped: false,
+                      backgroundColor: "#fff",
+                      data: data.resolved_counts_weekly,
+                      maxBarThickness: 30
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        display: false,
+                      }
+                    },
+                    interaction: {
+                      intersect: false,
+                      mode: 'index',
+                    },
+                    scales: {
+                      y: {
+                        grid: {
+                          drawBorder: false,
+                          display: false,
+                          drawOnChartArea: false,
+                          drawTicks: false,
+                        },
+                        ticks: {
+                          suggestedMin: 0,
+                          suggestedMax: 500,
+                          beginAtZero: true,
+                          padding: 15,
+                          font: {
+                            size: 14,
+                            family: "Open Sans",
+                            style: 'normal',
+                            lineHeight: 2
+                          },
+                          color: "#fff"
+                        },
+                      },
+                      x: {
+                        grid: {
+                          drawBorder: false,
+                          display: false,
+                          drawOnChartArea: false,
+                          drawTicks: false
+                        },
+                        ticks: {
+                          display: false
+                        },
+                      },
+                    },
+                  },
+                });
+    
+                // Line Chart (Monthly Data)
+                var ctx2 = document.getElementById("chart-line").getContext("2d");
+    
+                var gradientStroke1 = ctx2.createLinearGradient(0, 230, 0, 50);
+    
+                gradientStroke1.addColorStop(1, 'rgba(203,12,159,0.2)');
+                gradientStroke1.addColorStop(0.2, 'rgba(72,72,176,0.0)');
+                gradientStroke1.addColorStop(0, 'rgba(203,12,159,0)'); //purple colors
+    
+                var gradientStroke2 = ctx2.createLinearGradient(0, 230, 0, 50);
+    
+                gradientStroke2.addColorStop(1, 'rgba(20,23,39,0.2)');
+                gradientStroke2.addColorStop(0.2, 'rgba(72,72,176,0.0)');
+                gradientStroke2.addColorStop(0, 'rgba(20,23,39,0)'); //purple colors
+    
+                new Chart(ctx2, {
+                  type: "line",
+                  data: {
+                    labels: data.labels_monthly,
+                    datasets: [
+                      {
+                        label: "Resolved",
+                        tension: 0.4,
+                        borderWidth: 0,
+                        pointRadius: 0,
+                        borderColor: "#16a34a",
+                        borderWidth: 4,
+                        backgroundColor: gradientStroke1,
+                        fill: true,
+                        data: data.resolved_counts_monthly,
+                        maxBarThickness: 20
+                      },
+                      {
+                        label: "Open",
+                        tension: 0.4,
+                        borderWidth: 0,
+                        pointRadius: 0,
+                        borderColor: "#86efac",
+                        borderWidth: 3,
+                        backgroundColor: gradientStroke2,
+                        fill: true,
+                        data: data.open_counts_monthly,
+                        maxBarThickness: 6
+                      },
+                      {
+                        label: "Closed",
+                        tension: 0.4,
+                        borderWidth: 0,
+                        pointRadius: 0,
+                        borderColor: "#dc2626",
+                        borderWidth: 3,
+                        backgroundColor: gradientStroke2,
+                        fill: true,
+                        data: data.closed_counts_monthly,
+                        maxBarThickness: 6
+                      },
+                      {
+                        label: "Pending",
+                        tension: 0.4,
+                        borderWidth: 0,
+                        pointRadius: 0,
+                        borderColor: "#fde047",
+                        borderWidth: 3,
+                        backgroundColor: gradientStroke2,
+                        fill: true,
+                        data: data.pending_counts_monthly,
+                        maxBarThickness: 6
+                      },
+                    ],
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        display: false,
+                      }
+                    },
+                    interaction: {
+                      intersect: false,
+                      mode: 'index',
+                    },
+                    scales: {
+                      y: {
+                        grid: {
+                          drawBorder: false,
+                          display: true,
+                          drawOnChartArea: true,
+                          drawTicks: false,
+                          borderDash: [5, 5]
+                        },
+                        ticks: {
+                          display: true,
+                          padding: 10,
+                          color: '#b2b9bf',
+                          font: {
+                            size: 15,
+                            family: "Open Sans",
+                            style: 'normal',
+                            lineHeight: 2
+                          },
+                        }
+                      },
+                      x: {
+                        grid: {
+                          drawBorder: false,
+                          display: false,
+                          drawOnChartArea: false,
+                          drawTicks: false,
+                          borderDash: [5, 5]
+                        },
+                        ticks: {
+                          display: true,
+                          color: '#b2b9bf',
+                          padding: 20,
+                          font: {
+                            size: 11,
+                            family: "Open Sans",
+                            style: 'normal',
+                            lineHeight: 2
+                          },
+                        }
+                      },
+                    },
+                  },
+                });
+            })
+            .catch(error => console.error('Error fetching chart data:', error));
+
+
+    document.getElementById('generate-report-button').addEventListener('click', function() {
+      document.getElementById('report-popup').style.display = 'block';
+  });
+
+  document.getElementById('close-popup').addEventListener('click', function() {
+      document.getElementById('report-popup').style.display = 'none';
+  });
+
+  // Support member searching on report
+  document.getElementById('report-type').addEventListener('change', function(e) {
+      const selectedType = this.value;
+      const searchSection = document.getElementById('support-member-search');
+      const branchSearch = document.getElementById('branch-search');
+
+      if (selectedType === 'support_member') {
+          searchSection.style.display = 'block';
+          branchSearch.style.display = 'none';
+      } else if (selectedType === 'branch') {
+          branchSearch.style.display = 'block';
+          searchSection.style.display = 'none';
+      } else {
+          searchSection.style.display = 'none';
+          branchSearch.style.display = 'none';
+      }
+  });
+
+  document.getElementById('support-member').addEventListener('input', function() {
+      const input = this.value.toLowerCase();
+      const suggestions = document.querySelectorAll('#support-member-suggestions option');
+
+      suggestions.forEach(option => {
+          const text = option.textContent.toLowerCase();
+          if (text.includes(input)) {
+              option.style.display = ''; // Show option if it matches the input
+          } else {
+              option.style.display = 'none'; // Hide option if it doesn't match the input
+          }
+      });
+  });
+
+  document.getElementById('support-member-suggestions').addEventListener('click', function(event) {
+      const selectedOption = event.target;
+      if (selectedOption.tagName.toLowerCase() === 'option') {
+          document.getElementById('support-member').value = selectedOption.textContent;
+      }
+  });
+
+  document.getElementById('branch-suggestions').addEventListener('click', function(event) {
+      const selectedOption = event.target;
+      if (selectedOption.tagName.toLowerCase() === 'option') {
+          document.getElementById('branch').value = selectedOption.textContent;
+      }
+  });
+
+  $(document).ready(function() {
+      $('#support-member').select2({
+          placeholder: 'Type to search...',
+      });
+  });
+
+
+
+//REPORT GENARATION block
+
+
+
+  });
+
+</script>
+
 {% endblock content %}
 
 <!-- Specific JS goes HERE --> 
 {% block scripts %}
 
   <script src="{% static 'js/plugins/chartjs.min.js' %}"></script>
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      fetch('/get-chart-data/')
-          .then(response => response.json())
-          .then(data => {
-              // Bar Chart (Weekly Data)
-              var ctx = document.getElementById("chart-bars").getContext("2d");
-  
-              new Chart(ctx, {
-                type: "bar",
-                data: {
-                  labels: data.labels_weekly,
-                  datasets: [{
-                    label: "Resolved",
-                    tension: 0.4,
-                    borderWidth: 0,
-                    borderRadius: 4,
-                    borderSkipped: false,
-                    backgroundColor: "#fff",
-                    data: data.resolved_counts_weekly,
-                    maxBarThickness: 30
-                  }]
-                },
-                options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      display: false,
-                    }
-                  },
-                  interaction: {
-                    intersect: false,
-                    mode: 'index',
-                  },
-                  scales: {
-                    y: {
-                      grid: {
-                        drawBorder: false,
-                        display: false,
-                        drawOnChartArea: false,
-                        drawTicks: false,
-                      },
-                      ticks: {
-                        suggestedMin: 0,
-                        suggestedMax: 500,
-                        beginAtZero: true,
-                        padding: 15,
-                        font: {
-                          size: 14,
-                          family: "Open Sans",
-                          style: 'normal',
-                          lineHeight: 2
-                        },
-                        color: "#fff"
-                      },
-                    },
-                    x: {
-                      grid: {
-                        drawBorder: false,
-                        display: false,
-                        drawOnChartArea: false,
-                        drawTicks: false
-                      },
-                      ticks: {
-                        display: false
-                      },
-                    },
-                  },
-                },
-              });
-  
-              // Line Chart (Monthly Data)
-              var ctx2 = document.getElementById("chart-line").getContext("2d");
-  
-              var gradientStroke1 = ctx2.createLinearGradient(0, 230, 0, 50);
-  
-              gradientStroke1.addColorStop(1, 'rgba(203,12,159,0.2)');
-              gradientStroke1.addColorStop(0.2, 'rgba(72,72,176,0.0)');
-              gradientStroke1.addColorStop(0, 'rgba(203,12,159,0)'); //purple colors
-  
-              var gradientStroke2 = ctx2.createLinearGradient(0, 230, 0, 50);
-  
-              gradientStroke2.addColorStop(1, 'rgba(20,23,39,0.2)');
-              gradientStroke2.addColorStop(0.2, 'rgba(72,72,176,0.0)');
-              gradientStroke2.addColorStop(0, 'rgba(20,23,39,0)'); //purple colors
-  
-              new Chart(ctx2, {
-                type: "line",
-                data: {
-                  labels: data.labels_monthly,
-                  datasets: [
-                    {
-                      label: "Resolved",
-                      tension: 0.4,
-                      borderWidth: 0,
-                      pointRadius: 0,
-                      borderColor: "#16a34a",
-                      borderWidth: 4,
-                      backgroundColor: gradientStroke1,
-                      fill: true,
-                      data: data.resolved_counts_monthly,
-                      maxBarThickness: 20
-                    },
-                    {
-                      label: "Open",
-                      tension: 0.4,
-                      borderWidth: 0,
-                      pointRadius: 0,
-                      borderColor: "#86efac",
-                      borderWidth: 3,
-                      backgroundColor: gradientStroke2,
-                      fill: true,
-                      data: data.open_counts_monthly,
-                      maxBarThickness: 6
-                    },
-                    {
-                      label: "Closed",
-                      tension: 0.4,
-                      borderWidth: 0,
-                      pointRadius: 0,
-                      borderColor: "#dc2626",
-                      borderWidth: 3,
-                      backgroundColor: gradientStroke2,
-                      fill: true,
-                      data: data.closed_counts_monthly,
-                      maxBarThickness: 6
-                    },
-                    {
-                      label: "Pending",
-                      tension: 0.4,
-                      borderWidth: 0,
-                      pointRadius: 0,
-                      borderColor: "#fde047",
-                      borderWidth: 3,
-                      backgroundColor: gradientStroke2,
-                      fill: true,
-                      data: data.pending_counts_monthly,
-                      maxBarThickness: 6
-                    },
-                  ],
-                },
-                options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      display: false,
-                    }
-                  },
-                  interaction: {
-                    intersect: false,
-                    mode: 'index',
-                  },
-                  scales: {
-                    y: {
-                      grid: {
-                        drawBorder: false,
-                        display: true,
-                        drawOnChartArea: true,
-                        drawTicks: false,
-                        borderDash: [5, 5]
-                      },
-                      ticks: {
-                        display: true,
-                        padding: 10,
-                        color: '#b2b9bf',
-                        font: {
-                          size: 15,
-                          family: "Open Sans",
-                          style: 'normal',
-                          lineHeight: 2
-                        },
-                      }
-                    },
-                    x: {
-                      grid: {
-                        drawBorder: false,
-                        display: false,
-                        drawOnChartArea: false,
-                        drawTicks: false,
-                        borderDash: [5, 5]
-                      },
-                      ticks: {
-                        display: true,
-                        color: '#b2b9bf',
-                        padding: 20,
-                        font: {
-                          size: 11,
-                          family: "Open Sans",
-                          style: 'normal',
-                          lineHeight: 2
-                        },
-                      }
-                    },
-                  },
-                },
-              });
-          })
-          .catch(error => console.error('Error fetching chart data:', error));
-  });
-
-  {% comment %} REPORT JS START {% endcomment %}
-  document.getElementById('generate-report-button').addEventListener('click', function() {
-    document.getElementById('report-popup').style.display = 'block';
-});
-
-document.getElementById('close-popup').addEventListener('click', function() {
-    document.getElementById('report-popup').style.display = 'none';
-});
-
-// Support member searching on report
-document.getElementById('report-type').addEventListener('change', function(e) {
-    const selectedType = this.value;
-    const searchSection = document.getElementById('support-member-search');
-    const branchSearch = document.getElementById('branch-search');
-
-    if (selectedType === 'support_member') {
-        searchSection.style.display = 'block';
-        branchSearch.style.display = 'none';
-    } else if (selectedType === 'branch') {
-        branchSearch.style.display = 'block';
-        searchSection.style.display = 'none';
-    } else {
-        searchSection.style.display = 'none';
-        branchSearch.style.display = 'none';
-    }
-});
-
-document.getElementById('support-member').addEventListener('input', function() {
-    const input = this.value.toLowerCase();
-    const suggestions = document.querySelectorAll('#support-member-suggestions option');
-
-    suggestions.forEach(option => {
-        const text = option.textContent.toLowerCase();
-        if (text.includes(input)) {
-            option.style.display = ''; // Show option if it matches the input
-        } else {
-            option.style.display = 'none'; // Hide option if it doesn't match the input
-        }
-    });
-});
-
-document.getElementById('support-member-suggestions').addEventListener('click', function(event) {
-    const selectedOption = event.target;
-    if (selectedOption.tagName.toLowerCase() === 'option') {
-        document.getElementById('support-member').value = selectedOption.textContent;
-    }
-});
-
-document.getElementById('branch-suggestions').addEventListener('click', function(event) {
-    const selectedOption = event.target;
-    if (selectedOption.tagName.toLowerCase() === 'option') {
-        document.getElementById('branch').value = selectedOption.textContent;
-    }
-});
-
-$(document).ready(function() {
-    $('#support-member').select2({
-        placeholder: 'Type to search...',
-    });
-});
 
 
-document.getElementById('report-form').addEventListener('submit', function(e) {
-  e.preventDefault(); // Prevent the default form submission behavior
-
-  const submitButton = document.getElementById('submit-button');
-  submitButton.disabled = true;
-
-  // Add loader
-  const loader = document.createElement('div');
-  loader.className = 'loader';
-  submitButton.appendChild(loader);
-
-  // Gather form data
-  const formData = new FormData(this);
-
-  let reportUrl;
-
-  // Determine the correct URL based on the report type
-  const reportType = formData.get('report_type');
-  if (reportType === 'support_member') {
-      reportUrl = '/generate_support_member_report/';
-  } else if (reportType === 'branch') {
-      reportUrl = '/generate_branch_report/';
-  } else if (reportType === 'weekly') {
-      reportUrl = '/generate_weekly_report/';
-  } else if (reportType === 'overall') {
-      reportUrl = '/generate_overall_report/';
-  } else if (reportType === 'monthly') {
-      reportUrl = '/generate_monthly_report/';
-  } else {
-      alert('Invalid report type selected!');
-      submitButton.disabled = false;
-      loader.remove();
-      return;
-  }
-
-  // Send the POST request to the server with form data
-  fetch(reportUrl, {
-      method: 'POST',
-      headers: {
-          'X-CSRFToken': getCookie('csrftoken') // Ensure you include the CSRF token
-      },
-      body: formData // Send the form data directly
-  })
-  .then(response => {
-      if (response.ok) {
-          return response.json();
-      } else {
-          throw new Error('Network response was not ok.');
-      }
-  })
-  .then(data => {
-      // Handle the response from the server
-      console.log('Report generated:', data);
-      // Redirect or display the report as needed
-  })
-  .catch(error => {
-      console.error('Error generating report:', error);
-  })
-  .finally(() => {
-      submitButton.disabled = false;
-      loader.remove();
-  });
-});
-
-// Function to get the CSRF token from cookies
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          if (cookie.startsWith(name + '=')) {
-              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-              break;
-          }
-      }
-  }
-  return cookieValue;
-}
-  </script>
   {% comment %} <script>
     var ctx = document.getElementById("chart-bars").getContext("2d");
 
