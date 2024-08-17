@@ -72,7 +72,11 @@
 </head>
 <body>
     <h2>{{branch|upper}} Branch Report ({{ start_date }} to {{ end_date }})</h2>
+<br />
+<br />
+<p>Inquiries: <strong>{{ total_inquiries }}</strong></p>
 
+<br />
     <h2>{{branch|title}} Tickets Summary</h2>
     <table>
         <thead>
@@ -92,8 +96,10 @@
                 <td>{{ ticket.resolved_count }}</td>
             
             </tr>
+            {% endfor %}
         </tbody>
     </table>
+    <br />
 
     <h2>Tickets</h2>
     <table>
