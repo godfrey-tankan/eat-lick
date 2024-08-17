@@ -484,6 +484,18 @@ fieldset {
 
 /* REPORT FORM STYLES  */
 
+.report-select {
+  padding: 10px; /* Adjust padding as needed */
+}
+
+/* Style for the searchable input field */
+.report-search-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 .report-popup-form {
   display: none;
   position: fixed;
