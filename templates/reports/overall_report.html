@@ -71,28 +71,46 @@
     </style>
 </head>
 <body>
-    <h2>Weekly Report ({{ start_date }} to {{ end_date }})</h2>
+    <h2>Overall Report as at <span id="current-date">{{today}}</span> </h2>
     {% comment %} <div class="branch-stats"> {% endcomment %}
         <p>Branch with Most Inquiries: <strong>{{ branch_most_inquiries.branch_opened}} ({{ branch_most_inquiries.tickets }} inquiries)</strong></p>
         <p>Total Inquiries: <strong>{{ total_inquiries }}</strong></p>
     {% comment %} </div> {% endcomment %}
-    <h2>Overall Inquiries Statistics</h2>
-    <div class="statistics">
-        <p>Total Opened Tickets: <strong>{{ total_opened }}</strong></p>
-        <p>Total Pending Tickets: <strong>{{ total_pending }}</strong></p>
-        <p>Total Closed Tickets: <strong>{{ total_closed }}</strong></p>
-        <p>Total Resolved Tickets: <strong>{{ total_resolved }}</strong></p>
-    </div>
+
+    <h2>Branch Statistics</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Branch</th>
+                <th>Opened Tickets</th>
+                <th>Pending Tickets</th>
+                <th>Closed Tickets</th>
+                <th>Resolved Tickets</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for branch in ticket_counts %}
+            <tr>
+                <td>{{ branch.branch_opened }}</td>
+                <td>{{ branch.open_count }}</td>
+                <td>{{ branch.pending_count }}</td>
+                <td>{{ branch.closed_count }}</td>
+                <td>{{ branch.resolved_count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
 
     <h2>Support Member Statistics</h2>
     <table>
         <thead>
             <tr>
-                <th>Support Member</th>
-                <th>Resolved Tickets</th>
-                <th>Pending Tickets</th>
-                <th>Closed Tickets</th>
-                <th>Average Time to Resolve</th>
+                <th>Name</th>
+                <th>Resolved</th>
+                <th>Pending</th>
+                <th>Closed</th>
+                <th>Average Resolve Time</th>
             </tr>
         </thead>
         <tbody>
@@ -108,7 +126,7 @@
         </tbody>
     </table>
     
-    <h2>Daily Ticket Counts</h2>
+    <h2>Ticket Counts</h2>
     <table>
         <thead>
             <tr>

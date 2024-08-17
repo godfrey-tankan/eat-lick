@@ -241,6 +241,12 @@ def generate_overall_report(request):
     branch_stats = tickets.values('branch_opened').annotate(
         tickets=Count('id')
     ).order_by('branch_opened')
+    ticket_counts = Ticket.objects.values('branch_opened').annotate(
+        open_count=Count('id', filter=Q(status='open')),
+        pending_count=Count('id', filter=Q(status='pending')),
+        closed_count=Count('id', filter=Q(status='closed')),
+        resolved_count=Count('id', filter=Q(status='resolved'))
+    )
 
     branch_most_inquiries = branch_stats.first()
     total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
@@ -249,10 +255,12 @@ def generate_overall_report(request):
         'report_data': report_data,
         'start_date': start_date,
         'end_date': end_date,
+        'today': datetime.now().strftime('%Y-%m-%d'),
         'total_opened': total_opened,
         'total_pending': tickets.filter(status='pending').count(),
         'total_closed': total_closed,
         'total_resolved': total_resolved,
+        'ticket_counts':ticket_counts,
         'daily_counts': daily_counts,
         'day_most_opened': day_most_opened,
         'day_most_closed': day_most_closed,
@@ -262,11 +270,11 @@ def generate_overall_report(request):
         'total_inquiries': total_inquiries,
     }
     
-    html_string = render_to_string('reports/weekly_report.html', context)
+    html_string = render_to_string('reports/overall_report.html', context)
     pdf_file = HTML(string=html_string).write_pdf()
 
     response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="weekly_report.pdf"'
+    response['Content-Disposition'] = 'attachment; filename="overall_report.pdf"'
     return response
 
 def generate_branch_report(request, branch_name):
