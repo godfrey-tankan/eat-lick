@@ -98,10 +98,10 @@
       </div>
       {% else %}
       <div class="row">
-        <div id="unique-report-popup" class="unique-popup-form">
-          <div class="unique-popup-content">
-              <span id="unique-close-popup" class="unique-popup-close">&times;</span>
-              <form id="unique-report-form">
+        <div id="report-popup" class="popup-form">
+          <div class="popup-content">
+              <span id="close-popup" class="popup-close">&times;</span>
+              <form id="report-form">
                   <label for="report-type">Report Type:</label>
                   <select id="report-type" name="report_type">
                       <option value="branch">Branch</option>
@@ -116,7 +116,7 @@
                   <label for="end-date">End Date:</label>
                   <input type="datetime-local" id="end-date" name="end_date" required>
       
-                  <button id="unique-submit-button" type="submit" class="unique-btn-submit">Generate</button>
+                  <button id="submit-button" type="submit" class="btn btn-success">Generate</button>
               </form>
           </div>
       </div>
@@ -124,7 +124,7 @@
           <a href="{% url 'generate_weekly_report' %}" class="btn btn-primary">Generate Report</a>
         </div> {% endcomment %}
         <div class="col-12 mb-4">
-          <button id="unique-generate-report-button" class="unique-btn-primary">Generate Report</button>
+          <button id="generate-report-button" class="btn btn-primary">Generate Report</button>
       </div>
         <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
           <div class="card">
