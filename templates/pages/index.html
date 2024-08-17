@@ -109,7 +109,14 @@
                           <option value="support_member">Support Member</option>
                           <option value="weekly">Weekly</option>
                           <option value="overall">Overall</option>
+                          <option value="monthly">Monthly</option> <!-- Added Monthly -->
                       </select>
+                  </div>
+      
+                  <div id="support-member-search" class="report-form-group" style="display: none;">
+                      <label for="support-member">Search Support Member:</label>
+                      <input type="text" id="support-member" class="report-search-input" placeholder="Type to search...">
+                      <!-- You can use a dropdown library here or custom implementation -->
                   </div>
       
                   <div class="report-form-group">
@@ -395,6 +402,9 @@
 {% block scripts %}
 
   <script src="{% static 'js/plugins/chartjs.min.js' %}"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       fetch('/get-chart-data/')
@@ -604,6 +614,22 @@
 
 document.getElementById('close-popup').addEventListener('click', function() {
     document.getElementById('report-popup').style.display = 'none';
+});
+document.getElementById('report-type').addEventListener('change', function() {
+  const selectedType = this.value;
+  const searchSection = document.getElementById('support-member-search');
+
+  if (selectedType === 'support_member') {
+      searchSection.style.display = 'block';
+  } else {
+      searchSection.style.display = 'none';
+  }
+});
+$(document).ready(function() {
+  $('#support-member').select2({
+      placeholder: 'Type to search...',
+      // Data source or options can be loaded here
+  });
 });
 
 document.getElementById('report-form').addEventListener('submit', function(e) {
