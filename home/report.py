@@ -328,15 +328,33 @@ def generate_support_member_report(request):
         start_date = datetime(2001, 1, 1).date()
         end_date = datetime(2050, 12, 31).date()
 
-    tickets = Ticket.objects.filter(created_at__range=[start_date, end_date])
-    support_member = SupportMember.objects.get(id=support_member_id)
+    support_member = SupportMember.objects.get(id=1)
+    tickets = Ticket.objects.filter(created_at__range=[start_date, end_date], assigned_to=support_member)
 
     report_data = []
+    branch_stats = tickets.values('branch_opened').annotate(
+        tickets=Count('id')
+    ).order_by('branch_opened')
+    ticket_counts = tickets.values('branch_opened').annotate(
+        open_count=Count('id', filter=Q(status='open')),
+        pending_count=Count('id', filter=Q(status='pending')),
+        closed_count=Count('id', filter=Q(status='closed')),
+        resolved_count=Count('id', filter=Q(status='resolved'))
+    )
+
+    branch_most_inquiries = branch_stats.first()
+    total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
+
 
     tickets_for_member = tickets.filter(assigned_to=support_member.id)
     resolved_tickets = tickets_for_member.filter(status='resolved')
     closed_tickets = tickets_for_member.filter(status='closed')
     pending_tickets = tickets_for_member.filter(status='pending')
+    total_opened = tickets.filter(status='open').count()
+    total_closed = tickets.filter(status='closed').count()
+    total_resolved = tickets.filter(status='resolved').count()
+    total_pending = tickets.filter(status='pending').count()
+    
     
     total_resolved_count = resolved_tickets.count()
     total_closed_count = closed_tickets.count()
@@ -362,6 +380,16 @@ def generate_support_member_report(request):
     })
 
     context = {
+        'support_member': support_member.username,
+        'total_opened': total_opened,
+        'total_pending': total_pending,
+        'total_closed': total_closed,
+        'total_resolved': total_resolved,
+        'tickets': tickets,
+        'ticket_counts': ticket_counts,
+        'branch_stats': branch_stats,
+        'branch_most_inquiries': branch_most_inquiries,
+        'total_inquiries': total_inquiries,
         'report_data': report_data,
         'start_date': start_date,
         'end_date': end_date,
