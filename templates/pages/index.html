@@ -113,35 +113,31 @@
                       </select>
                   </div>
   
-                  <div id="support-member-search" class="report-form-group" style="display: none;">
-                      <label for="support-member">Search Support Member:</label>
-                      <div id="suggestions-container" class="suggestions-container">
-                          <select id="support-member-suggestions" class="suggestions-list">
-                              {% if support_members %}
-                                  {% for member in support_members %}
-                                      <option value="{{ member.username }} {{ member.phone_number }}">
-                                          {{ member.username }}  {{ member.phone_number }}
-                                      </option>
-                                  {% endfor %}
-                              {% endif %}
-                          </select>
-                      </div>
-                  </div>
-                  
                   <div id="branch-search" class="report-form-group" style="display: none;">
-                      <label for="branch">Search Branch:</label>
-                      <div id="branch-suggestions-container" class="suggestions-container">
-                          <select id="branch-suggestions" class="suggestions-list">
-                              {% if branches %}
-                                  {% for branch in branches %}
-                                      <option value="{{ branch.name }}">
-                                          {{ branch.name }}
-                                      </option>
-                                  {% endfor %}
-                              {% endif %}
-                          </select>
-                      </div>
-                  </div>
+                    <label for="branch">Search Branch:</label>
+                    <div id="branch-suggestions-container" class="suggestions-container">
+                        <select id="branch-suggestions" class="suggestions-list">
+                            {% if branches %}
+                                {% for branch in branches %}
+                                    <option value="{{ branch.name }}">{{ branch.name }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="support-member-search" class="report-form-group" style="display: none;">
+                    <label for="support-member">Search Support Member:</label>
+                    <div id="suggestions-container" class="suggestions-container">
+                        <select id="support-member-suggestions" class="suggestions-list">
+                            {% if support_members %}
+                                {% for member in support_members %}
+                                    <option value="{{ member.id }}">{{ member.username }}  {{ member.phone_number }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
   
                   <div class="report-form-group">
                       <label for="start-date">Start Date:</label>
@@ -658,6 +654,7 @@ document.getElementById('report-type').addEventListener('change', function(e) {
   }
   else {
       searchSection.style.display = 'none';
+    supportMemberSearch.style.display = 'none';
   }
 });
 
@@ -697,22 +694,47 @@ $(document).ready(function() {
 });
 
 document.getElementById('report-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const submitButton = document.getElementById('submit-button');
-    submitButton.disabled = true;
+  e.preventDefault();
+  const submitButton = document.getElementById('submit-button');
+  submitButton.disabled = true;
 
-    // Add loader
-    const loader = document.createElement('div');
-    loader.className = 'loader';
-    submitButton.appendChild(loader);
+  // Add loader
+  const loader = document.createElement('div');
+  loader.className = 'loader';
+  submitButton.appendChild(loader);
 
-    // Simulate form submission (Replace with actual AJAX request if needed)
-    setTimeout(function() {
-        submitButton.disabled = false;
-        loader.remove();
-        document.getElementById('report-popup').style.display = 'none';
-        alert('Report generated!');
-    }, 3000); // Simulated delay
+  // Gather form data
+  const reportType = document.getElementById('report-type').value;
+  const startDate = document.getElementById('start-date').value;
+  const endDate = document.getElementById('end-date').value;
+  const supportMemberId = document.getElementById('support-member-suggestions').value;
+  const branchId = document.getElementById('branch-suggestions').value;
+
+  let reportUrl;
+
+  // Determine the correct URL based on the report type
+  if (reportType === 'support_member') {
+      reportUrl = `/generate_support_member_report/?start_date=${startDate}&end_date=${endDate}&support_member=${supportMemberId}`;
+  } else if (reportType === 'branch') {
+      reportUrl = `/generate_branch_report/?start_date=${startDate}&end_date=${endDate}&branch=${branchId}`;
+  } else if (reportType === 'weekly') {
+      reportUrl = `/generate_weekly_report/?start_date=${startDate}&end_date=${endDate}`;
+  } else if (reportType === 'overall') {
+      reportUrl = `/generate_overall_report/?start_date=${startDate}&end_date=${endDate}`;
+  }
+
+  // Redirect to the report generation URL
+  setTimeout(function() {
+      submitButton.disabled = false;
+      loader.remove();
+      document.getElementById('report-popup').style.display = 'none';
+
+      if (reportUrl) {
+          window.location.href = reportUrl;
+      } else {
+          alert('Invalid report type selected!');
+      }
+  }, 3000); // Simulated delay
 });
   </script>
   {% comment %} <script>

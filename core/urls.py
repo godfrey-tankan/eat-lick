@@ -44,6 +44,10 @@ urlpatterns = [
     path('escalate/<int:ticket_id>/', escalate_ticket, name='escalate_ticket'),
     path('send-message/<int:ticket_id>/', send_message, name='send_message'),
     path('get/support-members/', support_member_suggestions, name='support_member_suggestions'),
+    path('generate_support_member_report/', generate_support_member_report, name='generate_support_member_report'),
+    path('generate_branch_report/', generate_branch_report, name='generate_branch_report'),
+    path('generate_weekly_report/', generate_weekly_report, name='generate_weekly_report'),
+    path('generate_overall_report/', generate_overall_report, name='generate_overall_report'),
 ]
 urlpatterns += [
     path('tickets/edit/<int:pk>/', TicketEditView.as_view(), name='ticket-edit'),
@@ -66,7 +70,7 @@ urlpatterns += [
     path('tickets/create/', ticket_create, name='ticket-create'),
     path('ticket/<int:pk>/', ticket_detail, name='ticket-detail'),
     path('get-chart-data/', get_chart_data, name='get_chart_data'),
-    path('reports/weekly/', generate_weekly_report, name='generate_weekly_report'),
+    # path('reports/weekly/', generate_weekly_report, name='generate_weekly_report'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
