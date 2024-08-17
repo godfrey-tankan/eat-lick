@@ -98,23 +98,29 @@
       </div>
       {% else %}
       <div class="row">
-        <div id="report-popup" class="popup-form">
-          <div class="popup-content">
-              <span id="close-popup" class="popup-close">&times;</span>
+        <div id="report-popup" class="report-popup-form">
+          <div class="report-popup-content">
+              <span id="close-popup" class="report-popup-close">&times;</span>
               <form id="report-form">
-                  <label for="report-type">Report Type:</label>
-                  <select id="report-type" name="report_type">
-                      <option value="branch">Branch</option>
-                      <option value="support_member">Support Member</option>
-                      <option value="weekly">Weekly</option>
-                      <option value="overall">Overall</option>
-                  </select>
+                  <div class="report-form-group">
+                      <label for="report-type">Report Type:</label>
+                      <select id="report-type" class="report-select" name="report_type">
+                          <option value="branch">Branch</option>
+                          <option value="support_member">Support Member</option>
+                          <option value="weekly">Weekly</option>
+                          <option value="overall">Overall</option>
+                      </select>
+                  </div>
       
-                  <label for="start-date">Start Date:</label>
-                  <input type="datetime-local" id="start-date" name="start_date" required>
+                  <div class="report-form-group">
+                      <label for="start-date">Start Date:</label>
+                      <input type="datetime-local" id="start-date" class="report-datetime-picker" name="start_date" required>
+                  </div>
       
-                  <label for="end-date">End Date:</label>
-                  <input type="datetime-local" id="end-date" name="end_date" required>
+                  <div class="report-form-group">
+                      <label for="end-date">End Date:</label>
+                      <input type="datetime-local" id="end-date" class="report-datetime-picker" name="end_date" required>
+                  </div>
       
                   <button id="submit-button" type="submit" class="btn btn-success">Generate</button>
               </form>
@@ -592,29 +598,29 @@
   });
 
   {% comment %} REPORT JS START {% endcomment %}
-  document.getElementById('unique-generate-report-button').addEventListener('click', function() {
-    document.getElementById('unique-report-popup').style.display = 'flex';
+  document.getElementById('generate-report-button').addEventListener('click', function() {
+    document.getElementById('report-popup').style.display = 'flex';
 });
 
-document.getElementById('unique-close-popup').addEventListener('click', function() {
-    document.getElementById('unique-report-popup').style.display = 'none';
+document.getElementById('close-popup').addEventListener('click', function() {
+    document.getElementById('report-popup').style.display = 'none';
 });
 
-document.getElementById('unique-report-form').addEventListener('submit', function(e) {
+document.getElementById('report-form').addEventListener('submit', function(e) {
     e.preventDefault();
-    const submitButton = document.getElementById('unique-submit-button');
+    const submitButton = document.getElementById('submit-button');
     submitButton.disabled = true;
 
     // Add loader
     const loader = document.createElement('div');
-    loader.className = 'unique-loader';
+    loader.className = 'loader';
     submitButton.appendChild(loader);
 
     // Simulate form submission (Replace with actual AJAX request if needed)
     setTimeout(function() {
         submitButton.disabled = false;
         loader.remove();
-        document.getElementById('unique-report-popup').style.display = 'none';
+        document.getElementById('report-popup').style.display = 'none';
         alert('Report generated!');
     }, 3000); // Simulated delay
 });

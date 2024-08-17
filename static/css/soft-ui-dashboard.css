@@ -484,7 +484,8 @@ fieldset {
 
 /* REPORT FORM STYLES  */
 
-.unique-btn-primary {
+/* Restored original button styles */
+.btn-primary {
   background-color: #007bff;
   color: white;
   border: none;
@@ -493,12 +494,12 @@ fieldset {
   border-radius: 5px;
 }
 
-.unique-btn-primary:active {
+.btn-primary:active {
   transform: scale(0.95);
 }
 
 /* Popup form styling */
-.unique-popup-form {
+.popup-form {
   display: none;
   position: fixed;
   top: 0;
@@ -512,7 +513,7 @@ fieldset {
   z-index: 1000;
 }
 
-.unique-popup-content {
+.popup-content {
   background-color: #fff;
   padding: 20px;
   border-radius: 10px;
@@ -532,14 +533,15 @@ fieldset {
   }
 }
 
-.unique-popup-close {
+.popup-close {
   float: right;
   font-size: 24px;
   cursor: pointer;
   margin-top: -10px;
 }
 
-.unique-btn-submit {
+/* Submit button styles */
+.btn-success {
   background-color: #28a745;
   color: white;
   border: none;
@@ -549,12 +551,13 @@ fieldset {
   position: relative;
 }
 
-.unique-btn-submit:disabled {
+.btn-success:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-.unique-btn-submit .unique-loader {
+/* Rotating loader */
+.btn-success .loader {
   border: 2px solid #f3f3f3;
   border-top: 2px solid #3498db;
   border-radius: 50%;
