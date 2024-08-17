@@ -448,7 +448,7 @@ def generate_branch_report(request):
         pdf_file = HTML(string=html_string).write_pdf()
 
         response = HttpResponse(pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{'branch_name'}_report.pdf"'
+        response['Content-Disposition'] = 'attachment; filename=branch_name_report.pdf'
         return response
     else:
         context = {
@@ -467,7 +467,7 @@ def generate_branch_report(request):
         pdf_file = HTML(string=html_string).write_pdf()
         
         response = HttpResponse(pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{'branch_name'}_report.pdf"'
+        response['Content-Disposition'] = 'attachment; filename=branch_name_report.pdf'
         return response
 
 @csrf_exempt

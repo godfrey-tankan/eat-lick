@@ -460,6 +460,7 @@ def get_image_message(recipient, image_id):
     )
 def forward_message(request):
     print('forwarding message.........>>>>>>')
+    return JsonResponse({'status':'success'})
     
 def get_document_message(recipient, document_id, caption='New document'):
     return json.dumps(
