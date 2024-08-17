@@ -255,7 +255,7 @@ def generate_overall_report(request):
         'report_data': report_data,
         'start_date': start_date,
         'end_date': end_date,
-        'today': datetime.now().strftime('%Y-%m-%d'),
+        'today': datetime.now().strftime('%d %B %Y'),
         'total_opened': total_opened,
         'total_pending': tickets.filter(status='pending').count(),
         'total_closed': total_closed,
