@@ -288,6 +288,14 @@ def generate_overall_report(request):
     return response
 
 def generate_branch_report(request):
+    start_date = request.GET.get('start_date', '2001-01-01')
+    end_date = request.GET.get('end_date', '2050-12-31')
+    try:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    except ValueError:
+        start_date = datetime(2001, 1, 1).date()
+        end_date = datetime(2050, 12, 31).date()
     tickets = Ticket.objects.filter(branch_opened='harare')
     branch_stats = tickets.values('branch_opened').annotate(
             tickets=Count('id')
@@ -303,12 +311,7 @@ def generate_branch_report(request):
     for ticket in tickets:
         report_data.append({
             'title': ticket.title,
-            'open_count': open_tickets_count,
-            'pending_count': pending_tickets_count,
-            'closed_count': closed_tickets_count,
-            'resolved_count': resolved_tickets_count,
-            'branch': ticket.branch_opened,
-            'total_inquiries': total_inquiries,
+            
             'description': ticket.description,
             'created_by': ticket.created_by.username if ticket.created_by else 'N/A',
             'assigned_to': ticket.assigned_to.username if ticket.assigned_to else 'N/A',
@@ -322,7 +325,18 @@ def generate_branch_report(request):
             'time_to_resolve': ticket.get_time_to_resolve(),
         })
     
-    context = {'report_data': report_data, 'branch_name': 'branch_name'}
+    context = {
+        'report_data': report_data, 
+        'branch_name': 'branch_name',
+        'open_count': open_tickets_count,
+        'start_date': datetime.strftime(start_date,'%d %B %Y'),
+        'end_date': datetime.strftime(end_date,'%d %B %Y'),
+        'pending_count': pending_tickets_count,
+        'closed_count': closed_tickets_count,
+        'resolved_count': resolved_tickets_count,
+        'branch': ticket.branch_opened,
+        'total_inquiries': total_inquiries,
+        }
     
     html_string = render_to_string('reports/branch_report.html', context)
     pdf_file = HTML(string=html_string).write_pdf()
