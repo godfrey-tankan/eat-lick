@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from weasyprint import HTML
-from datetime import timedelta
+from datetime import timedelta,datetime
 from django.utils.timezone import now
 from .models import Ticket, SupportMember, Inquirer
 from django.db.models import Count, Q
@@ -95,9 +95,18 @@ def generate_weekly_report(request):
     response['Content-Disposition'] = 'attachment; filename="weekly_report.pdf"'
     return response
 
-
 def generate_overall_report(request):
-    tickets = Ticket.objects.all()
+    # Get start and end dates from the request or set default dates
+    start_date = request.GET.get('start_date', '2001-01-01')
+    end_date = request.GET.get('end_date', '2050-12-31')
+    try:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    except ValueError:
+        start_date = datetime(2001, 1, 1).date()
+        end_date = datetime(2050, 12, 31).date()
+    
+    tickets = Ticket.objects.filter(created_at__range=[start_date, end_date])
     
     report_data = []
     for ticket in tickets:
@@ -126,7 +135,17 @@ def generate_overall_report(request):
     return response
 
 def generate_branch_report(request, branch_name):
-    tickets = Ticket.objects.filter(branch_opened=branch_name)
+    # Get start and end dates from the request or set default dates
+    start_date = request.GET.get('start_date', '2001-01-01')
+    end_date = request.GET.get('end_date', '2050-12-31')
+    try:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    except ValueError:
+        start_date = datetime(2001, 1, 1).date()
+        end_date = datetime(2050, 12, 31).date()
+    
+    tickets = Ticket.objects.filter(branch_opened=branch_name, created_at__range=[start_date, end_date])
     
     report_data = []
     for ticket in tickets:
@@ -154,43 +173,149 @@ def generate_branch_report(request, branch_name):
     response['Content-Disposition'] = f'attachment; filename="{branch_name}_report.pdf"'
     return response
 
-def generate_support_member_report(request):
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
-    support_member_id = request.GET.get('support_member')
+def generate_monthly_report(request):
+    # Get start and end dates from the request or set default dates
+    start_date = request.GET.get('start_date', '2001-01-01')
+    end_date = request.GET.get('end_date', '2050-12-31')
+    try:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    except ValueError:
+        start_date = datetime(2001, 1, 1).date()
+        end_date = datetime(2050, 12, 31).date()
 
-    # Filter tickets based on the support member and date range
-    tickets = Ticket.objects.filter(assigned_to_id=support_member_id, created_at__range=[start_date, end_date])
-    support_member = SupportMember.objects.get(id=support_member_id)
-    
+    tickets = Ticket.objects.filter(created_at__range=[start_date, end_date])
+    support_members = SupportMember.objects.all()
+
     report_data = []
+    total_opened = tickets.filter(status='open').count()
+    total_closed = tickets.filter(status='closed').count()
+    total_resolved = tickets.filter(status='resolved').count()
+    total_pending = tickets.filter(status='pending').count()
+    
+    daily_counts = tickets.values('created_at__date').annotate(
+        opened=Count('id', filter=Q(status='open')),
+        closed=Count('id', filter=Q(status='closed')),
+        resolved=Count('id', filter=Q(status='resolved')),
+        pending_tickets=Count('id', filter=Q(status='pending'))
+    ).order_by('created_at__date')
+    
+    day_most_opened = daily_counts.order_by('-opened').first()
+    day_most_closed = daily_counts.order_by('-closed').first()
+    day_most_resolved = daily_counts.order_by('-resolved').first()
+    day_most_pending = daily_counts.order_by('-pending_tickets').first()
 
-    for ticket in tickets:
-        time_to_resolve = ticket.get_time_to_resolve_duration()
-        time_closed = ticket.closed_at
+    for member in support_members:
+        tickets_for_member = tickets.filter(assigned_to=member.id)
+        resolved_tickets = tickets_for_member.filter(status='resolved')
+        closed_tickets = tickets_for_member.filter(status='closed')
+        pending_tickets = tickets_for_member.filter(status='pending')
+        
+        total_resolved_count = resolved_tickets.count()
+        total_closed_count = closed_tickets.count()
+        pending_tickets_count = pending_tickets.count()
+        
+        total_time = timedelta()
+        resolved_ticket_count = 0
+        
+        for ticket in resolved_tickets:
+            if ticket.resolved_at:
+                total_time += ticket.resolved_at - ticket.created_at
+                resolved_ticket_count += 1
+        
+        average_time_hours = (total_time.total_seconds() / 3600) / resolved_ticket_count if resolved_ticket_count > 0 else 0
+        average_time = f"{average_time_hours:.2f} hours"
         
         report_data.append({
-            'ticket_id': ticket.id,
-            'title': ticket.title,
-            'status': ticket.status,
-            'created_at': ticket.created_at,
-            'resolved_at': ticket.resolved_at,
-            'time_to_resolve': time_to_resolve,
-            'time_closed': time_closed,
+            'member': member.username,
+            'resolved_count': total_resolved_count,
+            'pending_count': pending_tickets_count,
+            'closed_count': total_closed_count,
+            'average_time': average_time
         })
 
     context = {
-        'support_member': support_member.username,
         'report_data': report_data,
         'start_date': start_date,
         'end_date': end_date,
+        'total_opened': total_opened,
+        'total_pending': total_pending,
+        'total_closed': total_closed,
+        'total_resolved': total_resolved,
+        'daily_counts': daily_counts,
+        'day_most_opened': day_most_opened,
+        'day_most_closed': day_most_closed,
+        'day_most_pending': day_most_pending,
+        'day_most_resolved': day_most_resolved,
+    }
+    
+    html_string = render_to_string('reports/monthly_report.html', context)
+    pdf_file = HTML(string=html_string).write_pdf()
+
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="monthly_report.pdf"'
+    return response
+
+def generate_support_member_report(request):
+    # Get start and end dates from the request or set default dates
+    start_date = request.GET.get('start_date', '2001-01-01')
+    end_date = request.GET.get('end_date', '2050-12-31')
+    support_member_id = request.GET.get('support_member')
+    try:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    except ValueError:
+        start_date = datetime(2001, 1, 1).date()
+        end_date = datetime(2050, 12, 31).date()
+
+    tickets = Ticket.objects.filter(created_at__range=[start_date, end_date])
+    support_member = SupportMember.objects.get(id=support_member_id)
+
+    report_data = []
+
+    tickets_for_member = tickets.filter(assigned_to=support_member.id)
+    resolved_tickets = tickets_for_member.filter(status='resolved')
+    closed_tickets = tickets_for_member.filter(status='closed')
+    pending_tickets = tickets_for_member.filter(status='pending')
+    
+    total_resolved_count = resolved_tickets.count()
+    total_closed_count = closed_tickets.count()
+    pending_tickets_count = pending_tickets.count()
+    
+    total_time = timedelta()
+    resolved_ticket_count = 0
+    
+    for ticket in resolved_tickets:
+        if ticket.resolved_at:
+            total_time += ticket.resolved_at - ticket.created_at
+            resolved_ticket_count += 1
+    
+    average_time_hours = (total_time.total_seconds() / 3600) / resolved_ticket_count if resolved_ticket_count > 0 else 0
+    average_time = f"{average_time_hours:.2f} hours"
+    
+    report_data.append({
+        'member': support_member.username,
+        'resolved_count': total_resolved_count,
+        'pending_count': pending_tickets_count,
+        'closed_count': total_closed_count,
+        'average_time': average_time
+    })
+
+    context = {
+        'report_data': report_data,
+        'start_date': start_date,
+        'end_date': end_date,
+        'total_opened': tickets.filter(status='open').count(),
+        'total_pending': tickets.filter(status='pending').count(),
+        'total_closed': tickets.filter(status='closed').count(),
+        'total_resolved': tickets.filter(status='resolved').count(),
     }
     
     html_string = render_to_string('reports/support_member_report.html', context)
     pdf_file = HTML(string=html_string).write_pdf()
 
     response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{support_member.username}_support_member_report.pdf"'
+    response['Content-Disposition'] = 'attachment; filename="support_member_report.pdf"'
     return response
 
 
