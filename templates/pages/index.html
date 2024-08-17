@@ -477,9 +477,11 @@
             console.log('Invalid report type');
         }
     });
+  });
 
-
-
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
         fetch('/get-chart-data/')
             .then(response => response.json())
             .then(data => {
