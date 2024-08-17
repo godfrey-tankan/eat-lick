@@ -484,41 +484,26 @@ fieldset {
 
 /* REPORT FORM STYLES  */
 
-/* Restored original button styles */
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-.btn-primary:active {
-  transform: scale(0.95);
-}
-
-/* Popup form styling */
-.popup-form {
+.report-popup-form {
   display: none;
   position: fixed;
-  top: 0;
+  z-index: 1000;
   left: 0;
+  top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Blurred background */
-  backdrop-filter: blur(5px);
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4); /* Blurred background */
+  backdrop-filter: blur(5px); /* Optional: for extra blur effect */
 }
 
-.popup-content {
-  background-color: #fff;
+.report-popup-content {
+  background-color: #fefefe;
+  margin: 15% auto;
   padding: 20px;
-  border-radius: 10px;
-  width: 300px;
-  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 500px;
   animation: popup-show 0.3s ease;
 }
 
@@ -533,11 +518,28 @@ fieldset {
   }
 }
 
-.popup-close {
+.report-popup-close {
+  color: #aaa;
   float: right;
-  font-size: 24px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.report-popup-close:hover,
+.report-popup-close:focus {
+  color: black;
+  text-decoration: none;
   cursor: pointer;
-  margin-top: -10px;
+}
+
+.report-form-group {
+  margin-bottom: 15px;
+}
+
+.report-select, .report-datetime-picker {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
 }
 
 /* Submit button styles */
