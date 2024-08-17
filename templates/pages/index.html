@@ -644,9 +644,14 @@ document.getElementById('close-popup').addEventListener('click', function() {
 document.getElementById('report-type').addEventListener('change', function(e) {
   const selectedType = this.value;
   const searchSection = document.getElementById('support-member-search');
+  const branchSearch = document.getElementById('branch-search');
+  const supportMemberSearch = document.getElementById('support-member-search');
+
+
 
   if (selectedType === 'support_member') {
       searchSection.style.display = 'block';
+      branchSearch.style.display = 'none';
   } else if (selectedType === 'branch') {
     branchSearch.style.display = 'block';
     supportMemberSearch.style.display = 'none';
