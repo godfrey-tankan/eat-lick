@@ -555,8 +555,8 @@ def generate_support_member_report(request):
             'start_date': start_date,
             'end_date': end_date,
             'total_assigned': total_assigned,
-            'resolved_percentage': resolved_percentage,
-            'closed_percentage': closed_percentage
+            'resolved_percentage': round(resolved_percentage,2),
+            'closed_percentage': round(closed_percentage,2)
         }
 
         html_string = render_to_string('reports/support_member_report.html', context)
