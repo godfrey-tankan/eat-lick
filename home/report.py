@@ -14,9 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def generate_weekly_report(request):
     if request.method == 'GET':
-        print('weekly GET report requested........')
         return JsonResponse({'message':'GET request not allowed'}, status=405)
-    print('weekly POST report requested........')
     today = now().date()
     start_date = today - timedelta(days=today.weekday() + 7)
     end_date = start_date + timedelta(days=6)
@@ -133,9 +131,7 @@ def generate_weekly_report(request):
 @csrf_exempt
 def generate_monthly_report(request):
     if request.method == 'GET':
-        print('MOnthly GET report requested........')
         return JsonResponse({'message':'GET request not allowed'}, status=405)
-    print('monthly POST report requested........')
     data = json.loads(request.body)
     start_date = data.get('start_date',datetime.now().date())
     # Get start and end dates from the request or set default dates
@@ -261,9 +257,7 @@ def generate_monthly_report(request):
 @csrf_exempt
 def generate_overall_report(request):
     if request.method == 'GET':
-        print('Overall GET report requested........')
         return JsonResponse({'message':'GET request not allowed'}, status=405)
-    print('overall report requested........')
     today = now().date()
     data = json.loads(request.body)
     start_date = data.get('start_date', '2001-01-01')
@@ -396,9 +390,7 @@ def generate_overall_report(request):
 @csrf_exempt
 def generate_branch_report(request):
     if request.method == 'GET':
-        print('Branch GET report requested........')
         return JsonResponse({'message':'GET request not allowed'}, status=405)
-    print('branch reported requested........')
     data = json.loads(request.body)
     start_date = data.get('start_date', '2001-01-01')
     end_date = data.get('end_date', '2050-12-31')
@@ -481,9 +473,7 @@ def generate_branch_report(request):
 @csrf_exempt
 def generate_support_member_report(request):
     if request.method == 'GET':
-        print('SPM GET report requested........')
         return JsonResponse({'message':'GET request not allowed'}, status=405)
-    print('support member report requested........')
     # Get start and end dates from the request or set default dates
     data = json.loads(request.body)
     start_date = data.get('start_date', '2001-01-01')

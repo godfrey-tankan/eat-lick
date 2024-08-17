@@ -1,6 +1,12 @@
 from datetime import datetime, timedelta
+from django.utils.timezone import now
+
 
 def get_current_month_dates(today):
+    try:
+        today = datetime.strptime(today, '%Y-%m-%d')
+    except ValueError:
+        today = datetime.strptime(now().date(), '%Y-%m-%d ')
     year = today.year
     month = today.month
     start_date = datetime(year, month, 1)
