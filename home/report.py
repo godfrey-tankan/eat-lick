@@ -293,6 +293,9 @@ def generate_branch_report(request):
             tickets=Count('id')
         ).order_by('branch_opened')
     closed_tickets_count = tickets.filter(status='closed').count()
+    open_tickets_count = tickets.filter(status='open').count()
+    resolved_tickets_count = tickets.filter(status='resolved').count()
+    pending_tickets_count = tickets.filter(status='pending').count()
 
     total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
 
@@ -300,6 +303,10 @@ def generate_branch_report(request):
     for ticket in tickets:
         report_data.append({
             'title': ticket.title,
+            'open_count': open_tickets_count,
+            'pending_count': pending_tickets_count,
+            'closed_count': closed_tickets_count,
+            'resolved_count': resolved_tickets_count,
             'branch': ticket.branch_opened,
             'total_inquiries': total_inquiries,
             'description': ticket.description,

@@ -88,15 +88,12 @@
             </tr>
         </thead>
         <tbody>
-            {% for ticket in ticket_counts %}
             <tr>
-                <td>{{ ticket.open_count }}</td>
-                <td>{{ ticket.pending_count }}</td>
-                <td>{{ ticket.closed_count }}</td>
-                <td>{{ ticket.resolved_count }}</td>
-            
+            <td>{{ ticket.open_count }}</td>
+            <td>{{ ticket.pending_count }}</td>
+            <td>{{ ticket.closed_count }}</td>
+            <td>{{ ticket.resolved_count }}</td>
             </tr>
-            {% endfor %}
         </tbody>
     </table>
     <br />
