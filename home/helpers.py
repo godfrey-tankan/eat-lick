@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
-def get_current_month_dates():
-    today = datetime.now()
+def get_current_month_dates(today):
     year = today.year
     month = today.month
     start_date = datetime(year, month, 1)

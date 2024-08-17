@@ -3,11 +3,13 @@ from django.template.loader import render_to_string
 from weasyprint import HTML
 from datetime import timedelta,datetime
 from django.utils.timezone import now
-from .models import Ticket, SupportMember, Inquirer
+from .models import Ticket, SupportMember, Inquirer, Branch
 from django.db.models import Count, Q
 from .helpers import get_current_month_dates
+import json
 
 def generate_weekly_report(request):
+    print('weekly report requested........')
     today = now().date()
     start_date = today - timedelta(days=today.weekday() + 7)
     end_date = start_date + timedelta(days=6)
@@ -97,8 +99,11 @@ def generate_weekly_report(request):
     return response
 
 def generate_monthly_report(request):
+    print('monthly report requested........')
+    data = json.loads(request.body)
+    start_date = data.get('start_date',datetime.now().date())
     # Get start and end dates from the request or set default dates
-    start_date, end_date = get_current_month_dates()
+    start_date, end_date = get_current_month_dates(start_date)
 
     tickets = Ticket.objects.filter(created_at__range=[start_date, end_date])
     support_members = SupportMember.objects.all()
@@ -191,11 +196,18 @@ def generate_monthly_report(request):
     return response
 
 def generate_overall_report(request):
+    print('overall report requested........')
     today = now().date()
-    start_date = today - timedelta(days=today.weekday() + 7)
-    end_date = start_date + timedelta(days=6)
-
-    tickets = Ticket.objects.all()
+    data = json.loads(request.body)
+    start_date = data.get('start_date', '2001-01-01')
+    end_date = data.get('end_date', '2050-12-31')
+    try:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    except ValueError:
+        start_date = datetime(2001, 1, 1).date()
+        end_date = datetime(2050, 12, 31).date()
+    tickets = Ticket.objects.filter(created_at__range=[start_date, end_date])
     support_members = SupportMember.objects.all()
     inquirers = Inquirer.objects.all()
     
@@ -288,15 +300,19 @@ def generate_overall_report(request):
     return response
 
 def generate_branch_report(request):
-    start_date = request.GET.get('start_date', '2001-01-01')
-    end_date = request.GET.get('end_date', '2050-12-31')
+    print('branch reported requested........')
+    data = json.loads(request.body)
+    start_date = data.get('start_date', '2001-01-01')
+    end_date = data.get('end_date', '2050-12-31')
+    branch_id = data.get('branch')
     try:
         start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
     except ValueError:
         start_date = datetime(2001, 1, 1).date()
         end_date = datetime(2050, 12, 31).date()
-    tickets = Ticket.objects.filter(branch_opened='harare')
+    branch = Branch.objects.get(id=branch_id)
+    tickets = Ticket.objects.filter(branch_opened__icontains=branch.name, created_at__range=[start_date, end_date])
     branch_stats = tickets.values('branch_opened').annotate(
             tickets=Count('id')
         ).order_by('branch_opened')
@@ -346,10 +362,12 @@ def generate_branch_report(request):
     return response
 
 def generate_support_member_report(request):
+    print('support member report requested........')
     # Get start and end dates from the request or set default dates
-    start_date = request.GET.get('start_date', '2001-01-01')
-    end_date = request.GET.get('end_date', '2050-12-31')
-    support_member_id = request.GET.get('support_member')
+    data = json.loads(request.body)
+    start_date = data.get('start_date', '2001-01-01')
+    end_date = data.get('end_date', '2050-12-31')
+    support_member_id = data.get('support_member')
     try:
         start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
@@ -357,7 +375,7 @@ def generate_support_member_report(request):
         start_date = datetime(2001, 1, 1).date()
         end_date = datetime(2050, 12, 31).date()
 
-    support_member = SupportMember.objects.get(id=2)
+    support_member = SupportMember.objects.get(id=support_member_id)
     tickets = Ticket.objects.filter(created_at__range=[start_date, end_date], assigned_to=support_member)
 
     report_data = []
