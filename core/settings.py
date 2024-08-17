@@ -39,7 +39,7 @@ DEBUG = str2bool(os.environ.get('DEBUG'))
 
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://localhost:5085', 'http://127.0.0.1:8000', 'http://127.0.0.1:5085']
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://localhost:5085', 'http://127.0.0.1:8000', 'https://tithehurst.co.zw/']
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:    
@@ -55,8 +55,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'cloudinary_storage',
-    'cloudinary',
     "home",
     "a_bot",
     "rest_framework",
@@ -155,20 +153,18 @@ USE_I18N = True
 
 USE_TZ = True
 MEDIA_URL = 'media/'
-if DEBUG:
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-else:
-    MEDIA_ROOT = BASE_DIR / 'media' 
+# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+MEDIA_ROOT = BASE_DIR / 'media' 
     
 
 # cloudinary_storage.storage.MediaCloudinaryStorage
 # cloudinary_storage.storage.RawMediaCloudinaryStorage 
 # cloudinary_storage.storage.VideoMediaCloudinaryStorage
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv('CLOUD_NAME'),
-    'API_KEY': os.getenv('CLOUD_API_KEY'),
-    'API_SECRET': os.getenv('CLOUD_API_SECRET'),
-}
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': os.getenv('CLOUD_NAME'),
+#     'API_KEY': os.getenv('CLOUD_API_KEY'),
+#     'API_SECRET': os.getenv('CLOUD_API_SECRET'),
+# }
 
 
 # Static files (CSS, JavaScript, Images)
