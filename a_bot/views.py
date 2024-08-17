@@ -159,10 +159,11 @@ def process_whatsapp_message(body):
             data = get_image_message_input(phone_number_id, image_data)
             send_message(data)
         elif message_type == "audio":
-                audio_id = message["audio"]["id"]
-                audio_data = download_media(audio_id, "audio")
-                data = get_audio_message_input(phone_number_id, audio_data)
-                send_message(data)
+            return "audio"
+            audio_id = message["audio"]["id"]
+            audio_data = download_media(audio_id, "audio")
+            data = get_audio_message_input(phone_number_id, audio_data)
+            send_message(data)
         
         elif message_type == "document":
             document_id = message["document"]["id"]
