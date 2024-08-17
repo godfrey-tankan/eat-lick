@@ -46,7 +46,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return assist_support_member(support_member.id,response,message_type,message_id)
 
         if support_member.user_mode == HELPING_MODE or check_ticket:
-            return handle_help(wa_id, response, name)
+            return handle_help(wa_id, response, name,message_type,message_id)
 
         if support_member.user_mode == ACCEPT_TICKET_MODE:
             return accept_ticket(wa_id,name, response)
@@ -183,8 +183,6 @@ def get_audio_message_input(phone_number_id, audio_id):
         }
     )
 
-
-
 def send_message_template(recepient):
     return json.dumps(
     {
@@ -262,7 +260,7 @@ def handle_inquiry(wa_id, response, name):
         broadcast_messages(name,ticket)
     return 'Thank you for contacting us. A support member will be assisting you shortly.'
 
-def handle_help(wa_id, response, name):
+def handle_help(wa_id, response, name,message_type,message_id):
     support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
     inquirer = Inquirer.objects.filter(phone_number=wa_id[0]).first()
     try:
@@ -274,10 +272,18 @@ def handle_help(wa_id, response, name):
             open_inquiries = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member).first()
         except Ticket.DoesNotExist:
             open_inquiries = None
+        if message_type == "document":
+            data = get_document_message(open_inquiries.created_by.phone_number, message_id)
+            return send_message(data)
+        if message_type == "image":
+            data = get_image_message(open_inquiries.created_by.phone_number, message_id)
+            return send_message(data)
+        if message_type == "audio":
+            data = get_audio_message_input(open_inquiries.created_by.phone_number, message_id)
+            return send_message(data)
 
     if open_inquiries:
         if support_member:
-            print('support member')
             try:
                 Message.objects.create(ticket_id=open_inquiries,inquirer=None, support_member=support_member, content=response)
             except Exception as e:
@@ -289,13 +295,20 @@ def handle_help(wa_id, response, name):
             data = get_text_message_input(open_inquiries.created_by.phone_number, response, None)
             return send_message(data)
         else:
-            print('not support member')
+            if message_type == "document":
+                data = get_document_message(open_inquiries.assigned_to.phone_number, message_id)
+                return send_message(data)
+            if message_type == "image":
+                data = get_image_message(open_inquiries.assigned_to.phone_number, message_id)
+                return send_message(data)
+            if message_type == "audio":
+                data = get_audio_message_input(open_inquiries.assigned_to.phone_number, message_id)
+                return send_message(data)
             try:
                 inquirer = Inquirer.objects.filter(phone_number=wa_id[0]).first()
-                # save_messages(open_inquiries.id,inquirer,None,response)
                 Message.objects.create(ticket_id=open_inquiries,inquirer=inquirer, support_member=None, content=response)
             except Exception as e:
-                print('error saving message')
+                ...
             if inquirer and inquirer.user_mode == CONFIRM_RESPONSE:
                 if '1' in response:
                     return mark_as_resolved(open_inquiries.id)
@@ -304,7 +317,6 @@ def handle_help(wa_id, response, name):
                 
             for message in thank_you_messages:
                 if message in response.lower():
-                    print('matched')
                     if inquirer:
                         inquirer.user_mode = CONFIRM_RESPONSE
                         inquirer.save()
@@ -315,17 +327,27 @@ def handle_help(wa_id, response, name):
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number,inquirer_helped_assumed_messages , None)
                     return send_message(data)
                 else:
-                    print('replying to support member')
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
                     return send_message(data)
     return "You have no open inquiries"
-def broadcast_messages(name,ticket=None,message=None,phone_number=None):
+
+def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_type=None,message_id=None):
     support_members = SupportMember.objects.all()
     for support_member in support_members:
         user_mobile = support_member.phone_number
         if user_mobile == phone_number:
             ...
         else:
+            if message_type == "document":
+                data = get_document_message(user_mobile, message_id)
+                return send_message(data)
+            if message_type == "image":
+                data = get_image_message(user_mobile, message_id)
+                return send_message(data)
+            if message_type == "audio":
+                data = get_audio_message_input(user_mobile, message_id)
+                return send_message(data)
+            
             if message:
                 message=message
             else:
@@ -412,7 +434,7 @@ def assist_support_member(support_member_id, response,message_type,message_id):
             support_member.save()
             data = get_text_message_input(support_member.phone_number, passed_support_helping, None)
             return send_message(data)
-        broadcast_messages(None,None,response,support_member.phone_number)
+        broadcast_messages(None,None,response,support_member.phone_number,message_type,message_id)
     elif support_member.user_status == SUPPORT_MEMBER_ASSISTANCE_MODE:
         for thank_you_message in thank_you_messages:
             if thank_you_message in response.lower():
@@ -421,7 +443,7 @@ def assist_support_member(support_member_id, response,message_type,message_id):
                     member.save()
                 data = get_text_message_input(support_member.phone_number, back_to_helping_mode, None)
                 return send_message(data)
-        broadcast_messages(None,None,response,support_member.phone_number)
+        broadcast_messages(None,None,response,support_member.phone_number,message_type,message_id)
     
 def get_image_message(recipient, image_id):
     return json.dumps(
@@ -439,7 +461,7 @@ def get_image_message(recipient, image_id):
 def forward_message(request):
     print('forwarding message.........>>>>>>')
     
-def get_document_message(recipient, document_id, caption=None):
+def get_document_message(recipient, document_id, caption='New document'):
     return json.dumps(
         {
             "messaging_product": "whatsapp",
