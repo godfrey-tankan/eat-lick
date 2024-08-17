@@ -105,41 +105,54 @@
                   <div class="report-form-group">
                       <label for="report-type">Report Type:</label>
                       <select id="report-type" class="report-select" name="report_type">
+                          <option value="overall">Overall</option>
                           <option value="branch">Branch</option>
                           <option value="support_member">Support Member</option>
                           <option value="weekly">Weekly</option>
-                          <option value="overall">Overall</option>
-                          <option value="monthly">Monthly</option> <!-- Added Monthly -->
+                          <option value="monthly">Monthly</option>
                       </select>
                   </div>
-      
+  
                   <div id="support-member-search" class="report-form-group" style="display: none;">
-                    <label for="support-member">Search Support Member:</label>
-                    {% comment %} <input type="text" id="support-member" class="report-search-input" placeholder="Type to search..."> {% endcomment %}
-                    <div id="suggestions-container" class="suggestions-container">
-                        <select id="support-member-suggestions" class="suggestions-list">
-                            {% if support_members %}
-                                {% for member in support_members %}
-                                    <option value="{{ member.username }} {{ member.phone_number }}">
-                                        {{ member.username }}  {{ member.phone_number }}
-                                    </option>
-                                {% endfor %}
-                            {% endif %}
-                        </select>
-                    </div>
-                </div>
-                
-      
+                      <label for="support-member">Search Support Member:</label>
+                      <div id="suggestions-container" class="suggestions-container">
+                          <select id="support-member-suggestions" class="suggestions-list">
+                              {% if support_members %}
+                                  {% for member in support_members %}
+                                      <option value="{{ member.username }} {{ member.phone_number }}">
+                                          {{ member.username }}  {{ member.phone_number }}
+                                      </option>
+                                  {% endfor %}
+                              {% endif %}
+                          </select>
+                      </div>
+                  </div>
+                  
+                  <div id="branch-search" class="report-form-group" style="display: none;">
+                      <label for="branch">Search Branch:</label>
+                      <div id="branch-suggestions-container" class="suggestions-container">
+                          <select id="branch-suggestions" class="suggestions-list">
+                              {% if branches %}
+                                  {% for branch in branches %}
+                                      <option value="{{ branch.name }}">
+                                          {{ branch.name }}
+                                      </option>
+                                  {% endfor %}
+                              {% endif %}
+                          </select>
+                      </div>
+                  </div>
+  
                   <div class="report-form-group">
                       <label for="start-date">Start Date:</label>
                       <input type="date" id="start-date" class="report-datetime-picker" name="start_date" required>
                   </div>
-      
+  
                   <div class="report-form-group">
                       <label for="end-date">End Date:</label>
                       <input type="date" id="end-date" class="report-datetime-picker" name="end_date" required>
                   </div>
-      
+  
                   <button id="submit-button" type="submit" class="btn btn-primary">Generate</button>
               </form>
           </div>
@@ -634,7 +647,11 @@ document.getElementById('report-type').addEventListener('change', function(e) {
 
   if (selectedType === 'support_member') {
       searchSection.style.display = 'block';
-  } else {
+  } else if (selectedType === 'branch') {
+    branchSearch.style.display = 'block';
+    supportMemberSearch.style.display = 'none';
+  }
+  else {
       searchSection.style.display = 'none';
   }
 });
@@ -657,6 +674,13 @@ document.getElementById('support-member-suggestions').addEventListener('click', 
   const selectedOption = event.target;
   if (selectedOption.tagName.toLowerCase() === 'option') {
       document.getElementById('support-member').value = selectedOption.value;
+  }
+});
+
+document.getElementById('branch-suggestions').addEventListener('click', function(event) {
+  const selectedOption = event.target;
+  if (selectedOption.tagName.toLowerCase() === 'option') {
+      document.getElementById('branch').value = selectedOption.value;
   }
 });
 
