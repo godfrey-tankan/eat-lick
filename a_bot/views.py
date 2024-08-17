@@ -129,6 +129,7 @@ def send_message(data,template=False):
 
 def process_whatsapp_message(body):
     data = body
+    print(data)
     try:
         # phone_number_id = data['entry'][0]['changes'][0]['value']['metadata']['phone_number_id']
         phone_number_id =  [contact['wa_id'] for contact in data['entry'][0]['changes'][0]['value']['contacts']]
@@ -389,6 +390,37 @@ def assist_support_member(support_member_id, response):
                 return send_message(data)
         broadcast_messages(None,None,response,support_member.phone_number)
     
+def send_image_message(recipient, image_url):
+    return json.dumps(
+        {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": '263779586059',
+            "type": "image",
+            "image": {
+                "link": 'https://clava.co.zw/assets/images/ai.png',
+            },
+        }
+    )
+def forward_message(request):
+    print('forwarding message.........>>>>>>')
+    # data = send_image_message('263779586059','https://clava.co.zw/assets/images/ai.png')
+    data = get_text_message_input('263779586059','https://clava.co.zw/assets/images/ai.png',None)
+    return send_message(data)
+def send_document_message(recipient, document_url):
+    return json.dumps(
+        {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": recipient,
+            "type": "document",
+            "document": {
+                "link": document_url,
+                "filename": "example.pdf",
+            },
+        }
+    )
+
 def mark_as_resolved( ticket_id,is_closed=False):
     naive_datetime = datetime.now()
     aware_datetime = timezone.make_aware(naive_datetime)
