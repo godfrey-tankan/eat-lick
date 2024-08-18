@@ -48,9 +48,9 @@ class Ticket(models.Model):
 
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
-    created_by = models.ForeignKey(Inquirer, related_name='tickets', on_delete=models.DO_NOTHING, null=True, blank=True)
+    created_by = models.ForeignKey(Inquirer, related_name='tickets', on_delete=models.SET_NULL, null=True, blank=True)
     branch_opened = models.CharField(max_length=20, null=True, blank=True)
-    assigned_to = models.ForeignKey(SupportMember, related_name='assigned_tickets', on_delete=models.DO_NOTHING, null=True, blank=True)
+    assigned_to = models.ForeignKey(SupportMember, related_name='assigned_tickets', on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
     support_level = models.CharField(max_length=20, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -127,15 +127,15 @@ class FAQ(models.Model):
     def __str__(self):
         return f"FAQ: {self.question}"
 class Message(models.Model):
-    inquirer = models.ForeignKey(Inquirer, related_name='messages', on_delete=models.DO_NOTHING, null=True, blank=True)
-    support_member = models.ForeignKey(SupportMember, related_name='messages', on_delete=models.DO_NOTHING, null=True, blank=True)
+    inquirer = models.ForeignKey(Inquirer, related_name='messages', on_delete=models.SET_NULL, null=True, blank=True)
+    support_member = models.ForeignKey(SupportMember, related_name='messages', on_delete=models.SET_NULL, null=True, blank=True)
     image_message = models.ImageField(upload_to='images/', null=True, blank=True)
     image_name = models.CharField(max_length=255, null=True, blank=True)
     audio_message = models.FileField(upload_to='audio/', null=True, blank=True)
     audio_name = models.CharField(max_length=255, null=True, blank=True)
     document_message = models.FileField(upload_to='documents/', null=True, blank=True)
     document_name = models.CharField(max_length=255, null=True, blank=True)
-    ticket_id = models.ForeignKey(Ticket, related_name='messages', on_delete=models.DO_NOTHING, null=True, blank=True)
+    ticket_id = models.ForeignKey(Ticket, related_name='messages', on_delete=models.SET_NULL, null=True, blank=True)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 

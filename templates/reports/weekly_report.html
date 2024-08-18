@@ -86,7 +86,7 @@
     {% comment %} </div> {% endcomment %}
     <h2>Overall Inquiries Statistics</h2>
     <div class="statistics">
-        <p>Total Opened Tickets: <strong>{{ total_opened }}</strong></p>
+        <p>Total Opend Tickets: <strong>{{ total_opened }}</strong></p>
         <p>Total Pending Tickets: <strong>{{ total_pending }}</strong></p>
         <p>Total Closed Tickets: <strong>{{ total_closed }}</strong></p>
         <p>Total Resolved Tickets: <strong>{{ total_resolved }}</strong></p>
@@ -121,7 +121,7 @@
         <thead>
             <tr>
                 <th>Date</th>
-                <th>Opened Tickets</th>
+                <th>Opend Tickets</th>
                 <th>Closed Tickets</th>
                 <th>Pending Tickets</th>
                 <th>Resolved Tickets</th>
@@ -142,7 +142,7 @@
 
     <h2>Highest Daily Volumes</h2>
     <div class="statistics">
-        <p>Day with Most Opened Tickets: <strong>{{ day_most_opened.created_at__date }} ({{ day_most_opened.opened }} tickets)</strong></p>
+        <p>Day with Most Opend Tickets: <strong>{{ day_most_opened.created_at__date }} ({{ day_most_opened.opened }} tickets)</strong></p>
         <p>Day with Most Pending Tickets: <strong>{{ day_most_pending.created_at__date }} ({{ day_most_pending.pending_tickets }} tickets)</strong></p>
         <p>Day with Most Closed Tickets: <strong>{{ day_most_closed.created_at__date }} ({{ day_most_closed.closed }} tickets)</strong></p>
         <p>Day with Most Resolved Tickets: <strong>{{ day_most_resolved.created_at__date }} ({{ day_most_resolved.resolved }} tickets)</strong></p>
