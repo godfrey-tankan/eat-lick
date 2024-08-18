@@ -195,6 +195,16 @@
         border-bottom: 1px solid #ccc;
         position: relative;
     }
+    .phone-input-section{
+        flex-grow: 1;
+        padding: 10px;
+        width:390px;
+        position:fixed;
+        bottom: 17px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-right: -20px;
+    }
     
     .close-btn {
         position: absolute;
@@ -278,8 +288,27 @@
         z-index: 1000;
     }
     .logo {
+        display: flex;
+        align-items: center;
+        height: 50px;
+        width: 50px;
         font-size: 1.5em;
         font-weight: bold;
+    }
+    .logo img {
+        height: 100%;
+        width: 100%;
+        
+    }
+    .chat-logo {
+        height: 30px;
+        width: 30px;
+    }
+    .chat-logo img {
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+        
     }
 
     .nav-links {
@@ -347,7 +376,9 @@
 </style>
 <body>
     <header>
-        <div class="logo">Support</div>
+        <div class="logo">
+            <img src="{%static 'avatars/support.svg'%}" alt="Support">
+        </div>
         <nav class="nav-links">
             <a href="#services">Services</a>
             <a href="#about">About Us</a>
@@ -389,6 +420,9 @@
     </section>
     <div id="chat-popup" class="chat-popup">
         <div class="chat-header">
+            <div class="chat-logo">
+                <img src="{%static 'avatars/support.svg'%}" alt="Support">
+            </div>
             <span>Support Chat</span>
             <button class="close-btn" onclick="closeChat()">x</button>
         </div>
