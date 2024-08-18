@@ -198,12 +198,23 @@
     .phone-input-section{
         flex-grow: 1;
         padding: 10px;
-        width:390px;
+        width:350px;
         position:fixed;
         bottom: 17px;
         border: 1px solid #ccc;
         border-radius: 5px;
         margin-right: -20px;
+    }
+    .phone-input-section input {
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        margin-right: 5px;
+    }
+    .phone-input-section button {
+        border: none;
+        border-radius: 5px;
+        margin-left: 250px;
     }
     
     .close-btn {
@@ -247,7 +258,7 @@
     }
     
     .chat-footer {
-        margin-top: -20px;
+        margin-top: -50px;
         padding: 10px;
         display: flex;
         align-items: center;
@@ -265,8 +276,24 @@
         border-radius: 5px;
         margin-right: 5px;
     }
+    .phone-input{
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-right: 5px;
+    }
     
     .send-btn {
+        background-color: #007bff;
+        color: #fff;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .phone-send-btn{
         background-color: #007bff;
         color: #fff;
         padding: 10px;
@@ -431,14 +458,15 @@
                 <!-- Messages will be dynamically loaded here -->
             </div>
         </div>
-        <div class="phone-input-section">
-            <input type="text" id="phone-input" placeholder="Enter your phone number..." class="chat-input" />
-            <button id="phone-submit-btn" class="send-btn">Submit</button>
-        </div>
-        <div class="chat-footer" style="display: none;">
-            <input type="file" id="upload-file" class="upload-input" />
-            <input type="text" id="chat-input" placeholder="Type a message..." class="chat-input" />
-            <button id="send-btn" class="send-btn">Send</button>
+        {% comment %} <div class="phone-input-section">
+        </div> {% endcomment %}
+
+        <div class="chat-footer" >
+            <input type="text" id="phone-input" placeholder="Enter your phone number..." class="phone-input" />
+            <button id="phone-submit-btn" class="phone-send-btn">Submit</button>
+            <input type="file" style="display: none;" id="upload-file" class="upload-input" />
+            <input type="text" style="display: none;" id="chat-input" placeholder="Type a message..." class="chat-input" />
+            <button id="send-btn" style="display: none;" class="send-btn">Send</button>
         </div>
     </div>
 
@@ -492,9 +520,11 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                document.getElementById('phone-submit-btn').style.display = 'none';
+                document.getElementById('phone-input').style.display = 'none';
+                document.getElementById('chat-input').style.display = 'block';
+                document.querySelector('.send-btn').style.display = 'block';
                 displayMessage(data.message, 'received');
-                document.querySelector('.chat-footer').style.display = 'flex';
-                document.querySelector('.phone-input-section').style.display = 'none';
             } else {
                 alert('Error: ' + data.error);
             }
