@@ -74,7 +74,7 @@ def generate_weekly_report(request):
         # Additional statistics
         branch_stats = tickets.values('branch_opened').annotate(
             tickets=Count('id')
-        ).order_by('branch_opened')
+        ).order_by('tickets__count')
 
         branch_most_inquiries = branch_stats.first()
         total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
