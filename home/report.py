@@ -615,6 +615,6 @@ def generate_support_member_report(request):
             response['Content-Disposition'] = 'attachment; filename="support_member_report.pdf"'
             return response
     except Exception as e:
-        return JsonResponse({'message':str(e)}, status=500)
+        return HttpResponse(str(e), status=500)
 
 
