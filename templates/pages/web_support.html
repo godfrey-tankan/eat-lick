@@ -1,6 +1,13 @@
-{%extends 'layouts/base.html'%}
 {% load static %}
-{% include 'includes/navigation-fullscreen.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Support Landing Page</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap">
+</head>
 <style>
 
     body {
@@ -262,15 +269,91 @@
         cursor: pointer;
         z-index: 1000;
     }
+    .logo {
+        font-size: 1.5em;
+        font-weight: bold;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 20px;
+    }
+
+    .nav-links a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .nav-links a:hover {
+        text-decoration: underline;
+    }
+
+    .cta-button {
+        background: #fff;
+        color: #007bff;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background 0.3s ease;
+    }
+
+    .cta-button:hover {
+        background: #f0f0f0;
+    }
+
+    @media (max-width: 768px) {
+        .nav-links {
+            display: none;
+        }
+
+        .cta-button {
+            padding: 8px 16px;
+        }
+
+        .menu-toggle {
+            display: block;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+    }
+
+    @media (min-width: 769px) {
+        .menu-toggle {
+            display: none;
+        }
+    }
+
+    .nav-links.show {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        background: #333;
+        padding: 10px;
+        border-radius: 5px;
+    }
     
 </style>
 <body>
+    <header>
+        <div class="logo">Support</div>
+        <nav class="nav-links">
+            <a href="#services">Services</a>
+            <a href="#about">About Us</a>
+            <a href="#contact">Contact</a>
+            <a href="#support" class="cta-button">Request support</a>
+        </nav>
+        <div class="menu-toggle">☰</div>
+    </header>
     <header class="hero-section">
         <div class="overlay"></div>
         <div class="hero-content">
-            <h1>Welcome to Web Support</h1>
-            <p>Your reliable partner for all web-related support needs.</p>
-            <a href="#contact" class="cta-button">Get Support Now</a>
+            <h1>Welcome to Web-version Support</h1>
+            <p>We promise to assist you as soon as we can </p>
+            <a id='open-chat-btn' class="cta-button">Have an inquiry?</a>
         </div>
     </header>
 
@@ -334,6 +417,9 @@
     document.getElementById('open-chat-btn').addEventListener('click', function () {
         document.getElementById('chat-popup').style.display = 'block';
     });
+    document.querySelector('.menu-toggle').addEventListener('click', function() {
+        document.querySelector('.nav-links').classList.toggle('show');
+    });
     
     function closeChat() {
         document.getElementById('chat-popup').style.display = 'none';
@@ -346,7 +432,7 @@
         const csrftoken = getCSRFToken();
         let phoneRegex = /^((07[1378]\d{7})|(263[1378]\d{8})|(\+263[1378]\d{8}))$/;
 
-        if (!phoneRegex.test(ph)) {
+        if (!phoneRegex.test(phoneNumber)) {
             displayMessage('Please enter a valid phone number.', 'received');
             return; 
         }
@@ -412,4 +498,4 @@
         chatBody.scrollTop = chatBody.scrollHeight;
     }
 </script>
-{% include "includes/footer.html" %}
+</html>
