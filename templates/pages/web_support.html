@@ -103,8 +103,8 @@
         
         .contact-section {
             padding: 60px 20px;
-            background: #007bff;
-            color: #fff;
+            background: #f9fafb;
+            color: #000;
             text-align: center;
         }
         
@@ -310,7 +310,11 @@
                 <!-- Messages will be dynamically loaded here -->
             </div>
         </div>
-        <div class="chat-footer">
+        <div class="phone-input-section">
+            <input type="text" id="phone-input" placeholder="Enter your phone number..." class="chat-input" />
+            <button id="phone-submit-btn" class="send-btn">Submit</button>
+        </div>
+        <div class="chat-footer" style="display: none;">
             <input type="file" id="upload-file" class="upload-input" />
             <input type="text" id="chat-input" placeholder="Type a message..." class="chat-input" />
             <button id="send-btn" class="send-btn">Send</button>
@@ -336,24 +340,57 @@
     document.getElementById('open-chat-btn').addEventListener('click', function () {
         document.getElementById('chat-popup').style.display = 'block';
     });
-
+    
     function closeChat() {
         document.getElementById('chat-popup').style.display = 'none';
     }
-
+    
+    // Handle Phone Number Submission
+    document.getElementById('phone-submit-btn').addEventListener('click', function () {
+        let phoneNumber = document.getElementById('phone-input').value.trim();
+        if (phoneNumber !== '') {
+            // Send phone number to the backend
+            fetch('/api/submit-phone/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ phone: phoneNumber }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayMessage(data.message, 'received');
+                    // Show the chat footer after successful phone submission
+                    document.querySelector('.chat-footer').style.display = 'flex';
+                    document.querySelector('.phone-input-section').style.display = 'none';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    });
+    
+    // Handle Chat Message Submission
     document.getElementById('send-btn').addEventListener('click', function () {
         let input = document.getElementById('chat-input');
         let message = input.value;
         if (message.trim() !== '') {
-            let messageElement = document.createElement('div');
-            messageElement.classList.add('message', 'sent');
-            messageElement.innerText = message;
-            document.querySelector('.messages').appendChild(messageElement);
+            displayMessage(message, 'sent');
             input.value = '';  // Clear the input
             scrollToBottom();  // Scroll to the latest message
         }
     });
-
+    
+    function displayMessage(message, type) {
+        let messageElement = document.createElement('div');
+        messageElement.classList.add('message', type);
+        messageElement.innerText = message;
+        document.querySelector('.messages').appendChild(messageElement);
+        scrollToBottom();
+    }
+    
     function scrollToBottom() {
         let chatBody = document.querySelector('.chat-body');
         chatBody.scrollTop = chatBody.scrollHeight;
