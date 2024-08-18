@@ -71,7 +71,13 @@
     </style>
 </head>
 <body>
-    <h2>{{branch|upper}} Branch Report ({{ start_date }} to {{ end_date }})</h2>
+    <h2>{{branch|upper}} Branch Report - 
+        {% if start_date%}
+        ({{ start_date }} to {{ end_date }})
+        {% else %}
+        Full Report
+        {% endif %}
+    </h2>
 <br />
 <br />
 <p>Inquiries: <strong>{{ total_inquiries }}</strong></p>
