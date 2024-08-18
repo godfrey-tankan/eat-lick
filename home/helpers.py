@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from django.utils.timezone import now
 import re
 
-
 def get_current_month_dates(today=None):
     if today:
         try:
