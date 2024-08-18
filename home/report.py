@@ -337,8 +337,8 @@ def generate_overall_report(request):
 
         context = {
             'report_data': report_data,
-            'start_date': start_date,
-            'end_date': end_date,
+            'start_date': None if '2001' in str(start_date) else start_date,
+            'end_date': None if '2050' in str(end_date) else end_date,
             'today': datetime.now().strftime('%d %B %Y'),
             'total_opened': total_opened,
             'total_pending': tickets.filter(status='pending').count(),
@@ -588,8 +588,8 @@ def generate_support_member_report(request):
             'branch_most_inquiries': None,
             'total_inquiries': 0,
             'report_data': [],
-            'start_date': start_date,
-            'end_date': end_date,
+            'start_date': None,
+            'end_date': None,
             'total_assigned': 0,
             'resolved_percentage': 0,
             'closed_percentage': 0
