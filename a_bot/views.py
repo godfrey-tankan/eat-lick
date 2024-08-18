@@ -527,6 +527,8 @@ def web_messaging(ticket_id,message=None,is_broadcasting=False):
     data =get_text_message_input(ticket.created_by.phone_number, message, None)
     return send_message(data)
 
-def alert_support_members(name,ticket, message):
+def alert_support_members(name,ticket, message,resolved=False):
+    if resolved:
+        return mark_as_resolved(ticket.id)
     return broadcast_messages(name,ticket)
     

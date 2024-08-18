@@ -27,6 +27,11 @@ def web_support(request):
         except Inquirer.DoesNotExist:
             get_inquirer = None
         if get_inquirer:
+            for msg in resolve_ticket_responses:
+                if msg in message:
+                    ticket_in_pg = Ticket.objects.filter(created_by=get_inquirer, status__in=['open', 'pending']).last()
+                    alert_support_members(get_inquirer.username,ticket_in_pg, message,True)
+                    return JsonResponse({'success': True, 'message': resolve_ticket_responses[msg]})
             if get_inquirer.user_mode == INQUIRY_MODE:
                 return create_web_inquiry(get_inquirer, message)
             if get_inquirer.user_mode == NAMES_MODE:
