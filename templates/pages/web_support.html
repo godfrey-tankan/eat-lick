@@ -611,13 +611,9 @@
         }
     }
     
-    // Function to repeatedly fetch messages every 5 seconds if chat-popup is displayed
     function startFetchingMessages(ticketId) {
-        // Initial fetch
         fetchMessages(ticketId);
-        
-        // Fetch every 5 seconds only if chat-popup is visible
-        setInterval(() => fetchMessages(ticketId), 5000);
+        setInterval(() => fetchMessages(ticketId), 7000);
     }
 
     function getCSRFToken() {
