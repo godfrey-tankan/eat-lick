@@ -74,7 +74,7 @@ def generate_weekly_report(request):
         # Additional statistics
         branch_stats = tickets.values('branch_opened').annotate(
             tickets=Count('id')
-        ).order_by('tickets__count')
+        ).order_by('-tickets')
 
         branch_most_inquiries = branch_stats.first()
         total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
@@ -130,7 +130,7 @@ def generate_weekly_report(request):
 @csrf_exempt
 def generate_monthly_report(request):
     data = json.loads(request.body)
-    start_date = data.get('start_date',datetime.now().date())
+    start_date = data.get('start_date',None)
     # Get start and end dates from the request or set default dates
     start_date, end_date = get_current_month_dates(start_date)
 
@@ -139,7 +139,7 @@ def generate_monthly_report(request):
         support_members = SupportMember.objects.all()
         branch_stats = tickets.values('branch_opened').annotate(
             tickets=Count('id')
-        ).order_by('tickets__count')
+        ).order_by('-tickets')
         ticket_counts = tickets.values('branch_opened').annotate(
             open_count=Count('id', filter=Q(status='open')),
             pending_count=Count('id', filter=Q(status='pending')),
