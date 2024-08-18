@@ -466,7 +466,7 @@
             <button id="phone-submit-btn" class="phone-send-btn">Submit</button>
             <input type="file" style="display: none;" id="upload-file" class="upload-input" />
             <input type="text" style="display: none;" id="chat-input" placeholder="Type a message..." class="chat-input" />
-            <button id="send-btn" style="display: none;" class="send-btn">Send</button>
+            <button id="send-btn" style="display: none;"onclick="sendMessage()" class="send-btn">Send</button>
         </div>
     </div>
 
@@ -532,10 +532,43 @@
         .catch(error => console.error('Error:', error));
         }
     });
+    function sendMessage() {
+        const messageInput = document.getElementById('message-input');
+        const messageText = messageInput.value.trim();
+        const messagesContainer = document.getElementById('messages-container');
+    
+        if (messageText === '') {
+            return;
+        }
+    
+        // Display the message immediately in the chat window
+        const newMessage = document.createElement('div');
+        newMessage.classList.add('message', 'sent');
+        newMessage.textContent = messageText;
+        messagesContainer.appendChild(newMessage);
+    
+        // Clear the input
+        messageInput.value = '';
+    
+        // Scroll to the latest message
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+        // Send the message to the backend
+        axios.post('/send-message/', { message: messageText })
+            .then(response => {
+                console.log('Message sent successfully:', response.data);
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+    
+                // Optionally, you can add a retry mechanism or notify the user about the error.
+            });
+    }
     
     // Handle Chat Message Submission
     document.getElementById('send-btn').addEventListener('click', function () {
         let input = document.getElementById('chat-input');
+        
         let message = input.value;
         if (message.trim() !== '') {
             displayMessage(message, 'sent');
