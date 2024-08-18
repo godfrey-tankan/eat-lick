@@ -488,7 +488,7 @@
 </body>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-    let ticketId = 0;  // Replace with the actual ticket ID
+    let ticketId = localStorage.getItem('ticketId');  // Replace with the actual ticket ID
     let fetchingInterval;
     document.getElementById('open-chat-btn').addEventListener('click', function () {
         document.getElementById('chat-popup').style.display = 'block';
@@ -534,9 +534,7 @@
                 document.getElementById('chat-input').style.display = 'block';
                 document.querySelector('.send-btn').style.display = 'block';
                 displayMessage(data.message, 'received');
-                if (!fetchingInterval) {
-                    startFetchingMessages(ticketId); 
-                }
+                
             } else {
                 displayMessage(data.error, 'received');
             }
@@ -553,14 +551,14 @@
         if (message.trim() !== '') {
             displayMessage(message, 'sent');
             input.value = '';  // Clear the input
-            scrollToBottom();  // Scroll to the latest message
+            scrollToBottom();  
             phone=localStorage.getItem('userPhoneNumber');
             const csrftoken = getCSRFToken();
             fetch('chat/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken,  // Add this line
+                    'X-CSRFToken': csrftoken,  
                 },
                 body: JSON.stringify({ phone: phone, message: message }),
             })
@@ -572,6 +570,9 @@
                     if (ticketIdMatch) {
                         ticketId = ticketIdMatch[1]; 
                         localStorage.setItem('ticketId', ticketId);
+                    }
+                    if (!fetchingInterval) {
+                        startFetchingMessages(ticketId); 
                     }
                 } else {
                     alert('Error: ' + data.error);

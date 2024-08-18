@@ -31,7 +31,7 @@ def web_support(request):
                 if msg in message:
                     ticket_in_pg = Ticket.objects.filter(created_by=get_inquirer, status__in=['open', 'pending']).last()
                     alert_support_members(get_inquirer.username,ticket_in_pg, message,True)
-                    return JsonResponse({'success': True, 'message': resolve_ticket_responses[msg]})
+                    return JsonResponse({'success': True, 'message': f'Hello {get_inquirer.username.split()[0]}, your inquiry has been resolved. Thank you for reaching out.'})
             if get_inquirer.user_mode == INQUIRY_MODE:
                 return create_web_inquiry(get_inquirer, message)
             if get_inquirer.user_mode == NAMES_MODE:
@@ -57,9 +57,9 @@ def create_web_inquiry(inquirer, message):
         pending_tickets = None
     if pending_tickets:
         if len(message) < 5:
-            return JsonResponse({'success': True, 'message': f'Hello {inquirer.username.split()[0]}, you have a pending ticket. Please wait for a support member to respond.'})
+            return JsonResponse({'success': True, 'message': f'Hello {inquirer.username.split()[0]}, you have a pending ticket. Please wait for a support member to respond. You just reply with #done or #resolved when you are helped.'})
         new_msg = Message.objects.create(ticket_id=pending_tickets.last(),inquirer=inquirer, content=message)
-        return JsonResponse({'success': True, 'message': f'Someone is attending to your inquiry. Please wait for a response.'})
+        return JsonResponse({'success': True, 'message': f'Someone is attending to your inquiry. Please wait for a response.You can reply with #done or #resolved anytime when you are helped.'})
     ticket=Ticket.objects.create(title=message.split()[0], created_by=inquirer,description=message, status='open')
     TicketLog.objects.create(ticket=ticket, status=ticket.status, changed_by=inquirer)
     alert_support_members(inquirer.username,ticket, message)
