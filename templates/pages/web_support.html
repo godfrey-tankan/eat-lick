@@ -1,4 +1,4 @@
-{% extends 'layouts/base.html' %}
+{% extends 'layouts/na' %}
 {% load static %}
 
 {% block content %}
@@ -150,4 +150,5 @@
         chatBody.scrollTop = chatBody.scrollHeight;
     }
 </script>
-</html>
+{% include "includes/footer.html" %}
+{% endblock content %}
