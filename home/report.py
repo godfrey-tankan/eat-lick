@@ -4,7 +4,8 @@ from weasyprint import HTML
 from datetime import timedelta,datetime
 from django.utils.timezone import now
 from .models import Ticket, SupportMember, Inquirer, Branch, TicketLog
-from django.db.models import Count, Q,OuterRef,Exists
+from django.db.models import Count, Q,OuterRef,Exists,Avg,FloatField
+from django.db.models.functions import Cast
 from .helpers import get_current_month_dates
 import json
 from django.http import JsonResponse
@@ -481,11 +482,14 @@ def generate_support_member_report(request):
         ticket=OuterRef('pk'),
         changed_by__icontains='escalated'
     ).values('id')
+
     tickets = Ticket.objects.filter(created_at__range=[start_date, end_date], assigned_to=support_member).annotate(
         message_count=Count('messages'),
-            is_escalated=Exists(escalated_subquery)
+        is_escalated=Exists(escalated_subquery),
+        average_rating=Avg(Cast('support_level', FloatField()))
     )
-    
+    average_rating = tickets.aggregate(average_rating=Avg(Cast('support_level', FloatField())))['average_rating']
+        
     if tickets:
         branch_stats = tickets.values('branch_opened').annotate(
             tickets=Count('id')
@@ -540,6 +544,7 @@ def generate_support_member_report(request):
         ]
 
         context = {
+            'average_rating': average_rating,
             'support_member': support_member.username,
             'total_opened': total_opened,
             'total_pending': total_pending,

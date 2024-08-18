@@ -85,6 +85,10 @@ class Ticket(models.Model):
     def get_time_to_resolve_duration(self):
         end_time = self.resolved_at or self.closed_at or now()
         return end_time - self.created_at
+    def save(self, *args, **kwargs):
+        if self.support_level:
+            self.support_level = self.support_level.split('/')[0]
+        super().save(*args, **kwargs)
     def __str__(self):
         return f"Ticket #{self.id} - {self.title} ({self.status})"
     
