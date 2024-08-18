@@ -51,6 +51,7 @@ urlpatterns = [
     path('generate_overall_report/', generate_overall_report, name='generate_overall_report'),
     path('generate_monthly_report/', generate_monthly_report, name='generate_monthly_report'),
     path('web-support/', web_support, name='web_support'),
+    path('web-support/chat/', web_support, name='web_support'),
 ]
 urlpatterns += [
     path('tickets/edit/<int:pk>/', TicketEditView.as_view(), name='ticket-edit'),

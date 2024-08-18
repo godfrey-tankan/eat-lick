@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -284,17 +285,17 @@
         <h2>Our Services</h2>
         <div class="features-container">
             <div class="feature-box">
-                <img src="path-to-image/support.jpg" alt="Support">
+                <img src="{%static 'avatars/avatar.svg'%}" alt="Support">
                 <h3>24/7 Support</h3>
                 <p>We provide round-the-clock assistance to ensure your website runs smoothly.</p>
             </div>
             <div class="feature-box">
-                <img src="path-to-image/consultation.jpg" alt="Consultation">
+                <img src="{%static 'avatars/avatar.svg'%}" alt="Consultation">
                 <h3>Consultation</h3>
                 <p>Expert advice on how to improve your web presence and optimize performance.</p>
             </div>
             <div class="feature-box">
-                <img src="path-to-image/troubleshooting.jpg" alt="Troubleshooting">
+                <img src="{%static 'avatars/avatar.svg'%}" alt="Troubleshooting">
                 <h3>Troubleshooting</h3>
                 <p>Quick and efficient solutions to any web-related issues you encounter.</p>
             </div>
@@ -349,26 +350,33 @@
     document.getElementById('phone-submit-btn').addEventListener('click', function () {
         let phoneNumber = document.getElementById('phone-input').value.trim();
         if (phoneNumber !== '') {
-            // Send phone number to the backend
-            fetch('/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ phone: phoneNumber }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    displayMessage(data.message, 'received');
-                    // Show the chat footer after successful phone submission
-                    document.querySelector('.chat-footer').style.display = 'flex';
-                    document.querySelector('.phone-input-section').style.display = 'none';
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            })
-            .catch(error => console.error('Error:', error));
+        const csrftoken = getCSRFToken();
+        let phoneRegex = /^((07[1378]\d{7})|(263[1378]\d{8})|(\+263[1378]\d{8}))$/;
+
+        if (!phoneRegex.test(phoneNumber)) {
+            displayMessage('Please enter a valid phone number.', 'received');
+            return; 
+        }
+
+        fetch('chat/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,  // Add this line
+            },
+            body: JSON.stringify({ phone: phoneNumber }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayMessage(data.message, 'received');
+                document.querySelector('.chat-footer').style.display = 'flex';
+                document.querySelector('.phone-input-section').style.display = 'none';
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => console.error('Error:', error));
         }
     });
     
@@ -389,6 +397,21 @@
         messageElement.innerText = message;
         document.querySelector('.messages').appendChild(messageElement);
         scrollToBottom();
+    }
+
+    function getCSRFToken() {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, 10) === ('csrftoken=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(10));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
     
     function scrollToBottom() {

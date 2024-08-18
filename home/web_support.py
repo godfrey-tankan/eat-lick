@@ -9,20 +9,16 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .forms import *
 import json
 from django.views.decorators.csrf import csrf_exempt
-
+from .helpers import format_phone_number
 
 @csrf_exempt
 def web_support(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         phone = data.get('phone')
-
-        # Validate the phone number (optional)
+        phone = format_phone_number(phone)
         if not phone:
             return JsonResponse({'success': False, 'error': 'Phone number is required.'})
-
-        # Process the phone number (e.g., save to the database, validate, etc.)
-        # For now, just return a success response with a welcome message
         return JsonResponse({'success': True, 'message': f'Welcome! Your phone number {phone} has been registered.'})
 
         return JsonResponse({'success': False, 'error': 'Invalid request method.'})
