@@ -58,4 +58,4 @@ def create_web_inquiry(inquirer, message):
     ticket=Ticket.objects.create(title=message.split()[0], created_by=inquirer,description=message, status='open')
     TicketLog.objects.create(ticket=ticket, status=ticket.status, changed_by=inquirer)
     alert_support_members(inquirer.username,ticket, message)
-    return JsonResponse({'success': True, 'message': f'Hello {inquirer.username.split()[0]}, your inquiry has been received. A support member will be with you shortly.'})
+    return JsonResponse({'success': True, 'message': f'Hello {inquirer.username.split()[0]}, your inquiry #{ticket.id} has been received. A support member will be with you shortly.'})
