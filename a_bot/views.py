@@ -297,32 +297,7 @@ def handle_help(wa_id, response, name,message_type,message_id):
             except Exception as e:
                 ...
             if inquirer and inquirer.user_mode == CONFIRM_RESPONSE:
-                try:
-                    last_msg = Message.objects.filter(ticket_id=open_inquiries).last()
-                except Message.DoesNotExist:
-                    last_msg = None
-                if last_msg:
-                    last_msg.support_level=response
-                    last_msg.save()
-                    data = get_text_message_input(inquirer.phone_number, '✨Thank you for your feedback.', None)
-                    send_message(data)
-                    inquirer.user_mode = WAITING_MODE
-                    inquirer.save()
-                    return ''
-                    
-            
-            if inquirer and inquirer.user_mode == CONFIRM_RESPONSE:
-                if '1' in response:
-                    data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
-                    send_message(data)
-                    inquirer.user_mode = SUPPORT_RATING
-                    inquirer.save()
-                    
-                    return mark_as_resolved(open_inquiries.id)
-                elif '2' in response:
-                    return mark_as_resolved(open_inquiries.id,True)
-                
-                
+                return inquirer_assistance_response(response, open_inquiries, inquirer)
             for message in thank_you_messages:
                 if message in response.lower():
                     if inquirer:
@@ -331,15 +306,24 @@ def handle_help(wa_id, response, name,message_type,message_id):
                         data = get_text_message_input(inquirer.phone_number, 'Hello', 'customer_helped_template',True)
                         # is_inquirer_helped.format(inquirer.username.split()[0].title(),open_inquiries.description)
                         return send_message(data)
-                        
+
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
                     send_message(data)
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number,inquirer_helped_assumed_messages , None)
-                    return send_message(data)
                 else:
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
-                    return send_message(data)
+                return send_message(data)
     return "You have no open inquiries"
+
+
+def inquirer_assistance_response(response, open_inquiries, inquirer):
+    open_inquiries.support_level = response
+    open_inquiries.save()
+    data = get_text_message_input(inquirer.phone_number, '✨Thank you for your feedback.', None)
+    send_message(data)
+    inquirer.user_mode = WAITING_MODE
+    inquirer.save()
+    return ''
 
 def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_type=None,message_id=None):
     support_members = SupportMember.objects.all()
