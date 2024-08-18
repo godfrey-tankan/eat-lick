@@ -158,21 +158,6 @@
         padding: 20px;
         text-align: center;
     }
-    @media (max-width: 768px) {
-        #chat-popup {
-            display: none;
-            position: fixed;
-            bottom: 17px;
-            right: 20px;
-            width: 80%;
-            height: 60%;
-            background-color: #ffffff;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            z-index: 9000;
-        }
-    }
     #chat-popup {
         display: none;
         position: fixed;
@@ -185,6 +170,21 @@
         border-radius: 10px;
         overflow: hidden;
         z-index: 9000;
+    }
+    @media (max-width: 768px) {
+        #chat-popup {
+            display: none;
+            position: fixed;
+            bottom: 17px;
+            right: 20px;
+            width: 90%;
+            height: 70%;
+            background-color: #ffffff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            z-index: 9000;
+        }
     }
     .chat-header {
         padding: 10px;
