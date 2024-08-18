@@ -139,7 +139,7 @@ def generate_monthly_report(request):
         support_members = SupportMember.objects.all()
         branch_stats = tickets.values('branch_opened').annotate(
             tickets=Count('id')
-        ).order_by('branch_opened')
+        ).order_by('tickets__count')
         ticket_counts = tickets.values('branch_opened').annotate(
             open_count=Count('id', filter=Q(status='open')),
             pending_count=Count('id', filter=Q(status='pending')),
