@@ -490,7 +490,7 @@ def generate_support_member_report(request):
     if tickets:
         branch_stats = tickets.values('branch_opened').annotate(
             tickets=Count('id')
-        ).order_by('branch_opened')
+        ).order_by('tickets__count')
         
         
         ticket_counts = tickets.values('branch_opened').annotate(
