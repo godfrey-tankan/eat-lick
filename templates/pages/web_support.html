@@ -488,8 +488,11 @@
 </body>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
+    let ticketId = 0;  // Replace with the actual ticket ID
+    let fetchingInterval;
     document.getElementById('open-chat-btn').addEventListener('click', function () {
         document.getElementById('chat-popup').style.display = 'block';
+
     });
     document.querySelector('.menu-toggle').addEventListener('click', function() {
         document.querySelector('.nav-links').classList.toggle('show');
@@ -497,6 +500,10 @@
     
     function closeChat() {
         document.getElementById('chat-popup').style.display = 'none';
+        if (fetchingInterval) {
+            clearInterval(fetchingInterval);
+            fetchingInterval = null;
+        }
     }
     
     // Handle Phone Number Submission
@@ -527,6 +534,9 @@
                 document.getElementById('chat-input').style.display = 'block';
                 document.querySelector('.send-btn').style.display = 'block';
                 displayMessage(data.message, 'received');
+                if (!fetchingInterval) {
+                    startFetchingMessages(ticketId); 
+                }
             } else {
                 displayMessage(data.error, 'received');
             }
@@ -558,6 +568,11 @@
             .then(data => {
                 if (data.success) {
                     displayMessage(data.message, 'received');
+                    const ticketIdMatch = data.message.match(/#(\d+)/);
+                    if (ticketIdMatch) {
+                        ticketId = ticketIdMatch[1]; 
+                        localStorage.setItem('ticketId', ticketId);
+                    }
                 } else {
                     alert('Error: ' + data.error);
                 }
@@ -575,6 +590,33 @@
         messageElement.innerText = message;
         document.querySelector('.messages').appendChild(messageElement);
         scrollToBottom();
+    }
+    function fetchMessages(ticketId) {
+        // Check if chat-popup is visible
+        const chatPopup = document.getElementById('chat-popup');
+        if (chatPopup.style.display === 'block') {
+            fetch(`/ticket/${ticketId}/fetch-messages/`)
+                .then(response => response.json())
+                .then(data => {
+                    const messagesContainer = document.querySelector('.messages');
+                    messagesContainer.innerHTML = ''; // Clear existing messages
+    
+                    data.messages.forEach(messageData => {
+                        const messageType = messageData.inquirer ? 'sent' : 'received';
+                        displayMessage(`${messageData.username}: ${messageData.content}`, messageType);
+                    });
+                })
+                .catch(error => console.error('Error fetching messages:', error));
+        }
+    }
+    
+    // Function to repeatedly fetch messages every 5 seconds if chat-popup is displayed
+    function startFetchingMessages(ticketId) {
+        // Initial fetch
+        fetchMessages(ticketId);
+        
+        // Fetch every 5 seconds only if chat-popup is visible
+        setInterval(() => fetchMessages(ticketId), 5000);
     }
 
     function getCSRFToken() {
