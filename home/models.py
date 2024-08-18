@@ -52,6 +52,7 @@ class Ticket(models.Model):
     branch_opened = models.CharField(max_length=20, null=True, blank=True)
     assigned_to = models.ForeignKey(SupportMember, related_name='assigned_tickets', on_delete=models.DO_NOTHING, null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    support_level = models.CharField(max_length=20, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
