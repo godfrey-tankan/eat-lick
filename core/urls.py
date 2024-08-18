@@ -26,6 +26,7 @@ from home.global_search import global_search
 from home.escalate_ticket import escalate_ticket, send_message
 from home.fetch_messages import fetch_messages
 from a_bot.views import forward_message
+from home.web_support import web_support
 
 urlpatterns = [
     path('', include('home.urls')),
@@ -49,6 +50,7 @@ urlpatterns = [
     path('generate_weekly_report/', generate_weekly_report, name='generate_weekly_report'),
     path('generate_overall_report/', generate_overall_report, name='generate_overall_report'),
     path('generate_monthly_report/', generate_monthly_report, name='generate_monthly_report'),
+    path('web-support/', web_support, name='web_support'),
 ]
 urlpatterns += [
     path('tickets/edit/<int:pk>/', TicketEditView.as_view(), name='ticket-edit'),
