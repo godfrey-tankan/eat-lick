@@ -19,7 +19,7 @@ def web_support(request):
         data = json.loads(request.body)
         print(data)
         phone = data.get('phone')
-        message = data.get('message')
+        message = data.get('message', '')
         if phone:
             phone = format_phone_number(phone)
         try:
