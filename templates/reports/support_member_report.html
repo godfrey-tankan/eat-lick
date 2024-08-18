@@ -72,8 +72,6 @@
 </head>
 <body>
     <h2>Report of <span style='color:blue;font-weight:bolder;'>{{support_member|upper}} -  </span>{%if start_date%} from ({{ start_date }} to {{ end_date }}) {%else%}Full {%endif%}</h2>
-    <p>Branch Most Assigned: <strong>{{ branch_most_inquiries.branch_opened}} ({{ branch_most_inquiries.tickets }} inquiries)</strong></p>
-    <p>Total Tickets Assigned: <strong>{{ total_inquiries }}</strong></p>
     <br />
     <h1>Average rating- 
         {% if average_rating %}
@@ -83,6 +81,8 @@
         {% endif %}
     </h1>
     <br />
+    <p>Branch Most Assigned: <strong>{{ branch_most_inquiries.branch_opened}} ({{ branch_most_inquiries.tickets }} inquiries)</strong></p>
+    <p>Total Tickets Assigned: <strong>{{ total_inquiries }}</strong></p>
     <br />
 
 

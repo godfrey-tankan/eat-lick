@@ -544,7 +544,7 @@ def generate_support_member_report(request):
         ]
 
         context = {
-            'average_rating': average_rating,
+            'average_rating': round(average_rating,2) if average_rating else None,
             'support_member': support_member.username,
             'total_opened': total_opened,
             'total_pending': total_pending,
