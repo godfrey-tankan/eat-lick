@@ -7,10 +7,164 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap">
     <style>
-        /* Your existing CSS code here */
 
+        body {
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .hero-section {
+            height: 100vh;
+            background: url('path-to-background-image.jpg') no-repeat center center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            color: #fff;
+        }
+        
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+        
+        .hero-content {
+            z-index: 2;
+            text-align: center;
+        }
+        
+        .hero-content h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        
+        .hero-content p {
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }
+        
+        .cta-button {
+            background: #007bff;
+            color: #fff;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            background: #0056b3;
+        }
+        
+        .features-section {
+            padding: 60px 20px;
+            text-align: center;
+            background-color: #f7f7f7;
+        }
+        
+        .features-section h2 {
+            font-size: 2.5em;
+            margin-bottom: 40px;
+        }
+        
+        .features-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        
+        .feature-box {
+            background: #fff;
+            padding: 20px;
+            margin: 10px;
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-box img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-box:hover {
+            transform: translateY(-10px);
+        }
+        
+        .contact-section {
+            padding: 60px 20px;
+            background: #007bff;
+            color: #fff;
+            text-align: center;
+        }
+        
+        .contact-section h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .contact-section p {
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }
+        
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .contact-form input, .contact-form textarea {
+            width: 80%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 10px;
+        }
+        
+        .contact-form .contact-button {
+            background: #fff;
+            color: #007bff;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .footer {
+            background: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            #chat-popup {
+                display: none;
+                position: fixed;
+                bottom: 17px;
+                right: 20px;
+                width: 80%;
+                height: 60%;
+                background-color: #ffffff;
+                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+                border-radius: 10px;
+                overflow: hidden;
+                z-index: 9000;
+            }
+        }
         #chat-popup {
-            display: none; /* Initially hidden */
+            display: none;
             position: fixed;
             bottom: 17px;
             right: 20px;
@@ -22,12 +176,146 @@
             overflow: hidden;
             z-index: 9000;
         }
-
-        /* Other CSS remains the same */
+        .chat-header {
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid #ccc;
+            position: relative;
+        }
+        
+        .close-btn {
+            position: absolute;
+            right: 10px;
+            padding: 5px;
+            top: 10px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .chat-body {
+            padding: 10px;
+            height: calc(100% - 100px);
+            overflow-y: auto;
+        }
+        
+        .messages {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message {
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            max-width: max-content;
+        }
+        
+        .message.sent {
+            background-color: #DCF8C6;
+            align-self: flex-end;
+        }
+        
+        .message.received {
+            background-color: #f1f0f0;
+            align-self: flex-start;
+        }
+        
+        .chat-footer {
+            margin-top: -20px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            border-top: 1px solid #ccc;
+        }
+        
+        .upload-input {
+            display: none;
+        }
+        
+        .chat-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
+        
+        .send-btn {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .open-chat-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        
     </style>
 </head>
 <body>
-    <!-- Your existing HTML code here -->
+    <header class="hero-section">
+        <div class="overlay"></div>
+        <div class="hero-content">
+            <h1>Welcome to Web Support</h1>
+            <p>Your reliable partner for all web-related support needs.</p>
+            <a href="#contact" class="cta-button">Get Support Now</a>
+        </div>
+    </header>
+
+    <section class="features-section">
+        <h2>Our Services</h2>
+        <div class="features-container">
+            <div class="feature-box">
+                <img src="path-to-image/support.jpg" alt="Support">
+                <h3>24/7 Support</h3>
+                <p>We provide round-the-clock assistance to ensure your website runs smoothly.</p>
+            </div>
+            <div class="feature-box">
+                <img src="path-to-image/consultation.jpg" alt="Consultation">
+                <h3>Consultation</h3>
+                <p>Expert advice on how to improve your web presence and optimize performance.</p>
+            </div>
+            <div class="feature-box">
+                <img src="path-to-image/troubleshooting.jpg" alt="Troubleshooting">
+                <h3>Troubleshooting</h3>
+                <p>Quick and efficient solutions to any web-related issues you encounter.</p>
+            </div>
+        </div>
+    </section>
+    <div id="chat-popup" class="chat-popup">
+        <div class="chat-header">
+            <span>Support Chat</span>
+            <button class="close-btn" onclick="closeChat()">x</button>
+        </div>
+        <div class="chat-body">
+            <div class="messages">
+                <!-- Messages will be dynamically loaded here -->
+            </div>
+        </div>
+        <div class="chat-footer">
+            <input type="file" id="upload-file" class="upload-input" />
+            <input type="text" id="chat-input" placeholder="Type a message..." class="chat-input" />
+            <button id="send-btn" class="send-btn">Send</button>
+        </div>
+    </div>
 
     <section class="contact-section" id="contact">
         <button id="open-chat-btn" class="open-chat-btn">Contact Us</button>
@@ -43,33 +331,32 @@
     <footer class="footer">
         <p>&copy; 2024 Web Support. All rights reserved.</p>
     </footer>
-
-    <script>
-        document.getElementById('open-chat-btn').addEventListener('click', function () {
-            document.getElementById('chat-popup').style.display = 'block';
-        });
-
-        function closeChat() {
-            document.getElementById('chat-popup').style.display = 'none';
-        }
-
-        document.getElementById('send-btn').addEventListener('click', function () {
-            let input = document.getElementById('chat-input');
-            let message = input.value;
-            if (message.trim() !== '') {
-                let messageElement = document.createElement('div');
-                messageElement.classList.add('message', 'sent');
-                messageElement.innerText = message;
-                document.querySelector('.messages').appendChild(messageElement);
-                input.value = '';  // Clear the input
-                scrollToBottom();  // Scroll to the latest message
-            }
-        });
-
-        function scrollToBottom() {
-            let chatBody = document.querySelector('.chat-body');
-            chatBody.scrollTop = chatBody.scrollHeight;
-        }
-    </script>
 </body>
+<script>
+    document.getElementById('open-chat-btn').addEventListener('click', function () {
+        document.getElementById('chat-popup').style.display = 'block';
+    });
+
+    function closeChat() {
+        document.getElementById('chat-popup').style.display = 'none';
+    }
+
+    document.getElementById('send-btn').addEventListener('click', function () {
+        let input = document.getElementById('chat-input');
+        let message = input.value;
+        if (message.trim() !== '') {
+            let messageElement = document.createElement('div');
+            messageElement.classList.add('message', 'sent');
+            messageElement.innerText = message;
+            document.querySelector('.messages').appendChild(messageElement);
+            input.value = '';  // Clear the input
+            scrollToBottom();  // Scroll to the latest message
+        }
+    });
+
+    function scrollToBottom() {
+        let chatBody = document.querySelector('.chat-body');
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+</script>
 </html>
