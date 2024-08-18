@@ -336,7 +336,7 @@ def generate_overall_report(request):
             'total_pending': tickets.filter(status='pending').count(),
             'total_closed': total_closed,
             'total_resolved': total_resolved,
-            'ticket_counts':ticket_counts,
+            'ticket_counts':branch_stats,
             'daily_counts': daily_counts,
             'day_most_opened': day_most_opened,
             'day_most_closed': day_most_closed,
