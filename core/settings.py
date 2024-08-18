@@ -151,7 +151,7 @@ TIME_ZONE = "UTC"
 
 USE_I18N = True
 
-USE_TZ = False
+USE_TZ = True
 MEDIA_URL = 'media/'
 # DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 MEDIA_ROOT = BASE_DIR / 'media' 

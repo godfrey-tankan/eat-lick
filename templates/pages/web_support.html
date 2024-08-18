@@ -527,7 +527,7 @@
                 document.querySelector('.send-btn').style.display = 'block';
                 displayMessage(data.message, 'received');
             } else {
-                alert('Error: ' + data.error);
+                displayMessage(data.error, 'received');
             }
         })
         .catch(error => console.error('Error:', error));

@@ -315,7 +315,6 @@ def handle_help(wa_id, response, name,message_type,message_id):
                 return send_message(data)
     return "You have no open inquiries"
 
-
 def inquirer_assistance_response(response, open_inquiries, inquirer):
     open_inquiries.support_level = response
     open_inquiries.save()
@@ -356,8 +355,7 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
             except Exception as e:
                 response = "error sending messages"
     return response
-def save_messages(ticket_id,inquirer=None, support_member=None, content=None):
-    Message.objects.create(ticket_id=ticket_id,inquirer=inquirer, support_member=support_member, content=content)
+
 @csrf_exempt
 def accept_ticket(wa_id,name, ticket_id):
     try:
@@ -528,3 +526,7 @@ def web_messaging(ticket_id,message=None,is_broadcasting=False):
     ticket = Ticket.objects.filter(id=ticket_id).first()
     data =get_text_message_input(ticket.created_by.phone_number, message, None)
     return send_message(data)
+
+def alert_support_members(name,ticket, message):
+    return broadcast_messages(name,ticket)
+    

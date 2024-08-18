@@ -11,6 +11,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from .helpers import format_phone_number
 from a_bot.responses import *
+from a_bot.views import alert_support_members
 
 @csrf_exempt
 def web_support(request):
@@ -26,6 +27,8 @@ def web_support(request):
         except Inquirer.DoesNotExist:
             get_inquirer = None
         if get_inquirer:
+            if get_inquirer.user_mode == INQUIRY_MODE:
+                return create_web_inquiry(get_inquirer, message)
             if get_inquirer.user_mode == NAMES_MODE:
                 get_inquirer.username = message
                 get_inquirer.user_mode = BRANCH_MODE
@@ -33,18 +36,26 @@ def web_support(request):
                 return JsonResponse({'success': True, 'message': f'Hello {message}, which branch are you inquiring from?'})
             elif get_inquirer.user_mode == BRANCH_MODE:
                 get_inquirer.branch = message
-                get_inquirer.user_mode = WAITING_MODE
+                get_inquirer.user_mode = INQUIRY_MODE
                 get_inquirer.save()
-                return JsonResponse({'success': True, 'message': f'Hello {get_inquirer.username}, how can we help you today?.'})
-            get_inquirer.user_mode = INQUIRY_MODE
-            get_inquirer.save()
             return JsonResponse({'success': True, 'message': f'Hello {get_inquirer.username.split()[0]}, how can we help you today?.'})
         else:
             Inquirer.objects.create(phone_number=phone,user_mode =NAMES_MODE)
-            return JsonResponse({'success': True, 'message': f'We are creating an account for you. Please Please provide your names'})
-        if not phone:
-            return JsonResponse({'success': False, 'error': 'Phone number is required.'})
-        return JsonResponse({'success': True, 'message': f'Welcome! Your phone number {phone} has been registered.'})
-
-        return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+            return JsonResponse({'success': True, 'message': 'Hello, Please provide your full name.'})
+        
     return render(request, 'pages/web_support.html')
+
+def create_web_inquiry(inquirer, message):
+    try:
+        pending_tickets = Ticket.objects.filter(created_by=inquirer, status__in=['open', 'pending'])
+    except Ticket.DoesNotExist:
+        pending_tickets = None
+    if pending_tickets:
+        if len(message) < 5:
+            return JsonResponse({'success': True, 'message': f'Hello {inquirer.username.split()[0]}, you have a pending ticket. Please wait for a support member to respond.'})
+        new_msg = Message.objects.create(ticket_id=pending_tickets.last(),inquirer=inquirer, content=message)
+        return JsonResponse({'success': True, 'message': f'Someone is attending to your inquiry. Please wait for a response.'})
+    ticket=Ticket.objects.create(title=message.split()[0], created_by=inquirer,description=message, status='open')
+    TicketLog.objects.create(ticket=ticket, status=ticket.status, changed_by=inquirer)
+    alert_support_members(inquirer.username,ticket, message)
+    return JsonResponse({'success': True, 'message': f'Hello {inquirer.username.split()[0]}, your inquiry has been received. A support member will be with you shortly.'})
