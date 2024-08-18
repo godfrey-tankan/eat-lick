@@ -317,18 +317,15 @@ def generate_overall_report(request):
             })
 
         # Additional statistics
-        branch_stats = tickets.values('branch_opened').annotate(
-            tickets=Count('id')
-        ).order_by('branch_opened')
-        ticket_counts = Ticket.objects.values('branch_opened').annotate(
+        branch_stats = Ticket.objects.values('branch_opened').annotate(
+            total_tickets=Count('id'),  # Count all tickets in the branch
             open_count=Count('id', filter=Q(status='open')),
             pending_count=Count('id', filter=Q(status='pending')),
             closed_count=Count('id', filter=Q(status='closed')),
             resolved_count=Count('id', filter=Q(status='resolved'))
-        )
-
+        ).order_by('-total_tickets')
         branch_most_inquiries = branch_stats.first()
-        total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
+        total_inquiries = Ticket.objects.count()
 
         context = {
             'report_data': report_data,
