@@ -18,18 +18,27 @@ def web_support(request):
         data = json.loads(request.body)
         print(data)
         phone = data.get('phone')
-        phone = format_phone_number(phone)
+        message = data.get('message')
+        if phone:
+            phone = format_phone_number(phone)
         try:
             get_inquirer = Inquirer.objects.get(phone_number=phone)
         except Inquirer.DoesNotExist:
             get_inquirer = None
         if get_inquirer:
             if get_inquirer.user_mode == NAMES_MODE:
-                # get_inquirer.username = data.get('names')
-                # get_inquirer.user_mode = 'ticket_creation'
-                # get_inquirer.save()
-                return JsonResponse({'success': True, 'message': f'Hello we testing your names'})
-            return JsonResponse({'success': True, 'message': f'Hello {get_inquirer.username}, how can we help you today?.'})
+                get_inquirer.username = message
+                get_inquirer.user_mode = BRANCH_MODE
+                get_inquirer.save()
+                return JsonResponse({'success': True, 'message': f'Hello {message}, which branch are you inquiring from?'})
+            elif get_inquirer.user_mode == BRANCH_MODE:
+                get_inquirer.branch = message
+                get_inquirer.user_mode = WAITING_MODE
+                get_inquirer.save()
+                return JsonResponse({'success': True, 'message': f'Hello {get_inquirer.username}, how can we help you today?.'})
+            get_inquirer.user_mode = INQUIRY_MODE
+            get_inquirer.save()
+            return JsonResponse({'success': True, 'message': f'Hello {get_inquirer.username.split()[0]}, how can we help you today?.'})
         else:
             Inquirer.objects.create(phone_number=phone,user_mode =NAMES_MODE)
             return JsonResponse({'success': True, 'message': f'We are creating an account for you. Please Please provide your names'})

@@ -466,7 +466,7 @@
             <button id="phone-submit-btn" class="phone-send-btn">Submit</button>
             <input type="file" style="display: none;" id="upload-file" class="upload-input" />
             <input type="text" style="display: none;" id="chat-input" placeholder="Type a message..." class="chat-input" />
-            <button id="send-btn" style="display: none;"onclick="sendMessage()" class="send-btn">Send</button>
+            <button id="send-btn" style="display: none;" class="send-btn">Send</button>
         </div>
     </div>
 
@@ -485,6 +485,7 @@
         <p>&copy; 2024 Web Support. All rights reserved.</p>
     </footer>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
     document.getElementById('open-chat-btn').addEventListener('click', function () {
         document.getElementById('chat-popup').style.display = 'block';
@@ -508,7 +509,7 @@
             displayMessage('Please enter a valid phone number.', 'received');
             return; 
         }
-
+        localStorage.setItem('userPhoneNumber', phoneNumber);
         fetch('chat/', {
             method: 'POST',
             headers: {
@@ -532,40 +533,8 @@
         .catch(error => console.error('Error:', error));
         }
     });
-    function sendMessage() {
-        const messageInput = document.getElementById('message-input');
-        const messageText = messageInput.value.trim();
-        const messagesContainer = document.getElementById('messages-container');
-    
-        if (messageText === '') {
-            return;
-        }
-    
-        // Display the message immediately in the chat window
-        const newMessage = document.createElement('div');
-        newMessage.classList.add('message', 'sent');
-        newMessage.textContent = messageText;
-        messagesContainer.appendChild(newMessage);
-    
-        // Clear the input
-        messageInput.value = '';
-    
-        // Scroll to the latest message
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
-        // Send the message to the backend
-        axios.post('/send-message/', { message: messageText })
-            .then(response => {
-                console.log('Message sent successfully:', response.data);
-            })
-            .catch(error => {
-                console.error('Error sending message:', error);
-    
-                // Optionally, you can add a retry mechanism or notify the user about the error.
-            });
-    }
-    
-    // Handle Chat Message Submission
+
+    //SENDING MESSAGE
     document.getElementById('send-btn').addEventListener('click', function () {
         let input = document.getElementById('chat-input');
         
@@ -574,6 +543,28 @@
             displayMessage(message, 'sent');
             input.value = '';  // Clear the input
             scrollToBottom();  // Scroll to the latest message
+            phone=localStorage.getItem('userPhoneNumber');
+            const csrftoken = getCSRFToken();
+            fetch('chat/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,  // Add this line
+                },
+                body: JSON.stringify({ phone: phone, message: message }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayMessage(data.message, 'received');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        else{
+            return;
         }
     });
     
