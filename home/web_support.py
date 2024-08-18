@@ -8,7 +8,10 @@ from .serializers import *
 from django.shortcuts import render, get_object_or_404, redirect
 from .forms import *
 import json
+from django.views.decorators.csrf import csrf_exempt
 
+
+@csrf_exempt
 def web_support(request):
     if request.method == 'POST':
         data = json.loads(request.body)

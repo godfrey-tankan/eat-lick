@@ -350,7 +350,7 @@
         let phoneNumber = document.getElementById('phone-input').value.trim();
         if (phoneNumber !== '') {
             // Send phone number to the backend
-            fetch('/api/submit-phone/', {
+            fetch('/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
