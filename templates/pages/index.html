@@ -422,62 +422,72 @@
 
         const submitButton = document.getElementById('submit-button');
     
-    submitButton.addEventListener('click', function(e) {
-        e.preventDefault(); // Prevent the default form submission behavior
+        submitButton.addEventListener('click', function(e) {
+          e.preventDefault(); // Prevent the default form submission behavior
+      
+          // Gather form data
+          const reportType = document.getElementById('report-type').value;
+          const startDate = document.getElementById('start-date').value;
+          const endDate = document.getElementById('end-date').value;
+          const supportMemberId = document.getElementById('support-member-suggestions')?.value || '';
+          const branchId = document.getElementById('branch-suggestions')?.value || '';
+      
+          let url;
+      
+          if (reportType === 'support_member') {
+              url = '/generate_support_member_report/';
+          } else if (reportType === 'branch') {
+              url = '/generate_branch_report/';
+          } else if (reportType === 'weekly') {
+              url = '/generate_weekly_report/';
+          } else if (reportType === 'overall') {
+              url = '/generate_overall_report/';
+          } else if (reportType === 'monthly') {
+              url = '/generate_monthly_report/';
+          }
+      
+          if (url) {
+              axios.post(url, {
+                  start_date: startDate,
+                  end_date: endDate,
+                  support_member: supportMemberId,
+                  branch: branchId,
+                  report_type: reportType
+              }, {
+                  responseType: 'blob' // Important to set response type to blob for file downloads
+              })
+              .then(response => {
+                  // Create a new Blob object using the response data
+                  const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', 'report.pdf'); // Customize the filename if needed
+      
+                  // Append the link to the body
+                  document.body.appendChild(link);
+                  link.click();
+      
+                  // Clean up
+                  link.parentNode.removeChild(link);
+              })
+              .catch(error => {
+                  if (error.response) {
+                      // Server responded with a status code outside the range of 2xx
+                      console.error('Error response:', error.response.data.message);
+                  } else if (error.request) {
+                      // The request was made but no response was received
+                      console.error('Error request:', error.request);
+                  } else {
+                      // Something happened in setting up the request that triggered an Error
+                      console.error('Error message:', error.message);
+                  }
+              });
+          } else {
+              console.log('Invalid report type');
+          }
+      });
 
-        // Gather form data
-        const reportType = document.getElementById('report-type').value;
-        const startDate = document.getElementById('start-date').value;
-        const endDate = document.getElementById('end-date').value;
-        const supportMemberId = document.getElementById('support-member-suggestions')?.value || '';
-        const branchId = document.getElementById('branch-suggestions')?.value || '';
-
-        let url;
-
-        if (reportType === 'support_member') {
-            url = '/generate_support_member_report/';
-        } else if (reportType === 'branch') {
-            url = '/generate_branch_report/';
-        } else if (reportType === 'weekly') {
-            url = '/generate_weekly_report/';
-        } else if (reportType === 'overall') {
-            url = '/generate_overall_report/';
-        } else if (reportType === 'monthly') {
-            url = '/generate_monthly_report/';
-        }
-
-        if (url) {
-            axios.post(url, {
-                start_date: startDate,
-                end_date: endDate,
-                support_member: supportMemberId,
-                branch: branchId,
-                report_type: reportType
-            }, {
-                responseType: 'blob' // Important to set response type to blob for file downloads
-            })
-            .then(response => {
-                // Create a new Blob object using the response data
-                const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', 'report.pdf'); // Customize the filename if needed
-
-                // Append the link to the body
-                document.body.appendChild(link);
-                link.click();
-
-                // Clean up
-                link.parentNode.removeChild(link);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        } else {
-            console.log('Invalid report type');
-        }
     });
-  });
 
   </script>
   <script>
