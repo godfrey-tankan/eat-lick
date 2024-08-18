@@ -488,23 +488,29 @@ def generate_support_member_report(request):
     average_rating = tickets.aggregate(average_rating=Avg(Cast('support_level', FloatField())))['average_rating']
         
     if tickets:
-        branch_stats = tickets.values('branch_opened').annotate(
-            tickets=Count('id')
-        ).order_by('tickets__count')
+        branch_stats = Ticket.objects.values('branch_opened').annotate(
+            total_tickets=Count('id', distinct=True),  # Ensure each ticket is counted once
+            open_count=Count('id', filter=Q(status='open'), distinct=True),
+            pending_count=Count('id', filter=Q(status='pending'), distinct=True),
+            closed_count=Count('id', filter=Q(status='closed'), distinct=True),
+            resolved_count=Count('id', filter=Q(status='resolved'), distinct=True),
+            message_count=Count('messages', distinct=True),  # Count distinct messages
+            is_escalated=Exists(escalated_subquery)
+        ).order_by('-total_tickets')
         
+        branch_most_inquiries = branch_stats.first()
+        total_inquiries = tickets.aggregate(total=Count('id'))['total']
         
         ticket_counts = tickets.values('branch_opened').annotate(
+            total_assigned=Count('id'),
             open_count=Count('id', filter=Q(status='open')),
             pending_count=Count('id', filter=Q(status='pending')),
             closed_count=Count('id', filter=Q(status='closed')),
             resolved_count=Count('id', filter=Q(status='resolved')),
             message_count=Count('messages'),
             is_escalated=Exists(escalated_subquery)
-        )
+        ).order_by('-total_assigned')
     
-        branch_most_inquiries = branch_stats.first()
-        total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
-
         resolved_tickets = tickets.filter(status='resolved')
         closed_tickets = tickets.filter(status='closed')
         pending_tickets = tickets.filter(status='pending')
