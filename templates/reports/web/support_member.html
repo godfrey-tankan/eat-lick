@@ -12,17 +12,16 @@
         </div>
 
 <section class="report-section">
-    <h1>Support Member Report: {{ support_member }}</h1>
-    <h2>Average rating:
+    <h1>Report of <span style='color:grey;font-weight:bolder;'>{{support_member|upper}} -  </span>{%if start_date%} from ({{ start_date }} to {{ end_date }}) {%else%}Full {%endif%}</h1>
+    <h3>Average rating:
         {% if average_rating %}
         {{average_rating}} Out of 5
         {% else %}
         No rating
         {% endif %}
-    </h2>
-    <br />
-    <p>Branch Most Assigned: <strong>{{ branch_most_inquiries.branch_opened }} ({{ branch_most_inquiries.total_tickets }} inquiries)</strong></p>
-<p>Total Tickets Assigned: <strong>{{ total_inquiries }}</strong></p>
+    </h3>
+    <h3>Branch Most Assigned: <strong>{{ branch_most_inquiries.branch_opened }} ({{ branch_most_inquiries.total_tickets }} inquiries)</strong></h3>
+<h3>Total Tickets Assigned: <strong>{{ total_inquiries }}</strong></h3>
     <br />
     <div class="report-overview">
         <div class="report-stat">
@@ -66,13 +65,18 @@
         <tbody>
             {% for ticket in tickets %}
             <tr>
-                <td>{{ ticket.messages }}</td>
-                <td>{{ ticket.status }}</td>
-                <td>{{ ticket.created_by }}</td>
-                <td>{{ ticket.branch }}</td>
+                <td><span class="text-xs " ><span class='ticket-messages'>{{ticket.message_count}}</span> messages</span></td>
+                <td>{{ ticket.status }}
+                    {% if ticket.is_escalated %}
+                        <span class='escaleted-ticket' style='color:green;'>
+                            escalated</span>
+                    {% endif %}
+                </td>
+                <td>{{ ticket.created_by.username }}</td>
+                <td>{{ ticket.branch_opened }}</td>
                 <td>{{ ticket.created_at }}</td>
                 <td>{{ ticket.resolved_at }}</td>
-                <td>{{ ticket.time_to_resolve }}</td>
+                <td>{{ ticket.get_time_to_resolve }}</td>
             </tr>
             {% endfor %}
         </tbody>
