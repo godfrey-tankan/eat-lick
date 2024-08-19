@@ -358,7 +358,7 @@ def support_member_tickets(request, member_id):
 
     return render(request, 'tickets/tickets_by_assignee.html', {'tickets': tickets, 'member': member})
 
-def ticket_list(request):
+def all_tickets_list(request):
     escalated_subquery = TicketLog.objects.filter(
         ticket=OuterRef('pk'),
         changed_by__icontains='escalated'
