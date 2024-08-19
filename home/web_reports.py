@@ -243,8 +243,28 @@ def support_member_report_view(request):
             'resolved_percentage': round(resolved_percentage,2),
             'closed_percentage': round(closed_percentage,2)
         }
-
+        return render(request, 'reports/web/support_member.html', context)
+    context = {
+        'average_rating':None,
+        'support_member': support_member.username,
+        'total_opened': 0,
+        'total_pending': 0,
+        'total_closed': 0,
+        'total_resolved': 0,
+        'tickets': [],
+        'ticket_counts': [],
+        'branch_stats': [],
+        'branch_most_inquiries': [],
+        'total_inquiries': 0,
+        'report_data': [],
+        'start_date': start_date,
+        'end_date': end_date,
+        'total_assigned': 0,
+        'resolved_percentage': 0,
+        'closed_percentage': 0
+    }
     return render(request, 'reports/web/support_member.html', context)
+    
 
 @csrf_exempt
 def overall_report_view(request):
