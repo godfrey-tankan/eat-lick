@@ -42,10 +42,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return handle_inquiry(wa_id, response, name)
     else:
         check_ticket = None
-    if response.lower() in greeting_messages:
-        time_of_day = get_greeting()
-        name = inquirer.username.split()[0] if inquirer else name
-        return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
+   
     if support_member:
         if response.lower() in support_member_help_requests:
             return request_assistance_support_member(support_member.id)
@@ -63,15 +60,18 @@ def generate_response(response, wa_id, name,message_type,message_id):
         return 'hello! how can i help you today?'
     if check_ticket:
         return handle_help(wa_id, response, name,message_type,message_id)
-    
 
     if not support_member :
         for thank_you_message in thank_you_messages:
             if thank_you_message in response.lower():
                 return "You are welcome."
         for help_message in help_messages:
-            if help_message in response.lower() or len(response) > 4:
+            if help_message in response.lower() or len(response) > 5:
                 return handle_inquiry(wa_id, response, name)
+    if response.lower() in greeting_messages:
+        time_of_day = get_greeting()
+        name = inquirer.username.split()[0] if inquirer else name
+        return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     return f"Hello,golden greetings.{message_type} {message_id}"    
 
 def get_text_message_input(recipient, text,name=None,template=False):
