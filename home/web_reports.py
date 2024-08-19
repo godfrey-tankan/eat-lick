@@ -117,3 +117,16 @@ def weekly_report_page(request):
         }
         
         return render(request, 'reports/web/weekly.html', context)
+
+
+def monthly_report_view(request):
+    start_date, end_date = get_current_month_dates(request.GET.get('start_date', None))
+
+    tickets = Ticket.objects.filter(created_at__range=[start_date, end_date])
+    if tickets:
+        # Perform calculations and prepare context data as in your PDF generation function
+        context = prepare_monthly_report_context(tickets, start_date, end_date)
+    else:
+        context = prepare_empty_monthly_report_context(start_date, end_date)
+
+    return render(request, 'reports/monthly_report.html', context)
