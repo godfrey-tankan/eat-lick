@@ -286,7 +286,7 @@ def overall_report_view(request):
         context = prepare_overall_report_context(tickets, start_date, end_date)
     else:
         context = prepare_empty_overall_report_context(start_date, end_date)
-
+    context['today'] = datetime.now().date()
     return render(request, 'reports/web/overall.html', context)
 
 @csrf_exempt
@@ -336,7 +336,7 @@ def branch_report_view(request):
         
         context = {
             'report_data': report_data, 
-            'branch_name': branch,
+            'branch_name': branch_name.name if branch_name else 'Branch',
             'open_count': open_tickets_count,
             'start_date': None if '2001' in str(start_date) else datetime.strftime(start_date,'%d %B %Y'),
             'end_date':None if '2050' in str(end_date) else datetime.strftime(end_date,'%d %B %Y'),
@@ -357,7 +357,7 @@ def branch_report_view(request):
             'pending_count': 0,
             'closed_count': 0,
             'resolved_count': 0,
-            'branch': branch,
+            'branch': branch_name.name if branch_name else 'Branch',
             'total_inquiries': 0,
             }
     return render(request, 'reports/web/branch.html', context)

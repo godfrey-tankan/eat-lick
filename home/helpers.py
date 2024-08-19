@@ -53,8 +53,8 @@ def prepare_branch_report_context(branch, tickets, start_date, end_date):
         'day_most_closed': day_most_closed,
         'day_most_pending': day_most_pending,
         'day_most_resolved': day_most_resolved,
-        'start_date': start_date,
-        'end_date': end_date,
+        'start_date':  None if '2001' in str(start_date) else start_date,
+        'end_date':  None if '2050' in str(end_date) else end_date,
     }
     
 def prepare_empty_branch_report_context(branch, start_date, end_date):
@@ -70,8 +70,8 @@ def prepare_empty_branch_report_context(branch, start_date, end_date):
         'day_most_closed': [],
         'day_most_pending': [],
         'day_most_resolved': [],
-        'start_date': start_date,
-        'end_date': end_date,
+        'start_date': None if '2001' in str(start_date) else start_date,
+        'end_date': None if '2050' in str(end_date) else end_date,
     }
     
 def prepare_overall_report_context(tickets, start_date, end_date):
@@ -129,8 +129,8 @@ def prepare_overall_report_context(tickets, start_date, end_date):
         'total_closed': total_closed,
         'total_resolved': total_resolved,
         'report_data': report_data,
-        'start_date': start_date,
-        'end_date': end_date,
+        'start_date': None if '2001' in str(start_date) else start_date,
+        'end_date':None if '2050' in str(end_date) else end_date,
     }
 
 def prepare_empty_overall_report_context(start_date, end_date):
@@ -139,8 +139,8 @@ def prepare_empty_overall_report_context(start_date, end_date):
         'branch_most_inquiries': None,
         'total_inquiries': 0,
         'report_data': [],
-        'start_date': start_date,
-        'end_date': end_date,
+        'start_date':  None if '2001' in str(start_date) else start_date,
+        'end_date': None if '2050' in str(end_date) else end_date,
     }
     
 def prepare_support_member_report_context(member, tickets, start_date, end_date):
@@ -183,8 +183,8 @@ def prepare_support_member_report_context(member, tickets, start_date, end_date)
         'pending_count': total_pending,
         'closed_count': total_closed,
         'average_time': average_time,
-        'start_date': start_date,
-        'end_date': end_date,
+        'start_date':  None if '2001' in str(start_date) else start_date,
+        'end_date':  None if '2050' in str(end_date) else end_date,
         'branch_most_inquiries': branch_most_inquiries,
         'total_inquiries': tickets.count(),
         'resolved_percentage': round(resolved_percentage, 2),
@@ -200,8 +200,8 @@ def prepare_empty_support_member_report_context(member, start_date, end_date):
         'pending_count': 0,
         'closed_count': 0,
         'average_time': "N/A",
-        'start_date': start_date,
-        'end_date': end_date,
+        'start_date':  None if '2001' in str(start_date) else start_date,
+        'end_date':  None if '2050' in str(end_date) else end_date,
     }
     
 def prepare_monthly_report_context(tickets, start_date, end_date):
@@ -269,8 +269,8 @@ def prepare_monthly_report_context(tickets, start_date, end_date):
         'branch_most_inquiries': branch_most_inquiries,
         'total_inquiries': total_inquiries,
         'report_data': report_data,
-        'start_date': datetime.strftime(start_date, '%d %B %Y'),
-        'end_date': datetime.strftime(end_date, '%d %B %Y'),
+        'start_date':None if '2001' in str(start_date) else datetime.strftime(start_date, '%d %B %Y'),
+        'end_date':None if '2050' in str(end_date) else datetime.strftime(end_date, '%d %B %Y'),
         'total_opened': total_opened,
         'total_pending': total_pending,
         'total_closed': total_closed,
@@ -289,8 +289,8 @@ def prepare_empty_monthly_report_context(start_date, end_date):
         'branch_most_inquiries': [],
         'total_inquiries': 0,
         'report_data': [],
-        'start_date': start_date,
-        'end_date': end_date,
+        'start_date': None if '2001' in str(start_date) else start_date,
+        'end_date': None if '2050' in str(end_date) else end_date,
         'total_opened': 0,
         'total_pending': 0,
         'total_closed': 0,
