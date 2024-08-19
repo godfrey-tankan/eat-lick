@@ -169,8 +169,7 @@ def process_message_file_type(body, phone_number_id, profile_name):
 
     elif message_type == "image":
         message_id = message["image"]["id"]
-        data = get_image_message(phone_number_id[0], message["image"]["id"])
-        return send_message(data)
+        return handle_help(phone_number_id, message["text"]["body"], 'name',message_type,message_id)
 
     message_body = message["text"]["body"]
     response = generate_response(message_body, phone_number_id, profile_name,message_type,message_id)
@@ -305,16 +304,13 @@ def handle_help(wa_id, response, name,message_type,message_id):
             open_inquiries = None
         if message_type == "document":
             data = get_document_message(open_inquiries.created_by.phone_number, message_id)
-            send_message(data)
-            return 'you have sent a document'
+            return send_message(data)
         if message_type == "image":
             data = get_image_message(open_inquiries.created_by.phone_number, message_id)
-            send_message(data)
-            return 'you have sent an image'
+            return send_message(data)
         if message_type == "audio":
             data = get_audio_message_input(open_inquiries.created_by.phone_number, message_id)
-            send_message(data)
-            return 'you have sent an audio'
+            return send_message(data)
 
     if open_inquiries:
         if support_member:
