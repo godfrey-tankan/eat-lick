@@ -163,9 +163,11 @@ def process_message_file_type(body, phone_number_id, profile_name):
     message_id = None
     if message_type == "audio":
         message_id = message["audio"]["id"]
+        return handle_help(phone_number_id, message["text"]["body"], 'name',message_type,message_id)
 
     elif message_type == "document":
         message_id = message["document"]["id"]
+        return handle_help(phone_number_id, message["text"]["body"], 'name',message_type,message_id)
 
     elif message_type == "image":
         message_id = message["image"]["id"]
@@ -303,13 +305,13 @@ def handle_help(wa_id, response, name,message_type,message_id):
         except Ticket.DoesNotExist:
             open_inquiries = None
         if message_type == "document":
-            data = get_document_message(open_inquiries.created_by.phone_number, message_id)
+            data = get_document_message(wa_id[0], message_id)
             return send_message(data)
         if message_type == "image":
-            data = get_image_message(open_inquiries.created_by.phone_number, message_id)
+            data = get_image_message(wa_id[0], message_id)
             return send_message(data)
         if message_type == "audio":
-            data = get_audio_message_input(open_inquiries.created_by.phone_number, message_id)
+            data = get_audio_message_input(wa_id[0], message_id)
             return send_message(data)
 
     if open_inquiries:
