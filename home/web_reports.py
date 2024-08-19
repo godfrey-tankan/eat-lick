@@ -13,7 +13,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 
 
-
+@csrf_exempt
 def weekly_report_page(request):
     today = now().date()
     start_date = today - timedelta(days=today.weekday() + 7)
@@ -122,7 +122,7 @@ def weekly_report_page(request):
         
         return render(request, 'reports/web/weekly.html', context)
 
-
+@csrf_exempt
 def monthly_report_view(request):
     start_date, end_date = get_current_month_dates(request.GET.get('start_date', None))
 
@@ -135,12 +135,14 @@ def monthly_report_view(request):
 
     return render(request, 'reports/web/monthly.html', context)
 
-def support_member_report_view(request, member_id):
+@csrf_exempt
+def support_member_report_view(request):
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
         data = request.GET
     start_date = data.get('start_date', '2001-01-01')
+    member_id = data.get('support_member')
     end_date = data.get('end_date', '2050-12-31')
     
     try:
@@ -244,6 +246,7 @@ def support_member_report_view(request, member_id):
 
     return render(request, 'reports/web/support_member.html', context)
 
+@csrf_exempt
 def overall_report_view(request):
     start_date = request.GET.get('start_date', '2001-01-01')
     end_date = request.GET.get('end_date', '2050-12-31')
@@ -256,7 +259,8 @@ def overall_report_view(request):
 
     return render(request, 'reports/web/overall.html', context)
 
-def branch_report_view(request, branch_id):
+@csrf_exempt
+def branch_report_view(request):
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
