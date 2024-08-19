@@ -257,16 +257,74 @@ def overall_report_view(request):
     return render(request, 'reports/web/overall.html', context)
 
 def branch_report_view(request, branch_id):
-    start_date = request.GET.get('start_date', '2001-01-01')
-    end_date = request.GET.get('end_date', '2050-12-31')
-    
-    branch = get_object_or_404(Branch, id=branch_id)
-    tickets = Ticket.objects.filter(branch_opened=branch, created_at__range=[start_date, end_date])
-
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        data = request.GET
+    start_date = data.get('start_date', '2001-01-01')
+    end_date = data.get('end_date', '2050-12-31')
+    branch = data.get('branch')
+    try:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    except ValueError:
+        start_date = datetime(2001, 1, 1).date()
+        end_date = datetime(2050, 12, 31).date()
+    branch_name = Branch.objects.get(id=branch_id)
+    tickets = Ticket.objects.filter(branch_opened__icontains=branch_name.name, created_at__range=[start_date, end_date])
     if tickets:
-        context = prepare_branch_report_context(branch, tickets, start_date, end_date)
-    else:
-        context = prepare_empty_branch_report_context(branch, start_date, end_date)
+        branch_stats = tickets.values('branch_opened').annotate(
+                tickets=Count('id')
+            ).order_by('-tickets')
+        closed_tickets_count = tickets.filter(status='closed').count()
+        open_tickets_count = tickets.filter(status='open').count()
+        resolved_tickets_count = tickets.filter(status='resolved').count()
+        pending_tickets_count = tickets.filter(status='pending').count()
 
+        total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
+
+        report_data = []
+        for ticket in tickets:
+            report_data.append({
+                'title': ticket.title,
+                'description': ticket.description,
+                'created_by': ticket.created_by.username if ticket.created_by else 'N/A',
+                'assigned_to': ticket.assigned_to.username if ticket.assigned_to else 'N/A',
+                'branch_opened': ticket.branch_opened,
+                'status': ticket.status,
+                'created_at': ticket.created_at,
+                'updated_at': ticket.updated_at,
+                'resolved_at': ticket.resolved_at,
+                'closed_at': ticket.closed_at,
+                'expired_at': ticket.expired_at,
+                'time_to_resolve': ticket.get_time_to_resolve(),
+            })
+        
+        context = {
+            'report_data': report_data, 
+            'branch_name': branch,
+            'open_count': open_tickets_count,
+            'start_date': None if '2001' in str(start_date) else datetime.strftime(start_date,'%d %B %Y'),
+            'end_date':None if '2050' in str(end_date) else datetime.strftime(end_date,'%d %B %Y'),
+            'pending_count': pending_tickets_count,
+            'closed_count': closed_tickets_count,
+            'resolved_count': resolved_tickets_count,
+            'branch': ticket.branch_opened,
+            'total_inquiries': total_inquiries,
+            }
+        
+    else:
+        context = {
+            'report_data': [],
+            'branch_name': 'branch_name',
+            'open_count': 0,
+            'start_date': datetime.strftime(start_date,'%d %B %Y'),
+            'end_date': datetime.strftime(end_date,'%d %B %Y'),
+            'pending_count': 0,
+            'closed_count': 0,
+            'resolved_count': 0,
+            'branch': branch,
+            'total_inquiries': 0,
+            }
     return render(request, 'reports/web/branch.html', context)
 
