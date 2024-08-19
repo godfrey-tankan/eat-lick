@@ -24,10 +24,6 @@ def get_greeting():
         return "evening"
 
 def generate_response(response, wa_id, name,message_type,message_id):
-    if message_type == 'image':
-        data = get_image_message(wa_id[0], message_id)
-        return send_message(data)
-    return f'Hello,golden greetings.{message_type} {message_id}'
     try:
         support_member = SupportMember.objects.get(phone_number=wa_id[0])
     except SupportMember.DoesNotExist:
@@ -85,7 +81,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         time_of_day = get_greeting()
         name = inquirer.username.split()[0] if inquirer else name
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
-    return f"Hello,golden greetings.{message_type} {message_id}"    
+    return f"Hello,golden greetings. How can i help you today?"    
 
 def get_text_message_input(recipient, text,name=None,template=False):
 
