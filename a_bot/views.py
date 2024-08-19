@@ -49,15 +49,13 @@ def generate_response(response, wa_id, name,message_type,message_id):
         ]:
             return assist_support_member(support_member.id,response,message_type,message_id)
 
-        if support_member.user_mode == HELPING_MODE or check_ticket:
-            return handle_help(wa_id, response, name,message_type,message_id)
-
         if support_member.user_mode == ACCEPT_TICKET_MODE:
             return accept_ticket(wa_id,name, response)
 
         return 'hello! how can i help you today?'
-
-
+    
+    if support_member and support_member.user_mode == HELPING_MODE or check_ticket:
+        return handle_help(wa_id, response, name,message_type,message_id)
 
     if not support_member :
         for thank_you_message in thank_you_messages:
@@ -230,7 +228,28 @@ def handle_inquiry(wa_id, response, name):
     except Ticket.DoesNotExist:
         open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj.id).first()
     if open_inquiries:
-        return "Your inquiry is already being attended to."
+        if not inquirer_obj.user_status == NEW_TICKET_MODE:
+            return "You have an open inquiry, Do you want to open a new inquiry?"
+        if inquirer_obj.user_status == NEW_TICKET_MODE:
+            ticket = Ticket.objects.create(
+                title=f"Inquiry from {name}",
+                description=response,
+                created_by=inquirer_obj, 
+                branch_opened =inquirer_obj.branch,
+                status=OPEN_MODE
+            )
+            TicketLog.objects.create(
+                ticket=ticket,
+                status=OPEN_MODE,
+                changed_by=inquirer_obj
+            )
+            with contextlib.suppress(SupportMember.DoesNotExist):
+                broadcast_messages(name,ticket)
+            return new_inquiry_opened_response
+        if 'yes' in response.lower():
+            inquirer_obj.user_status = NEW_TICKET_MODE
+            inquirer_obj.save()
+            return 'What is your inquiry?'
     ticket = Ticket.objects.create(
         title=f"Inquiry from {name}",
         description=response,
@@ -347,7 +366,7 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                 pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id).first()
                 if not pending_ticket:
                     support_member.user_mode = ACCEPT_TICKET_MODE
-                    message=accept_ticket_response.format(name,ticket.id, ticket.description)
+                    message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
                     support_member.save()
             try:
                 data = get_text_message_input(user_mobile, message, None)
@@ -371,7 +390,7 @@ def accept_ticket(wa_id,name, ticket_id):
             assigned_to=support_member.id, status=PENDING_MODE
         ).first()
         if assigned_tickets:
-            return "You already have an open ticket"
+            return "You already have a pending inquiry assigned to you. Do you want to accept this new inquiry anyway?"
     except Ticket.DoesNotExist:
         assigned_tickets = None
     is_ticket_open = False
@@ -467,7 +486,6 @@ def get_document_message(recipient, document_id, caption='New document'):
             },
         }
     )
-
 def mark_as_resolved( ticket_id,is_closed=False):
     naive_datetime = datetime.now()
     aware_datetime = timezone.make_aware(naive_datetime)
@@ -505,7 +523,7 @@ def mark_as_resolved( ticket_id,is_closed=False):
     support_member.user_status = ACCEPT_TICKET_MODE
     support_member.save()
     message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."
-    reply = f'Your inquiry *{ticket.description}* has been marked as resolved'
+    reply = f'Your inquiry ( *{ticket.description}*) has been marked as resolved'
     data = get_text_message_input(ticket.created_by.phone_number, reply, None)
     send_message(data)
     return broadcast_messages(None,ticket,message)
