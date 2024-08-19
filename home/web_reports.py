@@ -129,4 +129,18 @@ def monthly_report_view(request):
     else:
         context = prepare_empty_monthly_report_context(start_date, end_date)
 
-    return render(request, 'reports/monthly_report.html', context)
+    return render(request, 'reports/web/monthly.html', context)
+
+def support_member_report_view(request, member_id):
+    start_date = request.GET.get('start_date', '2001-01-01')
+    end_date = request.GET.get('end_date', '2050-12-31')
+    
+    member = get_object_or_404(SupportMember, id=member_id)
+    tickets = Ticket.objects.filter(assigned_to=member.id, created_at__range=[start_date, end_date])
+
+    if tickets:
+        context = prepare_support_member_report_context(member, tickets, start_date, end_date)
+    else:
+        context = prepare_empty_support_member_report_context(member, start_date, end_date)
+
+    return render(request, 'reports/support_member_report.html', context)
