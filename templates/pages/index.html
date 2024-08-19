@@ -2,9 +2,9 @@
 {% load static %}
 
 {% block content %}
-<div id="report-container"></div>
+<div id='home-container' class='home-container'></div>
 
-    <div class="container-fluid py-4" id='home-container'>
+    <div class="container-fluid py-4" id='home-container-main'>
       {% if request.user.is_authenticated and not request.user.is_superuser %}
       <div class="row">
         
@@ -374,13 +374,45 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        function printReport() {
+            window.print();
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.html(document.querySelector('.report-container'), {
+                callback: function (doc) {
+                    doc.save('Monthly_Report.pdf');
+                },
+                x: 10,
+                y: 10
+            });
+        }
+
+        function downloadExcel() {
+            const table = document.querySelector('.report-container');
+            const worksheet = XLSX.utils.table_to_sheet(table);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Monthly Report');
+            XLSX.writeFile(workbook, 'Monthly_Report.xlsx');
+        }
+    </script>
+
     <script>
       document.addEventListener("DOMContentLoaded", function() {
         const submitButton = document.getElementById('submit-button');
+        const reportContainer = document.getElementById('home-container');
+        const mainContainer = document.getElementById('home-container-main');
+        reportContainer.style.display = 'none';
         
         submitButton.addEventListener('click', function(e) {
             e.preventDefault(); // Prevent the default form submission behavior
-        
+           
+
             // Gather form data
             const reportType = document.getElementById('report-type').value;
             const startDate = document.getElementById('start-date').value;
@@ -413,11 +445,12 @@
                     responseType: 'text' // Set response type to text for HTML content
                 })
                 .then(response => {
-                    const mainContainer = document.getElementById('home-container');
-                    mainContainer.innerHTML = response.data;
+                  mainContainer.style.display = 'none';
+                  reportContainer.style.display = 'block';
+                    reportContainer.innerHTML = response.data;
                     // Update the content of a specified container with the response data
                     // Optionally, scroll to the top of the container or do other actions
-                    mainContainer.scrollIntoView();
+                    reportContainer.scrollIntoView();
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -429,6 +462,7 @@
     });
 
   </script>
+
   <script>
     document.addEventListener("DOMContentLoaded", function() {
         fetch('/get-chart-data/')
@@ -630,13 +664,15 @@
             })
             .catch(error => console.error('Error fetching chart data:', error));
 
-
-    document.getElementById('generate-report-button').addEventListener('click', function() {
-      document.getElementById('report-popup').style.display = 'block';
-  });
+            
+            document.getElementById('generate-report-button').addEventListener('click', function() {
+              document.getElementById('report-popup').style.display = 'block';
+              
+            });
 
   document.getElementById('close-popup').addEventListener('click', function() {
       document.getElementById('report-popup').style.display = 'none';
+
   });
 
   // Support member searching on report
