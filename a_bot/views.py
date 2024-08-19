@@ -38,7 +38,11 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return handle_inquiry(wa_id, response, name)
     else:
         check_ticket = None
-   
+    
+    if response.lower() in greeting_messages:
+        time_of_day = get_greeting()
+        name = inquirer.username.split()[0] if inquirer else support_member.username.split()[0]
+        return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     if support_member:
         if response.lower() in support_member_help_requests:
             return request_assistance_support_member(support_member.id)
@@ -54,8 +58,12 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return accept_ticket(wa_id,name, response)
 
         return 'hello! how can i help you today?'
+    if inquirer and inquirer.user_status == SUPPORT_RATING:
+        if not '/' in response:
+            return 'Please rate the support member by replying with the rating and the support member name separated by a forward slash e.g 5/John Doe'
+        return inquirer_assistance_response(response, check_ticket, inquirer)
     if check_ticket:
-        if inquirer and inquirer.user_mode == CONFIRM_RESPONSE:
+        if inquirer and inquirer.user_mode== CONFIRM_RESPONSE:
             if response == '1':
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 send_message(data)
@@ -64,10 +72,6 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 send_message(data)
                 return mark_as_resolved(check_ticket.id,True)
-        if inquirer and inquirer.user_mode == SUPPORT_RATING:
-            if not '/' in response:
-                return 'Please rate the support member by replying with the rating and the support member name separated by a forward slash e.g 5/John Doe'
-            return inquirer_assistance_response(response, check_ticket, inquirer)
         return handle_help(wa_id, response, name,message_type,message_id)
 
     if not support_member :
@@ -77,10 +81,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         for help_message in help_messages:
             if help_message in response.lower() or len(response) > 5:
                 return handle_inquiry(wa_id, response, name)
-    if response.lower() in greeting_messages:
-        time_of_day = get_greeting()
-        name = inquirer.username.split()[0] if inquirer else name
-        return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
+    
     return f"Hello,golden greetings. How can i help you today?"    
 
 def get_text_message_input(recipient, text,name=None,template=False):
@@ -278,6 +279,8 @@ def handle_inquiry(wa_id, response, name):
     except Ticket.DoesNotExist:
         open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj.id).first()
     if open_inquiries:
+        return "You have an open inquiry, Do you want to open a new inquiry?"
+        
         if not inquirer_obj.user_status == NEW_TICKET_MODE:
             return "You have an open inquiry, Do you want to open a new inquiry?"
         if inquirer_obj.user_status == NEW_TICKET_MODE:
@@ -331,13 +334,13 @@ def handle_help(wa_id, response, name,message_type,message_id):
         except Ticket.DoesNotExist:
             open_inquiries = None
         if message_type == "document":
-            data = get_document_message(wa_id[0], message_id)
+            data = get_document_message(open_inquiries.created_by.phone_number, message_id)
             return send_message(data)
         if message_type == "image":
-            data = get_image_message(wa_id[0], message_id)
+            data = get_image_message(open_inquiries.created_by.phone_number, message_id)
             return send_message(data)
         if message_type == "audio":
-            data = get_audio_message_input(wa_id[0], message_id)
+            data = get_audio_message_input(open_inquiries.created_by.phone_number, message_id)
             return send_message(data)
 
     if open_inquiries:
@@ -521,6 +524,7 @@ def get_image_message(recipient, image_id):
             },
         }
     )
+
 def forward_message(request):
     data =get_text_message_input('263779586059', 'Hello', 'customer_helped_template',True)
     return send_message(data)
@@ -538,6 +542,7 @@ def get_document_message(recipient, document_id, caption='New document'):
             },
         }
     )
+
 def mark_as_resolved( ticket_id,is_closed=False):
     naive_datetime = datetime.now()
     aware_datetime = timezone.make_aware(naive_datetime)
@@ -594,6 +599,7 @@ def mark_as_resolved( ticket_id,is_closed=False):
     data = get_text_message_input(ticket.created_by.phone_number, reply, None)
     send_message(data)
     return broadcast_messages(None,ticket,message)
+
 def web_messaging(ticket_id,message=None,is_broadcasting=False):
     if message in resolve_ticket_responses:
         return mark_as_resolved(ticket_id)
