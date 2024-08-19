@@ -87,6 +87,18 @@ def prepare_overall_report_context(tickets, start_date, end_date):
     ).order_by('-total_tickets')
     branch_most_inquiries = branch_stats.first()
     total_inquiries = Ticket.objects.count()
+    
+    open_tickets_filter = tickets.filter(status='open')
+    pending_tickets_filter = tickets.filter(status='pending')
+    closed_tickets_filter = tickets.filter(status='closed')
+    resolved_tickets_filter = tickets.filter(status='resolved')
+    
+    
+    total_resolved = resolved_tickets_filter.count()
+    total_closed = closed_tickets_filter.count()
+    total_pending = pending_tickets_filter.count()
+    total_open = open_tickets_filter.count()
+    
 
     report_data = []
     for member in support_members:
@@ -94,11 +106,6 @@ def prepare_overall_report_context(tickets, start_date, end_date):
         resolved_tickets = tickets_for_member.filter(status='resolved')
         closed_tickets = tickets_for_member.filter(status='closed')
         pending_tickets = tickets_for_member.filter(status='pending')
-        
-        total_resolved_count = resolved_tickets.count()
-        total_closed_count = closed_tickets.count()
-        pending_tickets_count = pending_tickets.count()
-        
         total_time = timedelta()
         resolved_ticket_count = 0
         
@@ -112,9 +119,9 @@ def prepare_overall_report_context(tickets, start_date, end_date):
         
         report_data.append({
             'member': member.username,
-            'resolved_count': total_resolved_count,
-            'pending_count': pending_tickets_count,
-            'closed_count': total_closed_count,
+            'total_resolved_count': resolved_ticket_count,
+            'pending_tickets_count': pending_tickets,
+            'total_closed_count': closed_tickets,
             'average_time': average_time
         })
 
@@ -122,6 +129,11 @@ def prepare_overall_report_context(tickets, start_date, end_date):
         'branch_stats': branch_stats,
         'branch_most_inquiries': branch_most_inquiries,
         'total_inquiries': total_inquiries,
+        'total_open': total_open,
+        'total_pending': total_pending,
+        'total_closed': total_closed,
+        'total_resolved': total_resolved,
+        
         'report_data': report_data,
         'start_date': start_date,
         'end_date': end_date,

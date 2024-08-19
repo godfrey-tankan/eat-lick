@@ -1,0 +1,163 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="report-container">
+    <link rel="stylesheet" href="{% static 'css/report-styles.css' %}">
+        
+        <div class="report-actions">
+            <button onclick="printReport()" class="btn-action">Print Report</button>
+            {% comment %} <button onclick="downloadPDF()" class="btn-action">Download as PDF</button> {% endcomment %}
+            <button onclick="downloadExcel()" class="btn-action">Download as Excel</button>
+        </div>
+    <div class="report-container">
+        <header class="report-header">
+            <h1>Overall Report</h1>
+            <p>Report Period: <span class="report-date">{{ start_date }} - {{ end_date }}</span></p>
+            <p>Generated on: {{ today }}</p>
+        </header>
+
+        <section class="report-section">
+            <h2>Overall Statistics</h2>
+            <div class="report-overview">
+                <div class="report-stat">
+                    <span class="stat-number">{{ total_open }}</span>
+                    <span class="stat-label">Total Opened Tickets</span>
+                </div>
+                <div class="report-stat">
+                    <span class="stat-number">{{ total_pending }}</span>
+                    <span class="stat-label">Total Pending Tickets</span>
+                </div>
+                <div class="report-stat">
+                    <span class="stat-number">{{ total_closed }}</span>
+                    <span class="stat-label">Total Closed Tickets</span>
+                </div>
+                <div class="report-stat">
+                    <span class="stat-number">{{ total_resolved }}</span>
+                    <span class="stat-label">Total Resolved Tickets</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="report-section">
+            <h2>Branch Statistics</h2>
+            <p><strong>Branch Most Assigned:</strong> {{ branch_most_inquiries.branch_opened }} ({{ branch_most_inquiries.total_tickets }} inquiries)</p>
+            <p><strong>Total Tickets Assigned:</strong> {{ total_inquiries }}</p>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Branch</th>
+                        <th>Open Tickets</th>
+                        <th>Pending Tickets</th>
+                        <th>Closed Tickets</th>
+                        <th>Resolved Tickets</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for branch in branch_stats %}
+                    <tr>
+                        <td>{{ branch.branch_opened }}</td>
+                        <td>{{ branch.open_count }}</td>
+                        <td>{{ branch.pending_count }}</td>
+                        <td>{{ branch.closed_count }}</td>
+                        <td>{{ branch.resolved_count }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No branch statistics available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section class="report-section">
+            <h2>Support Member Performance</h2>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Support Member</th>
+                        <th>Resolved Tickets</th>
+                        <th>Pending Tickets</th>
+                        <th>Closed Tickets</th>
+                        <th>Average Resolution Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in report_data %}
+                    <tr>
+                        <td>{{ data.member }}</td>
+                        <td>{{ data.resolved_count }}</td>
+                        <td>{{ data.pending_count }}</td>
+                        <td>{{ data.closed_count }}</td>
+                        <td>{{ data.average_time }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No support member data available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section class="report-section">
+            <h2>Daily Ticket Statistics</h2>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Opened</th>
+                        <th>Closed</th>
+                        <th>Resolved</th>
+                        <th>Pending</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day in daily_counts %}
+                    <tr>
+                        <td>{{ day.created_at__date }}</td>
+                        <td>{{ day.opened }}</td>
+                        <td>{{ day.closed }}</td>
+                        <td>{{ day.resolved }}</td>
+                        <td>{{ day.pending_tickets }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No daily statistics available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        function printReport() {
+            window.print();
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.html(document.querySelector('.report-container'), {
+                callback: function (doc) {
+                    doc.save('Monthly_Report.pdf');
+                },
+                x: 10,
+                y: 10
+            });
+        }
+
+        function downloadExcel() {
+            const table = document.querySelector('.report-container');
+            const worksheet = XLSX.utils.table_to_sheet(table);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Monthly Report');
+            XLSX.writeFile(workbook, 'Monthly_Report.xlsx');
+        }
+    </script>
+
+    {% endblock content %}
