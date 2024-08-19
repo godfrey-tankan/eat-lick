@@ -51,13 +51,15 @@ def generate_response(response, wa_id, name,message_type,message_id):
         ]:
             return assist_support_member(support_member.id,response,message_type,message_id)
 
+        if support_member and support_member.user_mode == HELPING_MODE:
+            return handle_help(wa_id, response, name,message_type,message_id)
         if support_member.user_mode == ACCEPT_TICKET_MODE:
             return accept_ticket(wa_id,name, response)
 
         return 'hello! how can i help you today?'
-    
-    if support_member and support_member.user_mode == HELPING_MODE or check_ticket:
+    if check_ticket:
         return handle_help(wa_id, response, name,message_type,message_id)
+    
 
     if not support_member :
         for thank_you_message in thank_you_messages:
@@ -389,14 +391,14 @@ def accept_ticket(wa_id,name, ticket_id):
     if wa_id[0] not in support_team_mobiles:
         return "You are not authorized to accept tickets"
     support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
-    try:
-        assigned_tickets = Ticket.objects.filter(
-            assigned_to=support_member.id, status=PENDING_MODE
-        ).first()
-        if assigned_tickets:
-            return "You already have a pending inquiry assigned to you. Do you want to accept this new inquiry anyway?"
-    except Ticket.DoesNotExist:
-        assigned_tickets = None
+    # try:
+    #     assigned_tickets = Ticket.objects.filter(
+    #         assigned_to=support_member.id, status=PENDING_MODE
+    #     ).first()
+    #     if assigned_tickets:
+    #         return "You already have a pending inquiry assigned to you. Do you want to accept this new inquiry anyway?"
+    # except Ticket.DoesNotExist:
+    #     assigned_tickets = None
     is_ticket_open = False
     try:
         check_ticket = Ticket.objects.get(id=ticket_id)
