@@ -161,17 +161,47 @@ def process_message_file_type(body, phone_number_id, profile_name):
     message = body["entry"][0]["changes"][0]["value"]["messages"][0]
     message_type = message["type"]
     message_id = None
+    try:
+        support_member= SupportMember.objects.get(phone_number=phone_number_id[0])
+    except SupportMember.DoesNotExist:
+        support_member = None
+    try:
+        inquirer = Inquirer.objects.get(phone_number=phone_number_id[0])
+    except Inquirer.DoesNotExist:
+        inquirer = None
+    
+    try:
+        support_member_pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member).first()
+    except Ticket.DoesNotExist:
+        support_member_pending_ticket = None
+    try:
+        inquirer_pending_ticket = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer).first()
+    except Ticket.DoesNotExist:
+        inquirer_pending_ticket = None
+        
     if message_type == "audio":
         message_id = message["audio"]["id"]
-        return handle_help(phone_number_id, message["text"]["body"], 'name',message_type,message_id)
+        if support_member and support_member_pending_ticket:
+            data = get_audio_message_input(support_member_pending_ticket.created_by.phone_number, message_id)
+        if inquirer and inquirer_pending_ticket:
+            data = get_audio_message_input(inquirer_pending_ticket.assigned_to.phone_number, message_id)
+        return send_message(data)
 
     elif message_type == "document":
         message_id = message["document"]["id"]
-        return handle_help(phone_number_id, message["text"]["body"], 'name',message_type,message_id)
+        if support_member and support_member_pending_ticket:
+            data = get_document_message(support_member_pending_ticket.created_by.phone_number, message_id)
+        if inquirer and inquirer_pending_ticket:
+            data = get_document_message(inquirer_pending_ticket.assigned_to.phone_number, message_id)
+        return send_message(data)
 
     elif message_type == "image":
         message_id = message["image"]["id"]
-        return handle_help(phone_number_id, message["text"]["body"], 'name',message_type,message_id)
+        if support_member and support_member_pending_ticket:
+            data = get_image_message(support_member_pending_ticket.created_by.phone_number, message_id)
+        if inquirer and inquirer_pending_ticket:
+            data = get_image_message(inquirer_pending_ticket.assigned_to.phone_number, message_id)
+        return send_message(data)
 
     message_body = message["text"]["body"]
     response = generate_response(message_body, phone_number_id, profile_name,message_type,message_id)
