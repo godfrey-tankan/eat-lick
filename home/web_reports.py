@@ -23,7 +23,6 @@ def weekly_report_page(request):
     if tickets.exists():
         support_members = SupportMember.objects.all()
         inquirers = Inquirer.objects.all()
-        
         report_data = []
 
         # Calculate totals and daily statistics
@@ -74,13 +73,18 @@ def weekly_report_page(request):
 
         # Additional statistics
         branch_stats = tickets.values('branch_opened').annotate(
-            tickets=Count('id')
+            tickets=Count('id'),
+            open_count=Count('id', filter=Q(status='open')),
+            pending_count=Count('id', filter=Q(status='pending')),
+            closed_count=Count('id', filter=Q(status='closed')),
+            resolved_count=Count('id', filter=Q(status='resolved'))
         ).order_by('-tickets')
 
         branch_most_inquiries = branch_stats.first()
         total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
 
         context = {
+            'branch_stats': branch_stats,
             'report_data': report_data,
             'start_date': start_date,
             'end_date': end_date,

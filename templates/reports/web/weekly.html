@@ -106,6 +106,28 @@
                 <h2>Branch Statistics</h2>
                 <p><strong>Branch Most Assigned:</strong> {{ branch_most_inquiries.branch_opened }} ({{ branch_most_inquiries.tickets }} inquiries)</p>
                 <p><strong>Total Tickets Assigned:</strong> {{ total_inquiries }}</p>
+                <table class = 'report-table'>
+                    <thead>
+                        <tr>
+                            <th>Branch</th>
+                            <th>Open Tickets</th>
+                            <th>Pending Tickets</th>
+                            <th>Closed Tickets</th>
+                            <th>Resolved Tickets</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for branch in branch_stats %}
+                        <tr>
+                            <td>{{ branch.branch_opened }}</td>
+                            <td>{{ branch.open_count }}</td>
+                            <td>{{ branch.pending_count }}</td>
+                            <td>{{ branch.closed_count }}</td>
+                            <td>{{ branch.resolved_count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </section>
 
             <section class="report-section">
@@ -163,7 +185,7 @@
 
     {% endblock content %}
 
-    
+
 
 
         
