@@ -214,7 +214,7 @@ def handle_inquiry(wa_id, response, name):
                 inquirer_obj.branch = response
                 inquirer_obj.user_mode = INQUIRY_MODE
                 inquirer_obj.save()
-                return f'Hello {name.title()}, What is your inquiry?'
+                return f'Hello {inquirer_obj.username.split()[0].title()}, What is your inquiry?'
             names = response.split()
             if len(names) < 2:
                 return 'Please provide your first name and last name'
