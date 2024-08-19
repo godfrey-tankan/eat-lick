@@ -70,7 +70,7 @@ urlpatterns += [
 
     path('faqs/', FAQListCreateView.as_view(), name='faq-list-create'),
     path('faqs/<int:pk>/', FAQDetailView.as_view(), name='faq-detail'),
-    path('tickets-list/', all_tickets_list, name='ticket-list'),
+    path('inquiries/', all_tickets_list, name='ticket-list'),
     path('tickets/create/', ticket_create, name='ticket-create'),
     path('ticket/<int:pk>/', ticket_detail, name='ticket-detail'),
     path('get-chart-data/', get_chart_data, name='get_chart_data'),
