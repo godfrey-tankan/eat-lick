@@ -169,6 +169,8 @@ def process_message_file_type(body, phone_number_id, profile_name):
 
     elif message_type == "image":
         message_id = message["image"]["id"]
+        data = get_image_message(phone_number_id[0], message["image"]["id"])
+        return send_message(data)
 
     message_body = message["text"]["body"]
     response = generate_response(message_body, phone_number_id, profile_name,message_type,message_id)
