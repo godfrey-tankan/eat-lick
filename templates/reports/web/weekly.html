@@ -1,12 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weekly Report</title>
-    <!-- Include your CSS files here -->
-</head>
-<body>
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+
     <h1>Weekly Report</h1>
     <p>Report Period: {{ start_date }} - {{ end_date }}</p>
 
@@ -69,6 +65,4 @@
     </table>
 
     <!-- Add more sections if needed -->
-
-</body>
-</html>
+    {% endblock content %}
