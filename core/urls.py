@@ -56,7 +56,7 @@ urlpatterns = [
     path('reports/monthly/', monthly_report_view, name='monthly_report'),
     path('reports/support_member/', support_member_report_view, name='support_member_report'),
     path('reports/overall/', overall_report_view, name='overall_report'),
-    path('reports/branch/<int:branch_id>/', branch_report_view, name='branch_report'),
+    path('reports/branch/', branch_report_view, name='branch_report'),
     
     path('web-support/', web_support, name='web_support'),
     path('web-support/chat/', web_support, name='web_support'),
