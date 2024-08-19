@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Report</title>
+    <!-- Include your CSS files here -->
+</head>
+<body>
+    <h1>Weekly Report</h1>
+    <p>Report Period: {{ start_date }} - {{ end_date }}</p>
+
+    <h2>Overall Statistics</h2>
+    <p>Total Opened Tickets: {{ total_opened }}</p>
+    <p>Total Pending Tickets: {{ total_pending }}</p>
+    <p>Total Closed Tickets: {{ total_closed }}</p>
+    <p>Total Resolved Tickets: {{ total_resolved }}</p>
+
+    <h2>Branch Statistics</h2>
+    <p>Branch Most Assigned: <strong>{{ branch_most_inquiries.branch_opened }} ({{ branch_most_inquiries.tickets }} inquiries)</strong></p>
+    <p>Total Tickets Assigned: <strong>{{ total_inquiries }}</strong></p>
+
+    <h2>Support Member Performance</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Support Member</th>
+                <th>Resolved Tickets</th>
+                <th>Pending Tickets</th>
+                <th>Closed Tickets</th>
+                <th>Average Resolution Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in report_data %}
+                <tr>
+                    <td>{{ data.member }}</td>
+                    <td>{{ data.resolved_count }}</td>
+                    <td>{{ data.pending_count }}</td>
+                    <td>{{ data.closed_count }}</td>
+                    <td>{{ data.average_time }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Daily Ticket Statistics</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Opened</th>
+                <th>Closed</th>
+                <th>Resolved</th>
+                <th>Pending</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for day in daily_counts %}
+                <tr>
+                    <td>{{ day.created_at__date }}</td>
+                    <td>{{ day.opened }}</td>
+                    <td>{{ day.closed }}</td>
+                    <td>{{ day.resolved }}</td>
+                    <td>{{ day.pending_tickets }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Add more sections if needed -->
+
+</body>
+</html>

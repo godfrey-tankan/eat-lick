@@ -27,6 +27,7 @@ from home.escalate_ticket import escalate_ticket, send_message
 from home.fetch_messages import fetch_messages
 from a_bot.views import forward_message
 from home.web_support import web_support
+from home.web_reports import *
 
 urlpatterns = [
     path('', include('home.urls')),
@@ -44,11 +45,15 @@ urlpatterns = [
     path('escalate/<int:ticket_id>/', escalate_ticket, name='escalate_ticket'),
     path('send-message/<int:ticket_id>/', send_message, name='send_message'),
     path('get/support-members/', support_member_suggestions, name='support_member_suggestions'),
+    # PDF REPORTS
     path('generate_support_member_report/', generate_support_member_report, name='generate_support_member_report'),
     path('generate_branch_report/', generate_branch_report, name='generate_branch_report'),
     path('generate_weekly_report/', generate_weekly_report, name='generate_weekly_report'),
     path('generate_overall_report/', generate_overall_report, name='generate_overall_report'),
     path('generate_monthly_report/', generate_monthly_report, name='generate_monthly_report'),
+    # WEB REPORTS
+    path('reports/weekly/', weekly_report_page, name='weekly_report_page'),
+    
     path('web-support/', web_support, name='web_support'),
     path('web-support/chat/', web_support, name='web_support'),
 ]
