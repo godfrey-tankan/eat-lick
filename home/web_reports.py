@@ -156,3 +156,18 @@ def overall_report_view(request):
         context = prepare_empty_overall_report_context(start_date, end_date)
 
     return render(request, 'reports/web/overall.html', context)
+
+def branch_report_view(request, branch_id):
+    start_date = request.GET.get('start_date', '2001-01-01')
+    end_date = request.GET.get('end_date', '2050-12-31')
+    
+    branch = get_object_or_404(Branch, id=branch_id)
+    tickets = Ticket.objects.filter(branch_opened=branch, created_at__range=[start_date, end_date])
+
+    if tickets:
+        context = prepare_branch_report_context(branch, tickets, start_date, end_date)
+    else:
+        context = prepare_empty_branch_report_context(branch, start_date, end_date)
+
+    return render(request, 'reports/branch_report.html', context)
+

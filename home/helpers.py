@@ -17,6 +17,65 @@ from django.views.decorators.csrf import csrf_exempt
 
 
 
+
+def prepare_branch_report_context(branch, tickets, start_date, end_date):
+    branch_stats = tickets.values('branch_opened').annotate(
+        open_count=Count('id', filter=Q(status='open')),
+        pending_count=Count('id', filter=Q(status='pending')),
+        closed_count=Count('id', filter=Q(status='closed')),
+        resolved_count=Count('id', filter=Q(status='resolved'))
+    )
+    
+    total_opened = tickets.filter(status='open').count()
+    total_closed = tickets.filter(status='closed').count()
+    total_resolved = tickets.filter(status='resolved').count()
+    total_pending = tickets.filter(status='pending').count()
+    
+    daily_counts = tickets.values('created_at__date').annotate(
+        opened=Count('id', filter=Q(status='open')),
+        closed=Count('id', filter=Q(status='closed')),
+        resolved=Count('id', filter=Q(status='resolved')),
+        pending_tickets=Count('id', filter=Q(status='pending'))
+    ).order_by('created_at__date')
+    
+    day_most_opened = daily_counts.order_by('-opened').first()
+    day_most_closed = daily_counts.order_by('-closed').first()
+    day_most_resolved = daily_counts.order_by('-resolved').first()
+    day_most_pending = daily_counts.order_by('-pending_tickets').first()
+
+    return {
+        'branch': branch,
+        'branch_stats': branch_stats,
+        'total_opened': total_opened,
+        'total_closed': total_closed,
+        'total_resolved': total_resolved,
+        'total_pending': total_pending,
+        'daily_counts': daily_counts,
+        'day_most_opened': day_most_opened,
+        'day_most_closed': day_most_closed,
+        'day_most_pending': day_most_pending,
+        'day_most_resolved': day_most_resolved,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+    
+def prepare_empty_branch_report_context(branch, start_date, end_date):
+    return {
+        'branch': branch,
+        'branch_stats': [],
+        'total_opened': 0,
+        'total_closed': 0,
+        'total_resolved': 0,
+        'total_pending': 0,
+        'daily_counts': [],
+        'day_most_opened': [],
+        'day_most_closed': [],
+        'day_most_pending': [],
+        'day_most_resolved': [],
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+    
 def prepare_overall_report_context(tickets, start_date, end_date):
     support_members = SupportMember.objects.all()
     branch_stats = tickets.values('branch_opened').annotate(
@@ -78,7 +137,6 @@ def prepare_empty_overall_report_context(start_date, end_date):
         'end_date': end_date,
     }
     
-
 def prepare_support_member_report_context(member, tickets, start_date, end_date):
     resolved_tickets = tickets.filter(status='resolved')
     closed_tickets = tickets.filter(status='closed')
