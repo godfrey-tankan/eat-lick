@@ -142,8 +142,8 @@ def support_member_report_view(request):
     except json.JSONDecodeError:
         data = request.GET
     start_date = data.get('start_date', '2001-01-01')
-    member_id = data.get('support_member')
     end_date = data.get('end_date', '2050-12-31')
+    member_id = data.get('support_member')
     
     try:
         start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
@@ -265,11 +265,21 @@ def support_member_report_view(request):
     }
     return render(request, 'reports/web/support_member.html', context)
     
-
 @csrf_exempt
 def overall_report_view(request):
-    start_date = request.GET.get('start_date', '2001-01-01')
-    end_date = request.GET.get('end_date', '2050-12-31')
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        data = request.GET
+    start_date = data.get('start_date', '2001-01-01')
+    end_date = data.get('end_date', '2050-12-31')
+    
+    try:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    except ValueError:
+        start_date = datetime(2001, 1, 1).date()
+        end_date = datetime(2050, 12, 31).date()
     
     tickets = Ticket.objects.filter(created_at__range=[start_date, end_date])
     if tickets:
@@ -287,7 +297,7 @@ def branch_report_view(request):
         data = request.GET
     start_date = data.get('start_date', '2001-01-01')
     end_date = data.get('end_date', '2050-12-31')
-    branch = data.get('branch')
+    branch_id = data.get('branch')
     try:
         start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
