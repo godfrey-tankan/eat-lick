@@ -17,6 +17,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 
 
+
+
 def prepare_support_member_report_context(member, tickets, start_date, end_date):
     resolved_tickets = tickets.filter(status='resolved')
     closed_tickets = tickets.filter(status='closed')
@@ -47,7 +49,6 @@ def prepare_support_member_report_context(member, tickets, start_date, end_date)
         'end_date': end_date,
     }
     
-
 def prepare_empty_support_member_report_context(member, start_date, end_date):
     return {
         'member': member,
@@ -59,7 +60,6 @@ def prepare_empty_support_member_report_context(member, start_date, end_date):
         'end_date': end_date,
     }
     
-
 def prepare_monthly_report_context(tickets, start_date, end_date):
     support_members = SupportMember.objects.all()
     branch_stats = tickets.values('branch_opened').annotate(tickets=Count('id')).order_by('-tickets')

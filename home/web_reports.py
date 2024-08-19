@@ -143,4 +143,16 @@ def support_member_report_view(request, member_id):
     else:
         context = prepare_empty_support_member_report_context(member, start_date, end_date)
 
-    return render(request, 'reports/support_member_report.html', context)
+    return render(request, 'reports/web/support_member.html', context)
+
+def overall_report_view(request):
+    start_date = request.GET.get('start_date', '2001-01-01')
+    end_date = request.GET.get('end_date', '2050-12-31')
+    
+    tickets = Ticket.objects.filter(created_at__range=[start_date, end_date])
+    if tickets:
+        context = prepare_overall_report_context(tickets, start_date, end_date)
+    else:
+        context = prepare_empty_overall_report_context(start_date, end_date)
+
+    return render(request, 'reports/overall_report.html', context)
