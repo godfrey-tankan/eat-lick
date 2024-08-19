@@ -59,6 +59,19 @@ def generate_response(response, wa_id, name,message_type,message_id):
 
         return 'hello! how can i help you today?'
     if check_ticket:
+        if inquirer and inquirer.user_mode == CONFIRM_RESPONSE:
+            if response == '1':
+                data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
+                send_message(data)
+                return mark_as_resolved(check_ticket.id)
+            elif response == '2':
+                data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
+                send_message(data)
+                return mark_as_resolved(check_ticket.id,True)
+        if inquirer and inquirer.user_mode == SUPPORT_RATING:
+            if not '/' in response:
+                return 'Please rate the support member by replying with the rating and the support member name separated by a forward slash e.g 5/John Doe'
+            return inquirer_assistance_response(response, check_ticket, inquirer)
         return handle_help(wa_id, response, name,message_type,message_id)
 
     if not support_member :
@@ -328,19 +341,7 @@ def handle_help(wa_id, response, name,message_type,message_id):
                 Message.objects.create(ticket_id=open_inquiries,inquirer=inquirer, support_member=None, content=response)
             except Exception as e:
                 ...
-            if inquirer and inquirer.user_mode == CONFIRM_RESPONSE:
-                if response == '1':
-                    data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
-                    send_message(data)
-                    return mark_as_resolved(open_inquiries.id)
-                elif response == '2':
-                    data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
-                    send_message(data)
-                    return mark_as_resolved(open_inquiries.id,True)
-            if inquirer and inquirer.user_mode == SUPPORT_RATING:
-                if not '/' in response:
-                    return 'Please rate the support member by replying with the rating and the support member name separated by a forward slash e.g 5/John Doe'
-                return inquirer_assistance_response(response, open_inquiries, inquirer)
+            
             for message in thank_you_messages:
                 if message in response.lower():
                     if inquirer:
