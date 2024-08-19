@@ -223,7 +223,7 @@ def handle_inquiry(wa_id, response, name):
             if inquirer_obj.branch:
                 inquirer_obj.user_mode = INQUIRY_MODE
                 inquirer_obj.save()
-                return f'Hello {names[0].title()}, What is your inquiry?'
+                return f'Hello {inquirer_obj.username.split()[0].title()}, What is your inquiry?'
             inquirer_obj.user_mode=BRANCH_MODE
             inquirer_obj.save()
             return 'Please provide your branch'
