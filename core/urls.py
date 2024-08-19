@@ -54,7 +54,7 @@ urlpatterns = [
     # WEB REPORTS
     path('reports/weekly/', weekly_report_page, name='weekly_report_page'),
     path('reports/monthly/', monthly_report_view, name='monthly_report'),
-    path('reports/support_member/<int:member_id>/', support_member_report_view, name='support_member_report'),
+    path('reports/support_member/', support_member_report_view, name='support_member_report'),
     path('reports/overall/', overall_report_view, name='overall_report'),
     path('reports/branch/<int:branch_id>/', branch_report_view, name='branch_report'),
     
