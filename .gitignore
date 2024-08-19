@@ -8,6 +8,7 @@
 build/
 env
 /staticfiles/
+core/
 
 #src
 #*.sqlite*
