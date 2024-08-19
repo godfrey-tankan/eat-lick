@@ -6,7 +6,7 @@ from django.utils.timezone import now
 from .models import Ticket, SupportMember, Inquirer, Branch, TicketLog
 from django.db.models import Count, Q,OuterRef,Exists,Avg,FloatField
 from django.db.models.functions import Cast
-from .helpers import get_current_month_dates
+from .helpers import *
 import json
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
