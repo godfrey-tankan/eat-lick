@@ -87,9 +87,9 @@
                     {% for data in report_data %}
                     <tr>
                         <td>{{ data.member }}</td>
-                        <td>{{ data.resolved_count }}</td>
-                        <td>{{ data.pending_count }}</td>
-                        <td>{{ data.closed_count }}</td>
+                        <td>{{ data.total_resolved_count }}</td>
+                        <td>{{ data.pending_tickets_count }}</td>
+                        <td>{{ data.total_closed_count }}</td>
                         <td>{{ data.average_time }}</td>
                     </tr>
                     {% empty %}
@@ -100,7 +100,7 @@
                 </tbody>
             </table>
         </section>
-
+        
         <section class="report-section">
             <h2>Daily Ticket Statistics</h2>
             <table class="report-table">
@@ -116,11 +116,11 @@
                 <tbody>
                     {% for day in daily_counts %}
                     <tr>
-                        <td>{{ day.created_at__date }}</td>
+                        <td>{{ day.date }}</td>
                         <td>{{ day.opened }}</td>
                         <td>{{ day.closed }}</td>
                         <td>{{ day.resolved }}</td>
-                        <td>{{ day.pending_tickets }}</td>
+                        <td>{{ day.pending }}</td>
                     </tr>
                     {% empty %}
                     <tr>
@@ -129,7 +129,6 @@
                     {% endfor %}
                 </tbody>
             </table>
-        </section>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
@@ -159,5 +158,4 @@
             XLSX.writeFile(workbook, 'Monthly_Report.xlsx');
         }
     </script>
-
     {% endblock content %}

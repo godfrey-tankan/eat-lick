@@ -7,14 +7,12 @@ from weasyprint import HTML
 from datetime import timedelta,datetime
 from django.utils.timezone import now
 from .models import Ticket, SupportMember, Inquirer, Branch, TicketLog
-from django.db.models import Count, Q,OuterRef,Exists,Avg,FloatField
+from django.db.models import Count,F, Q,OuterRef,Exists,Avg,FloatField,ExpressionWrapper, fields,Sum,Case,When
 from django.db.models.functions import Cast
 import json
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-
-
 
 
 
@@ -78,6 +76,8 @@ def prepare_empty_branch_report_context(branch, start_date, end_date):
     
 def prepare_overall_report_context(tickets, start_date, end_date):
     support_members = SupportMember.objects.all()
+    
+    # Branch Stats
     branch_stats = tickets.values('branch_opened').annotate(
         total_tickets=Count('id'),
         open_count=Count('id', filter=Q(status='open')),
@@ -88,28 +88,20 @@ def prepare_overall_report_context(tickets, start_date, end_date):
     branch_most_inquiries = branch_stats.first()
     total_inquiries = Ticket.objects.count()
     
-    open_tickets_filter = tickets.filter(status='open')
-    pending_tickets_filter = tickets.filter(status='pending')
-    closed_tickets_filter = tickets.filter(status='closed')
-    resolved_tickets_filter = tickets.filter(status='resolved')
+    # Ticket Counts
+    total_resolved = tickets.filter(status='resolved').count()
+    total_closed = tickets.filter(status='closed').count()
+    total_pending = tickets.filter(status='pending').count()
+    total_open = tickets.filter(status='open').count()
     
-    
-    total_resolved = resolved_tickets_filter.count()
-    total_closed = closed_tickets_filter.count()
-    total_pending = pending_tickets_filter.count()
-    total_open = open_tickets_filter.count()
-    
-
+    # Prepare Report Data
     report_data = []
     for member in support_members:
-        tickets_for_member = tickets.filter(assigned_to=member.id)
-        resolved_tickets = tickets_for_member.filter(status='resolved')
-        closed_tickets = tickets_for_member.filter(status='closed')
-        pending_tickets = tickets_for_member.filter(status='pending')
+        tickets_for_member = tickets.filter(assigned_to=member.id, status='resolved')
         total_time = timedelta()
         resolved_ticket_count = 0
         
-        for ticket in resolved_tickets:
+        for ticket in tickets_for_member:
             if ticket.resolved_at:
                 total_time += ticket.resolved_at - ticket.created_at
                 resolved_ticket_count += 1
@@ -117,11 +109,14 @@ def prepare_overall_report_context(tickets, start_date, end_date):
         average_time_hours = (total_time.total_seconds() / 3600) / resolved_ticket_count if resolved_ticket_count > 0 else 0
         average_time = f"{average_time_hours:.2f} hours"
         
+        pending_tickets_count = tickets.filter(assigned_to=member.id, status='pending').count()
+        closed_tickets_count = tickets.filter(assigned_to=member.id, status='closed').count()
+        
         report_data.append({
             'member': member.username,
             'total_resolved_count': resolved_ticket_count,
-            'pending_tickets_count': pending_tickets,
-            'total_closed_count': closed_tickets,
+            'pending_tickets_count': pending_tickets_count,
+            'total_closed_count': closed_tickets_count,
             'average_time': average_time
         })
 
@@ -133,7 +128,6 @@ def prepare_overall_report_context(tickets, start_date, end_date):
         'total_pending': total_pending,
         'total_closed': total_closed,
         'total_resolved': total_resolved,
-        
         'report_data': report_data,
         'start_date': start_date,
         'end_date': end_date,
