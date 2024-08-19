@@ -344,8 +344,15 @@ def support_member_tickets(request, member_id):
         member = SupportMember.objects.get(id=member_id)
     except SupportMember.DoesNotExist:
         return HttpResponse("Support Member not found")
+    escalated_subquery = TicketLog.objects.filter(
+        ticket=OuterRef('pk'),
+        changed_by__icontains='escalated'
+    ).values('id')
 
-    tickets = Ticket.objects.filter(assigned_to=member.id)
+    tickets = Ticket.objects.filter(assigned_to=member.id).annotate(
+        is_escalated=Exists(escalated_subquery)
+    )
+    
     for ticket in tickets:
         if ticket.status in ['resolved', 'closed']:
             if ticket.resolved_at:
@@ -359,6 +366,8 @@ def support_member_tickets(request, member_id):
     return render(request, 'tickets/tickets_by_assignee.html', {'tickets': tickets, 'member': member})
 
 def all_tickets_list(request):
+    operator = request.GET.get('operator', '=')
+    filter_time = request.GET.get('filter_time', None)
     escalated_subquery = TicketLog.objects.filter(
         ticket=OuterRef('pk'),
         changed_by__icontains='escalated'
@@ -367,6 +376,45 @@ def all_tickets_list(request):
             message_count=Count('messages'),
             is_escalated=Exists(escalated_subquery)
     )
+
+    if filter_time:
+        try:
+            filter_time = int(filter_time)
+            # Convert minutes to a timedelta object
+            filter_time_duration = timedelta(minutes=filter_time)
+            end_time = now()
+
+            # Use expression to calculate the duration from creation to the end time
+            tickets = tickets.annotate(
+                time_to_resolve=ExpressionWrapper(
+                    F('resolved_at') - F('created_at'),
+                    output_field=DurationField()
+                )
+            )
+
+            if operator == '=':
+                tickets = tickets.filter(
+                    time_to_resolve=filter_time_duration
+                )
+            elif operator == '<':
+                tickets = tickets.filter(
+                    time_to_resolve__lt=filter_time_duration
+                )
+            elif operator == '>':
+                tickets = tickets.filter(
+                    time_to_resolve__gt=filter_time_duration
+                )
+            elif operator == '<=':
+                tickets = tickets.filter(
+                    time_to_resolve__lte=filter_time_duration
+                )
+            elif operator == '>=':
+                tickets = tickets.filter(
+                    time_to_resolve__gte=filter_time_duration
+                )
+        except ValueError:
+            pass  # Ignore if the filter_time is not a valid integer
+
     return render(request, 'tickets/ticket_list.html', {'tickets': tickets})
 
 def ticket_detail(request, pk):

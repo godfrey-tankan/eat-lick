@@ -84,6 +84,7 @@
                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Opened By</th>
                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Description</th>
                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Assigned To</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -106,6 +107,9 @@
                                 {{ ticket.status|title }}
                               </a>
                             </td>
+                        <td><a href="{% url 'ticket_detail' ticket.id %}">{{ ticket.assigned_to.username }}</a></td>
+
+                        
                         
                     </tr>
                     {% endfor %}

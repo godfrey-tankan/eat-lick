@@ -32,8 +32,7 @@ urlpatterns = [
     path('', include('home.urls')),
     path('admins/logout/', logout_view),
     path('tables/', support_users_list, name='support_users_list'),
-    path('tickets/status/<str:status>/', ticket_list_by_status, name='ticket_list_by_status'),
-    path('tickets/assigned-to/<int:member_id>/', support_member_tickets, name='tickets_by_assignee'),
+    
     path('users/', users_list, name='user_list'),
     path('user/<int:id>/', edit_user, name='edit_user'),
     path('profile/', profile_view, name='profile'),
@@ -70,11 +69,13 @@ urlpatterns += [
 
     path('faqs/', FAQListCreateView.as_view(), name='faq-list-create'),
     path('faqs/<int:pk>/', FAQDetailView.as_view(), name='faq-detail'),
-    path('inquiries/', all_tickets_list, name='ticket-list'),
     path('tickets/create/', ticket_create, name='ticket-create'),
     path('ticket/<int:pk>/', ticket_detail, name='ticket-detail'),
     path('get-chart-data/', get_chart_data, name='get_chart_data'),
     # path('reports/weekly/', generate_weekly_report, name='generate_weekly_report'),
+    path('inquiries/', all_tickets_list, name='inquiries_list'),
+    path('tickets/status/<str:status>/', ticket_list_by_status, name='ticket_list_by_status'),
+    path('tickets/assigned-to/<int:member_id>/', support_member_tickets, name='tickets_by_assignee'),
 ]
 all_tickets_list
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
