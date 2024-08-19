@@ -34,6 +34,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
         inquirer = None
     if inquirer:
         check_ticket = Ticket.objects.filter(created_by=inquirer.id,status=PENDING_MODE).first()
+        if inquirer.user_status == NEW_TICKET_MODE:
+            return handle_inquiry(wa_id, response, name)
     else:
         check_ticket = None
     if response.lower() in greeting_messages:
@@ -243,6 +245,8 @@ def handle_inquiry(wa_id, response, name):
                 status=OPEN_MODE,
                 changed_by=inquirer_obj
             )
+            inquirer_obj.user_status = WAITING_MODE
+            inquirer_obj.save()
             with contextlib.suppress(SupportMember.DoesNotExist):
                 broadcast_messages(name,ticket)
             return new_inquiry_opened_response
