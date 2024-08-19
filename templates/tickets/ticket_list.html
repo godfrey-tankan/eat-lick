@@ -42,6 +42,10 @@
                   <th class="text-uppercase text-black text-xxs font-weight-bolder opacity-7 ps-2">
                     Description
                   </th>
+                  <th class="text-uppercase text-black text-xxs font-weight-bolder opacity-7 ps-2">
+                    Status
+                  </th>
+
                   
                   <th class="text-center text-uppercase text-black text-xxs font-weight-bolder opacity-7">
                     <a href="?sort=created_at" class="text-black">Created At</a>
@@ -75,12 +79,71 @@
               </thead>
               <tbody>
                 {% for ticket in tickets %}
+                <tr>
+                    <td class='username-class'>
+                        <div class="d-flex px-2 py-1">
+                          <a href="{% url 'ticket_detail' ticket.id %}" class="text-secondary text-xs font-weight-bold">
+                            <div class="d-flex flex-column justify-content-center">
+                              <h6 class="mb-0 text-sm">{{ ticket.created_by.username|title }}
+
+                                <span class=" start-100 translate-middle p-1 bg-secondary border border-light semi-rounded">
+                                  <span class="text-xs " ><span class='ticket-messages'>{{ticket.message_count}}</span> messages</span>
+                                </span>
+                              </h6>
+                            </div>
+                          </div>
+                        </a>
+                    </td>
+                    <td>
+                        <p class="text-xs font-weight-bold mb-0">{{ ticket.description }}</p>
+                    </td>
+                    <td class="align-middle text-center ">
+                        <a href="{% url 'ticket_list_by_status' ticket.status %}" class="badge badge-sm position-relative" style="background-color: 
+                            {% if ticket.status == 'open' %}
+                                lightgreen
+                            {% elif ticket.status == 'resolved' %}
+                                green
+                            {% elif ticket.status == 'pending' %}
+                                orange
+                            {% elif ticket.status == 'closed' %}
+                                red
+                            {% endif %}
+                        ">
+                            {{ ticket.status|title }}
+                          </a>
+                        </td>
+                        <td class="align-middle text-center">
+                          <span class="text-secondary text-xs font-weight-bold">{{ ticket.created_at|date:"d/m/Y" }}</span>
+                        </td>
+                        {% if ticket.assigned_to %}
+                        <td class="align-middle text-center assigned-user">
+                          <a href="{% url 'tickets_by_assignee' ticket.assigned_to.id %}" class="text-xs font-weight-bold">
+                            {{ ticket.assigned_to.username }}
+                            
+                        </a>
+                        {% if ticket.is_escalated %}
+                          <span class='escaleted-ticket'>escalated</span>
+                        {% endif %}
+                    </td>
+                    {% else %}
+                    <td class="align-middle text-center">
+                        <span class="text-secondary text-xs font-weight-bold">Unassigned</span>
+                    </td>
+                    {% endif %}
+                    <td class="align-middle text-center">
+                      <span class="text-secondary text-xs font-weight-bold">{{ ticket.get_time_to_resolve }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+              {% comment %} <tbody>
+                {% for ticket in tickets %}
                 <tr class="ticket-row">
                   <td>
                     <div class="d-flex px-2 py-1">
                       <div class="d-flex flex-column justify-content-center">
                         <h6 class="mb-0 text-sm">
-                          {% comment %} <a href="#" class="open-popup" data-creater="{{ticket.created_by}}" data-description="{{ ticket.description }}">{{ ticket.created_by }}</a> {% endcomment %}
+                          
                           <a href="{% url 'ticket_detail' ticket.id %}">{{ ticket.created_by.username }}</a>
                         </h6>
                       </div>
@@ -103,7 +166,7 @@
                   <td colspan="4" class="text-center">No tickets with status "{{ status }}" found.</td>
                 </tr>
                 {% endfor %}
-              </tbody>
+              </tbody> {% endcomment %}
             </table>
           </div>
         </div>

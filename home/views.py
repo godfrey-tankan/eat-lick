@@ -359,7 +359,14 @@ def support_member_tickets(request, member_id):
     return render(request, 'tickets/tickets_by_assignee.html', {'tickets': tickets, 'member': member})
 
 def ticket_list(request):
-    tickets = Ticket.objects.all()
+    escalated_subquery = TicketLog.objects.filter(
+        ticket=OuterRef('pk'),
+        changed_by__icontains='escalated'
+    ).values('id')
+    tickets = Ticket.objects.order_by('-created_at').annotate(
+            message_count=Count('messages'),
+            is_escalated=Exists(escalated_subquery)
+    )
     return render(request, 'tickets/ticket_list.html', {'tickets': tickets})
 
 def ticket_detail(request, pk):
