@@ -12,25 +12,71 @@
         </div>
 
 <section class="report-section">
-    <h2>Support Member Report: {{ member.username }}</h2>
+    <h1>Support Member Report: {{ support_member }}</h1>
+    <h2>Average rating:
+        {% if average_rating %}
+        {{average_rating}} Out of 5
+        {% else %}
+        No rating
+        {% endif %}
+    </h2>
+    <br />
+    <p>Branch Most Assigned: <strong>{{ branch_most_inquiries.branch_opened }} ({{ branch_most_inquiries.total_tickets }} inquiries)</strong></p>
+<p>Total Tickets Assigned: <strong>{{ total_inquiries }}</strong></p>
+    <br />
     <div class="report-overview">
         <div class="report-stat">
-            <span class="stat-number">{{ pending_count }}</span>
+            <span class="stat-number">{{ total_pending }}</span>
             <span class="stat-label">Total Pending Tickets</span>
         </div>
         <div class="report-stat">
-            <span class="stat-number">{{ closed_count }}</span>
+            <span class="stat-number">{{ total_closed }}</span>
             <span class="stat-label">Total Closed Tickets</span>
         </div>
         <div class="report-stat">
-            <span class="stat-number">{{ resolved_count }}</span>
+            <span class="stat-number">{{ total_resolved }}</span>
             <span class="stat-label">Total Resolved Tickets</span>
         </div>
         <div class="report-stat">
-            <span class="stat-number">{{ average_time }}</span>
-            <span class="stat-label">Average Time To Reslve</span>
+            <span class="stat-number">{{ closed_percentage }}%</span>
+            <span class="stat-label">% Closed</span>
         </div>
+        <div class="report-stat">
+            <span class="stat-number">{{ resolved_percentage }}%</span>
+            <span class="stat-label">% Resolved</span>
+        </div>
+
     </div>
+</section>
+
+<section class='report-section'>
+    <h2>Tickets</h2>
+    <table class='report-table'>
+        <thead>
+            <tr>
+                <th>Messages</th>
+                <th>Status</th>
+                <th>Created By</th>
+                <th>Branch</th>
+                <th>Created At</th>
+                <th>Resolved At</th>
+                <th>Time to Resolve</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td>{{ ticket.messages }}</td>
+                <td>{{ ticket.status }}</td>
+                <td>{{ ticket.created_by }}</td>
+                <td>{{ ticket.branch }}</td>
+                <td>{{ ticket.created_at }}</td>
+                <td>{{ ticket.resolved_at }}</td>
+                <td>{{ ticket.time_to_resolve }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </section>
 
 

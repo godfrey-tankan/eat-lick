@@ -144,14 +144,16 @@ def prepare_empty_overall_report_context(start_date, end_date):
     }
     
 def prepare_support_member_report_context(member, tickets, start_date, end_date):
+    # Filtering tickets based on status
     resolved_tickets = tickets.filter(status='resolved')
     closed_tickets = tickets.filter(status='closed')
     pending_tickets = tickets.filter(status='pending')
-
-    total_resolved_count = resolved_tickets.count()
-    total_closed_count = closed_tickets.count()
-    pending_tickets_count = pending_tickets.count()
+    total_opened = tickets.filter(status='open').count()
+    total_closed = closed_tickets.count()
+    total_resolved = resolved_tickets.count()
+    total_pending = pending_tickets.count()
     
+    # Total counts and times
     total_time = timedelta()
     resolved_ticket_count = 0
     
@@ -160,18 +162,36 @@ def prepare_support_member_report_context(member, tickets, start_date, end_date)
             total_time += ticket.resolved_at - ticket.created_at
             resolved_ticket_count += 1
     
+    # Calculate average time to resolve
     average_time_hours = (total_time.total_seconds() / 3600) / resolved_ticket_count if resolved_ticket_count > 0 else 0
     average_time = f"{average_time_hours:.2f} hours"
-
-    return {
-        'member': member,
-        'resolved_count': total_resolved_count,
-        'pending_count': pending_tickets_count,
-        'closed_count': total_closed_count,
+    
+    # Calculate percentages
+    total_assigned = total_opened + total_pending + total_closed + total_resolved
+    resolved_percentage = (total_resolved / total_assigned * 100) if total_assigned > 0 else 0
+    closed_percentage = (total_closed / total_assigned * 100) if total_assigned > 0 else 0
+    
+    # Get branch statistics
+    branch_most_inquiries = tickets.values('branch_opened').annotate(
+        total_tickets=Count('id', distinct=True)
+    ).order_by('-total_tickets').first()
+    
+    # Generate the context dictionary
+    context = {
+        'member': member.username,
+        'resolved_count': total_resolved,
+        'pending_count': total_pending,
+        'closed_count': total_closed,
         'average_time': average_time,
         'start_date': start_date,
         'end_date': end_date,
+        'branch_most_inquiries': branch_most_inquiries,
+        'total_inquiries': tickets.count(),
+        'resolved_percentage': round(resolved_percentage, 2),
+        'closed_percentage': round(closed_percentage, 2),
     }
+
+    return context
     
 def prepare_empty_support_member_report_context(member, start_date, end_date):
     return {
