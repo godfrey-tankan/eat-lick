@@ -117,4 +117,35 @@
             </table>
         </section>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        function printReport() {
+            window.print();
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.html(document.querySelector('.report-container'), {
+                callback: function (doc) {
+                    doc.save('Monthly_Report.pdf');
+                },
+                x: 10,
+                y: 10
+            });
+        }
+
+        function downloadExcel() {
+            const table = document.querySelector('.report-container');
+            const worksheet = XLSX.utils.table_to_sheet(table);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Monthly Report');
+            XLSX.writeFile(workbook, 'Monthly_Report.xlsx');
+        }
+    </script>
+
+    <style>
+       
+    </style>
 {% endblock content %}
