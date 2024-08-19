@@ -25,9 +25,8 @@ def get_greeting():
 
 def generate_response(response, wa_id, name,message_type,message_id):
     if message_type == 'image':
-        # data = get_image_message(wa_id[0], message_id)
-        # send_message(data)
-        return f'you have sent an image {message_type} {message_id}'
+        data = get_image_message(wa_id[0], message_id)
+        return send_message(data)
     return f'Hello,golden greetings.{message_type} {message_id}'
     try:
         support_member = SupportMember.objects.get(phone_number=wa_id[0])
