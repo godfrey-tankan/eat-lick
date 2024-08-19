@@ -372,8 +372,8 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                 pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id).first()
                 if not pending_ticket:
                     support_member.user_mode = ACCEPT_TICKET_MODE
-                    message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
                     support_member.save()
+                    message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
             try:
                 data = get_text_message_input(user_mobile, message, None)
                 response = send_message(data)

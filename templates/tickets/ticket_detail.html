@@ -12,7 +12,7 @@
           </h6>
         </div>
         <div  class="card-body">
-          <p><strong>Status:</strong> {{ ticket.status }}</p>
+          <p><strong>Status:</strong> <span id='ticket_status'>{{ ticket.status }}</span></p>
           <p><strong>Origin Branch:</strong> {{ ticket.branch_opened }}</p>
           <p><strong>Description:</strong> {{ ticket.description }}</p>
           <p><strong>Created by:</strong> {{ ticket.created_by.username|title }}</p>
@@ -128,18 +128,23 @@
       });
     }
     console.log('Hovering');
-    $('#the-main-container').hover(
-      console.log('hovered'),
-      function() {
-        fetchMessages(); // Initial fetch on hover
-        fetchInterval = setInterval(fetchMessages, 8000);
-      },
-      function() {
-        // Mouse leaves the container
-        clearInterval(fetchInterval);
-      }
-    );
-    fetchMessages();
+    ticketStatus = $('#ticket_status').text();
+    console.log('Ticket status:', ticketStatus);
+    if (ticketStatus != 'resolved' && ticketStatus != 'closed') {
+
+      $('#the-main-container').hover(
+        console.log('hovered'),
+        function() {
+          fetchMessages(); // Initial fetch on hover
+          fetchInterval = setInterval(fetchMessages, 8000);
+        },
+        function() {
+          // Mouse leaves the container
+          clearInterval(fetchInterval);
+        }
+      );
+      fetchMessages();
+    }
   });
 </script>
 {% endblock content %}
