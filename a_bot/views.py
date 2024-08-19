@@ -286,13 +286,16 @@ def handle_help(wa_id, response, name,message_type,message_id):
             open_inquiries = None
         if message_type == "document":
             data = get_document_message(open_inquiries.created_by.phone_number, message_id)
-            return send_message(data)
+            send_message(data)
+            return 'you have sent a document'
         if message_type == "image":
             data = get_image_message(open_inquiries.created_by.phone_number, message_id)
-            return send_message(data)
+            send_message(data)
+            return 'you have sent an image'
         if message_type == "audio":
             data = get_audio_message_input(open_inquiries.created_by.phone_number, message_id)
-            return send_message(data)
+            send_message(data)
+            return 'you have sent an audio'
 
     if open_inquiries:
         if support_member:
@@ -322,11 +325,20 @@ def handle_help(wa_id, response, name,message_type,message_id):
             except Exception as e:
                 ...
             if inquirer and inquirer.user_mode == CONFIRM_RESPONSE:
+                if '1' in response:
+                    return mark_as_resolved(open_inquiries.id)
+                elif '2' in response:
+                    return mark_as_resolved(open_inquiries.id,True)
+            if inquirer and inquirer.user_mode == SUPPORT_RATING:
+                if not '/' in response:
+                    data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
+                    return send_message(data)
                 return inquirer_assistance_response(response, open_inquiries, inquirer)
             for message in thank_you_messages:
                 if message in response.lower():
                     if inquirer:
                         inquirer.user_mode = CONFIRM_RESPONSE
+                        inquirer.user_status = SUPPORT_RATING
                         inquirer.save()
                         data = get_text_message_input(inquirer.phone_number, 'Hello', 'customer_helped_template',True)
                         # is_inquirer_helped.format(inquirer.username.split()[0].title(),open_inquiries.description)
@@ -509,11 +521,19 @@ def mark_as_resolved( ticket_id,is_closed=False):
         support_member.user_mode = ACCEPT_TICKET_MODE
         support_member.user_status = ACCEPT_TICKET_MODE
         support_member.save()
+        try:
+            inquirer = Inquirer.objects.get(id=ticket.created_by.id)
+            inquirer.user_status = INQUIRY_MODE
+            inquirer.user_mode = INQUIRY_MODE
+            inquirer.save()
+        except Inquirer.DoesNotExist:
+            ...
         message=f"ticket *#{ticket.id}* has been closed ❌."
         reply = f'Your inquiry has been closed.'
         data = get_text_message_input(ticket.created_by.phone_number, reply, None)
         send_message(data)
         return broadcast_messages(None,ticket,message)
+    
     
     ticket = Ticket.objects.get(id=ticket_id)
     ticket.status = RESOLVED_MODE
@@ -528,6 +548,13 @@ def mark_as_resolved( ticket_id,is_closed=False):
     support_member.user_mode = ACCEPT_TICKET_MODE
     support_member.user_status = ACCEPT_TICKET_MODE
     support_member.save()
+    try:
+        inquirer = Inquirer.objects.get(id=ticket.created_by.id)
+        inquirer.user_status = INQUIRY_MODE
+        inquirer.user_mode = INQUIRY_MODE
+        inquirer.save()
+    except Inquirer.DoesNotExist:
+        ...
     message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."
     reply = f'Your inquiry ( *{ticket.description}*) has been marked as resolved'
     data = get_text_message_input(ticket.created_by.phone_number, reply, None)
