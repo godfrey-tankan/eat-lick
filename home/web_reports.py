@@ -297,14 +297,14 @@ def branch_report_view(request):
         data = request.GET
     start_date = data.get('start_date', '2001-01-01')
     end_date = data.get('end_date', '2050-12-31')
-    branch_id = data.get('branch')
+    branch_name = data.get('branch')
     try:
         start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
     except ValueError:
         start_date = datetime(2001, 1, 1).date()
         end_date = datetime(2050, 12, 31).date()
-    branch_name = Branch.objects.get(id=branch_id)
+    branch_name = Branch.objects.get(name__icontains=branch_name)
     tickets = Ticket.objects.filter(branch_opened__icontains=branch_name.name, created_at__range=[start_date, end_date])
     if tickets:
         branch_stats = tickets.values('branch_opened').annotate(
