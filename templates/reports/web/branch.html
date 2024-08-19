@@ -1,0 +1,107 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="report-container">
+    <link rel="stylesheet" href="{% static 'css/report-styles.css' %}">
+        
+        <div class="report-actions">
+            <button onclick="printReport()" class="btn-action">Print Report</button>
+            {% comment %} <button onclick="downloadPDF()" class="btn-action">Download as PDF</button> {% endcomment %}
+            <button onclick="downloadExcel()" class="btn-action">Download as Excel</button>
+        </div>
+
+    <h2>{{branch|upper}} Branch Report - 
+        {% if start_date%}
+        ({{ start_date }} to {{ end_date }})
+        {% else %}
+        Full Report
+        {% endif %}
+    </h2>
+<br />
+<br />
+<p>Inquiries: <strong>{{ total_inquiries }}</strong></p>
+
+<br />
+    <h2>{{branch|title}} Tickets Summary</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Open Tickets</th>
+                <th>Pending Tickets</th>
+                <th>Closed Tickets</th>
+                <th>Resolved Tickets</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+            <td>{{ open_count }}</td>
+            <td>{{ pending_count }}</td>
+            <td>{{ closed_count }}</td>
+            <td>{{ resolved_count }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <br />
+
+    <h2>Tickets</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Created By</th>
+                <th>Assigned To</th>
+                <th>Created At</th>
+                <th>Resolved At</th>
+                <th>Closed At</th>
+                <th>Time to Resolve</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in report_data %}
+            <tr>
+                <td>{{ ticket.title }}</td>
+                <td>{{ ticket.status }}</td>
+                <td>{{ ticket.created_by }}</td>
+                <td>{{ ticket.assigned_to }}</td>
+                <td>{{ ticket.created_at }}</td>
+                <td>{{ ticket.resolved_at }}</td>
+                <td>{{ ticket.closed_at }}</td>
+                <td>{{ ticket.time_to_resolve }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        function printReport() {
+            window.print();
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.html(document.querySelector('.report-container'), {
+                callback: function (doc) {
+                    doc.save('Monthly_Report.pdf');
+                },
+                x: 10,
+                y: 10
+            });
+        }
+
+        function downloadExcel() {
+            const table = document.querySelector('.report-container');
+            const worksheet = XLSX.utils.table_to_sheet(table);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Monthly Report');
+            XLSX.writeFile(workbook, 'Monthly_Report.xlsx');
+        }
+    </script>
+
+    {% endblock content %}
+
+

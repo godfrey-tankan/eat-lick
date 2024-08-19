@@ -12,7 +12,9 @@
         </div>
 
 <section class="report-section">
+    <header class="report-header">
     <h1>Report of <span style='color:grey;font-weight:bolder;'>{{support_member|upper}} -  </span>{%if start_date%} from ({{ start_date }} to {{ end_date }}) {%else%}Full {%endif%}</h1>
+    </header>
     <h3>Average rating:
         {% if average_rating %}
         {{average_rating}} Out of 5
