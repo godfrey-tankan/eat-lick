@@ -169,5 +169,5 @@ def branch_report_view(request, branch_id):
     else:
         context = prepare_empty_branch_report_context(branch, start_date, end_date)
 
-    return render(request, 'reports/branch_report.html', context)
+    return render(request, 'reports/web/branch.html', context)
 

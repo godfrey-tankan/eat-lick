@@ -1,0 +1,93 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="report-container">
+        <link rel="stylesheet" href="{% static 'css/report-styles.css' %}">
+        
+        <header class="report-header">
+            <h1>Monthly Report</h1>
+            <p>Report Period: <span class="report-date">{{ start_date }} - {{ end_date }}</span></p>
+        </header>
+
+        <section class="report-section">
+            <h2>Overall Monthly Statistics</h2>
+            <div class="report-overview">
+                <div class="report-stat">
+                    <span class="stat-number">{{ total_opened }}</span>
+                    <span class="stat-label">Total Opened Tickets</span>
+                </div>
+                <div class="report-stat">
+                    <span class="stat-number">{{ total_pending }}</span>
+                    <span class="stat-label">Total Pending Tickets</span>
+                </div>
+                <div class="report-stat">
+                    <span class="stat-number">{{ total_closed }}</span>
+                    <span class="stat-label">Total Closed Tickets</span>
+                </div>
+                <div class="report-stat">
+                    <span class="stat-number">{{ total_resolved }}</span>
+                    <span class="stat-label">Total Resolved Tickets</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="report-section">
+            <h2>Branch Statistics</h2>
+            <p><strong>Branch Most Assigned:</strong> {{ branch_most_inquiries.branch_opened }} ({{ branch_most_inquiries.tickets }} inquiries)</p>
+            <p><strong>Total Tickets Assigned:</strong> {{ total_inquiries }}</p>
+        </section>
+
+        <section class="report-section">
+            <h2>Support Member Performance</h2>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Support Member</th>
+                        <th>Resolved Tickets</th>
+                        <th>Pending Tickets</th>
+                        <th>Closed Tickets</th>
+                        <th>Average Resolution Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in report_data %}
+                        <tr>
+                            <td>{{ data.member }}</td>
+                            <td>{{ data.resolved_count }}</td>
+                            <td>{{ data.pending_count }}</td>
+                            <td>{{ data.closed_count }}</td>
+                            <td>{{ data.average_time }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section class="report-section">
+            <h2>Daily Ticket Statistics</h2>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Opened</th>
+                        <th>Closed</th>
+                        <th>Resolved</th>
+                        <th>Pending</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day in daily_counts %}
+                        <tr>
+                            <td>{{ day.created_at__date }}</td>
+                            <td>{{ day.opened }}</td>
+                            <td>{{ day.closed }}</td>
+                            <td>{{ day.resolved }}</td>
+                            <td>{{ day.pending_tickets }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </div>
+{% endblock content %}
