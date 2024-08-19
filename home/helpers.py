@@ -17,7 +17,48 @@ from django.views.decorators.csrf import csrf_exempt
 
 
 
+def prepare_support_member_report_context(member, tickets, start_date, end_date):
+    resolved_tickets = tickets.filter(status='resolved')
+    closed_tickets = tickets.filter(status='closed')
+    pending_tickets = tickets.filter(status='pending')
 
+    total_resolved_count = resolved_tickets.count()
+    total_closed_count = closed_tickets.count()
+    pending_tickets_count = pending_tickets.count()
+    
+    total_time = timedelta()
+    resolved_ticket_count = 0
+    
+    for ticket in resolved_tickets:
+        if ticket.resolved_at:
+            total_time += ticket.resolved_at - ticket.created_at
+            resolved_ticket_count += 1
+    
+    average_time_hours = (total_time.total_seconds() / 3600) / resolved_ticket_count if resolved_ticket_count > 0 else 0
+    average_time = f"{average_time_hours:.2f} hours"
+
+    return {
+        'member': member,
+        'resolved_count': total_resolved_count,
+        'pending_count': pending_tickets_count,
+        'closed_count': total_closed_count,
+        'average_time': average_time,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+    
+
+def prepare_empty_support_member_report_context(member, start_date, end_date):
+    return {
+        'member': member,
+        'resolved_count': 0,
+        'pending_count': 0,
+        'closed_count': 0,
+        'average_time': "N/A",
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+    
 
 def prepare_monthly_report_context(tickets, start_date, end_date):
     support_members = SupportMember.objects.all()
