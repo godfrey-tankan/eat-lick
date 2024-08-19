@@ -17,7 +17,67 @@ from django.views.decorators.csrf import csrf_exempt
 
 
 
+def prepare_overall_report_context(tickets, start_date, end_date):
+    support_members = SupportMember.objects.all()
+    branch_stats = tickets.values('branch_opened').annotate(
+        total_tickets=Count('id'),
+        open_count=Count('id', filter=Q(status='open')),
+        pending_count=Count('id', filter=Q(status='pending')),
+        closed_count=Count('id', filter=Q(status='closed')),
+        resolved_count=Count('id', filter=Q(status='resolved'))
+    ).order_by('-total_tickets')
+    branch_most_inquiries = branch_stats.first()
+    total_inquiries = Ticket.objects.count()
 
+    report_data = []
+    for member in support_members:
+        tickets_for_member = tickets.filter(assigned_to=member.id)
+        resolved_tickets = tickets_for_member.filter(status='resolved')
+        closed_tickets = tickets_for_member.filter(status='closed')
+        pending_tickets = tickets_for_member.filter(status='pending')
+        
+        total_resolved_count = resolved_tickets.count()
+        total_closed_count = closed_tickets.count()
+        pending_tickets_count = pending_tickets.count()
+        
+        total_time = timedelta()
+        resolved_ticket_count = 0
+        
+        for ticket in resolved_tickets:
+            if ticket.resolved_at:
+                total_time += ticket.resolved_at - ticket.created_at
+                resolved_ticket_count += 1
+        
+        average_time_hours = (total_time.total_seconds() / 3600) / resolved_ticket_count if resolved_ticket_count > 0 else 0
+        average_time = f"{average_time_hours:.2f} hours"
+        
+        report_data.append({
+            'member': member.username,
+            'resolved_count': total_resolved_count,
+            'pending_count': pending_tickets_count,
+            'closed_count': total_closed_count,
+            'average_time': average_time
+        })
+
+    return {
+        'branch_stats': branch_stats,
+        'branch_most_inquiries': branch_most_inquiries,
+        'total_inquiries': total_inquiries,
+        'report_data': report_data,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+
+def prepare_empty_overall_report_context(start_date, end_date):
+    return {
+        'branch_stats': [],
+        'branch_most_inquiries': None,
+        'total_inquiries': 0,
+        'report_data': [],
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+    
 
 def prepare_support_member_report_context(member, tickets, start_date, end_date):
     resolved_tickets = tickets.filter(status='resolved')

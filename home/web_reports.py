@@ -155,4 +155,4 @@ def overall_report_view(request):
     else:
         context = prepare_empty_overall_report_context(start_date, end_date)
 
-    return render(request, 'reports/overall_report.html', context)
+    return render(request, 'reports/web/overall.html', context)
