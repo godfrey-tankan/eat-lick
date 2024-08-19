@@ -68,7 +68,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         for help_message in help_messages:
             if help_message in response.lower() or len(response) > 4:
                 return handle_inquiry(wa_id, response, name)
-    return "Hello,golden greetings."    
+    return f"Hello,golden greetings.{message_type} {message_id}"    
 
 def get_text_message_input(recipient, text,name=None,template=False):
 
@@ -325,14 +325,17 @@ def handle_help(wa_id, response, name,message_type,message_id):
             except Exception as e:
                 ...
             if inquirer and inquirer.user_mode == CONFIRM_RESPONSE:
-                if '1' in response:
+                if response == '1':
+                    data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
+                    send_message(data)
                     return mark_as_resolved(open_inquiries.id)
-                elif '2' in response:
+                elif response == '2':
+                    data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
+                    send_message(data)
                     return mark_as_resolved(open_inquiries.id,True)
             if inquirer and inquirer.user_mode == SUPPORT_RATING:
                 if not '/' in response:
-                    data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
-                    return send_message(data)
+                    return 'Please rate the support member by replying with the rating and the support member name separated by a forward slash e.g 5/John Doe'
                 return inquirer_assistance_response(response, open_inquiries, inquirer)
             for message in thank_you_messages:
                 if message in response.lower():
