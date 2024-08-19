@@ -2,14 +2,9 @@
 {% load static %}
 
 {% block content %}
-<div id="popup-overlay" class="popup-overlay">
-  <div id="report-container" class="popup-content">
-      <button id="close-button" class="close-button">&times;</button>
-      <!-- Report content will be dynamically inserted here -->
-  </div>
-</div>
+<div id="report-container"></div>
 
-    <div class="container-fluid py-4">
+    <div class="container-fluid py-4" id='home-container'>
       {% if request.user.is_authenticated and not request.user.is_superuser %}
       <div class="row">
         
@@ -418,12 +413,11 @@
                     responseType: 'text' // Set response type to text for HTML content
                 })
                 .then(response => {
+                    const mainContainer = document.getElementById('home-container');
+                    mainContainer.innerHTML = response.data;
                     // Update the content of a specified container with the response data
-                    const container = document.getElementById('report-container');
-                    container.innerHTML = response.data; // Assuming the response is HTML
-                    
                     // Optionally, scroll to the top of the container or do other actions
-                    container.scrollIntoView();
+                    mainContainer.scrollIntoView();
                 })
                 .catch(error => {
                     console.error('Error:', error);
