@@ -69,3 +69,19 @@
 .report-table tr:hover {
     background-color: #e9ecef;
 }
+.btn-action {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+.btn-action:hover {
+    background-color: #0056b3;
+}
+.report-actions {
+    text-align: right;
+    margin-bottom: 20px;
+}
