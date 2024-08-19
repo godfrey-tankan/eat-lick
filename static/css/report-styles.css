@@ -85,3 +85,20 @@
     text-align: right;
     margin-bottom: 20px;
 }
+@media print {
+    #navbarBlur,
+    .report-actions {
+        display: none !important;
+    }
+    body {
+        margin: 30px;
+        padding: 0;
+    }
+
+    .report-container {
+        width: 100%;
+        margin: 0;
+        padding: 10px;
+        box-shadow: none;
+    }
+}
