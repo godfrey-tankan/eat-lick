@@ -24,6 +24,10 @@ def get_greeting():
         return "evening"
 
 def generate_response(response, wa_id, name,message_type,message_id):
+    if message_type == 'image':
+        data = get_image_message(wa_id[0], message_id)
+        send_message(data)
+        return 'you have sent an image'
     try:
         support_member = SupportMember.objects.get(phone_number=wa_id[0])
     except SupportMember.DoesNotExist:
