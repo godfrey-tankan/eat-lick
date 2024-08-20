@@ -192,32 +192,40 @@ def process_message_file_type(body, phone_number_id, profile_name):
     if message_type == "audio":
         message_id = message["audio"]["id"]
         if support_member and support_member_pending_ticket:
+            Message.objects.create(ticket_id=support_member_pending_ticket, support_member=support_member, content='sent audio message')
             data = get_audio_message_input(support_member_pending_ticket.created_by.phone_number, message_id)
         if inquirer and inquirer_pending_ticket:
+            Message.objects.create(ticket_id=inquirer_pending_ticket, inquirer=inquirer, content='sent audio message')
             data = get_audio_message_input(inquirer_pending_ticket.assigned_to.phone_number, message_id)
         return send_message(data)
     
     elif message_type == "video":
         message_id = message["video"]["id"]
         if support_member and support_member_pending_ticket:
+            Message.objects.create(ticket_id=support_member_pending_ticket, support_member=support_member, content='sent video message')
             data = get_video_message(support_member_pending_ticket.created_by.phone_number, message_id)
         if inquirer and inquirer_pending_ticket:
+            Message.objects.create(ticket_id=inquirer_pending_ticket, inquirer=inquirer, content='sent video message')
             data = get_video_message(inquirer_pending_ticket.assigned_to.phone_number, message_id)
         return send_message(data)
     
     elif message_type == "document":
         message_id = message["document"]["id"]
         if support_member and support_member_pending_ticket:
+            Message.objects.create(ticket_id=support_member_pending_ticket, support_member=support_member, content='sent document message')
             data = get_document_message(support_member_pending_ticket.created_by.phone_number, message_id)
         if inquirer and inquirer_pending_ticket:
+            Message.objects.create(ticket_id=inquirer_pending_ticket, inquirer=inquirer, content='sent document message')
             data = get_document_message(inquirer_pending_ticket.assigned_to.phone_number, message_id)
         return send_message(data)
 
     elif message_type == "image":
         message_id = message["image"]["id"]
         if support_member and support_member_pending_ticket:
+            Message.objects.create(ticket_id=support_member_pending_ticket, support_member=support_member, content='sent image message')
             data = get_image_message(support_member_pending_ticket.created_by.phone_number, message_id)
         if inquirer and inquirer_pending_ticket:
+            Message.objects.create(ticket_id=inquirer_pending_ticket, inquirer=inquirer, content='sent image message')
             data = get_image_message(inquirer_pending_ticket.assigned_to.phone_number, message_id)
         return send_message(data)
 
