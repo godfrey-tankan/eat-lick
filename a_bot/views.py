@@ -199,6 +199,8 @@ def process_message_file_type(body, phone_number_id, profile_name):
             Message.objects.create(ticket_id=inquirer_pending_ticket, inquirer=inquirer, content='sent audio message')
             data = get_audio_message_input(inquirer_pending_ticket.assigned_to.phone_number, message_id)
         return send_message(data)
+    elif message_type =='button':
+        message_body = message["button"]["text"]
     
     elif message_type == "video":
         message_id = message["video"]["id"]
@@ -229,8 +231,9 @@ def process_message_file_type(body, phone_number_id, profile_name):
             Message.objects.create(ticket_id=inquirer_pending_ticket, inquirer=inquirer, content='sent image message')
             data = get_image_message(inquirer_pending_ticket.assigned_to.phone_number, message_id)
         return send_message(data)
-
-    message_body = message["text"]["body"]
+    elif message_type == "text":
+        message_body = message["text"]["body"]
+        
     response = generate_response(message_body, phone_number_id, profile_name,message_type,message_id)
     data = get_text_message_input(phone_number_id, response, None, False)
     return send_message(data)
