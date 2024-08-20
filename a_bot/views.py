@@ -47,7 +47,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     if support_member:
         if support_member.user_status==NEW_TICKET_ACCEPT_MODE:
-            if '1' in response:
+            if response == '1' or response == '1.':
                 support_member.user_status = HELPING_MODE
                 support_member.save()
                 return 'You have skipped the ticket, you can now continue with your current task.'
@@ -77,11 +77,11 @@ def generate_response(response, wa_id, name,message_type,message_id):
         return inquirer_assistance_response(response, check_ticket, inquirer)
     if check_ticket:
         if inquirer and inquirer.user_mode== CONFIRM_RESPONSE:
-            if '1' in response:
+            if response == '1' or response == '1.':
                 mark_as_resolved(check_ticket.id)
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 return send_message(data)
-            elif '2' in response:
+            elif response =='2' or response == '2.':
                 mark_as_resolved(check_ticket.id,True)
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 return send_message(data)
