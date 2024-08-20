@@ -9,9 +9,9 @@ User = get_user_model()
 class Inquirer(models.Model):
     username = models.CharField(max_length=255,null=True, blank=True,default='Inquirer')
     phone_number = models.CharField(max_length=15, null=True, blank=True)
-    user_mode = models.CharField(max_length=20, null=True, blank=True)
-    user_status = models.CharField(max_length=20, null=True, blank=True)
-    branch = models.CharField(max_length=20, null=True, blank=True)
+    user_mode = models.CharField(max_length=255, null=True, blank=True)
+    user_status = models.CharField(max_length=255, null=True, blank=True)
+    branch = models.CharField(max_length=255, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -21,13 +21,15 @@ class Inquirer(models.Model):
         return f"Inquirer: {self.username}"
 
 
+# The above classes define models for Support Members and Tickets in a system with various fields and
+# relationships.
 class SupportMember(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     username = models.CharField(max_length=255,null=True, blank=True,default='Support')
     phone_number = models.CharField(max_length=15, null=True, blank=True)
-    user_mode = models.CharField(max_length=20, null=True, blank=True,default='ticket_acceptance')
-    user_status = models.CharField(max_length=20, null=True, blank=True,default='ticket_acceptance')
-    branch = models.CharField(max_length=20, null=True, blank=True)
+    user_mode = models.CharField(max_length=255, null=True, blank=True,default='ticket_acceptance')
+    user_status = models.CharField(max_length=255, null=True, blank=True,default='ticket_acceptance')
+    branch = models.CharField(max_length=255, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -49,11 +51,11 @@ class Ticket(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     created_by = models.ForeignKey(Inquirer, related_name='tickets', on_delete=models.SET_NULL, null=True, blank=True)
-    branch_opened = models.CharField(max_length=20, null=True, blank=True)
+    branch_opened = models.CharField(max_length=255, null=True, blank=True)
     assigned_to = models.ForeignKey(SupportMember, related_name='assigned_tickets', on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
-    ticket_mode = models.CharField(max_length=20, null=True, blank=True,default='other')
-    support_level = models.CharField(max_length=20, null=True, blank=True)
+    status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='open')
+    ticket_mode = models.CharField(max_length=255, null=True, blank=True,default='other')
+    support_level = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
@@ -97,7 +99,7 @@ class Ticket(models.Model):
 
 class TicketLog(models.Model):
     ticket = models.ForeignKey(Ticket, related_name='logs', on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=Ticket.STATUS_CHOICES)
+    status = models.CharField(max_length=255, choices=Ticket.STATUS_CHOICES)
     changed_by = models.CharField(max_length=255, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
@@ -145,7 +147,7 @@ class Message(models.Model):
 
 class Branch(models.Model):
     name = models.CharField(max_length=255)
-    code = models.CharField(max_length=20)
+    code = models.CharField(max_length=255)
 
     def __str__(self):
         return f"Branch: {self.name}"
