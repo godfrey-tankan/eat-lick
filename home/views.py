@@ -21,7 +21,8 @@ from django.db.models.functions import Coalesce
 from .decorators import staff_required
 from django.db.models import Prefetch
 from rest_framework.decorators import api_view
-
+from django.db.models import Count, Q, FloatField, ExpressionWrapper, F, Value, Avg
+from django.db.models.functions import Cast, Coalesce
 class TicketListCreateView(generics.ListCreateAPIView):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
@@ -129,9 +130,39 @@ def index(request):
         request_user_pending_tickets_count = 0
         request_user_tickets=None
         request_user_support_member=None
-    
+        
+    support_members = SupportMember.objects.annotate(
+        total_resolved_tickets=Count('assigned_tickets', filter=Q(assigned_tickets__status='resolved')),
+        total_closed_tickets=Count('assigned_tickets', filter=Q(assigned_tickets__status='closed')),
+        total_pending_tickets=Count('assigned_tickets', filter=Q(assigned_tickets__status='pending')),
+        total_assigned_tickets=Count('assigned_tickets'),
+        percent_resolved=ExpressionWrapper(
+            Cast(Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='resolved')), 0), FloatField()) * 100.0 /
+            Cast(Coalesce(Count('assigned_tickets'), 1), FloatField()),
+            output_field=FloatField()
+        ),
+        percent_pending=ExpressionWrapper(
+            Cast(Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='pending')), 0), FloatField()) * 100.0 /
+            Cast(Coalesce(Count('assigned_tickets'), 1), FloatField()),
+            output_field=FloatField()
+        ),
+        percent_closed=ExpressionWrapper(
+            Cast(Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='closed')), 0), FloatField()) * 100.0 /
+            Cast(Coalesce(Count('assigned_tickets'), 1), FloatField()),
+            output_field=FloatField()
+        ),
+        percent_expired=ExpressionWrapper(
+            Cast(Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='expired')), 0), FloatField()) * 100.0 /
+            Cast(Coalesce(Count('assigned_tickets'), 1), FloatField()),
+            output_field=FloatField()
+        )
+    ).order_by('-total_resolved_tickets')
+    for member in support_members:
+        print(f"support member stats....{member.username}: {member.total_assigned_tickets}, {member.total_resolved_tickets}, {member.percent_resolved}")
+
 
     context = {
+        'support_members': support_members,
         "tickets_count": total_tickets,
         "open_tickets_count": open_tickets_count,
         "closed_tickets_count": closed_tickets_count,
