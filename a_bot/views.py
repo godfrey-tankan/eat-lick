@@ -149,6 +149,7 @@ def send_message(data,template=False):
 
 def process_whatsapp_message(body):
     data = body
+    print(data)
     try:
         phone_number_id = [contact['wa_id'] for contact in data['entry'][0]['changes'][0]['value']['contacts']]
     except Exception as e:
