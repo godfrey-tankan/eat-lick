@@ -71,7 +71,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
     
     if inquirer and inquirer.user_status == SUPPORT_RATING:
         if not '/' in response:
-            return 'Please rate the support member by replying with the rating and the support member name separated by a forward slash e.g 5/John Doe'
+            data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
+            return send_message(data)
         return inquirer_assistance_response(response, check_ticket, inquirer)
     if check_ticket:
         if inquirer and inquirer.user_mode== CONFIRM_RESPONSE:
@@ -501,7 +502,8 @@ def inquirer_assistance_response(response, open_inquiries, inquirer):
     open_inquiries.save()
     data = get_text_message_input(inquirer.phone_number, '✨Thank you for your feedback.', None)
     send_message(data)
-    inquirer.user_mode = WAITING_MODE
+    inquirer.user_mode = INQUIRY_MODE
+    inquirer.user_status = INQUIRY_MODE
     inquirer.save()
     return ''
 
