@@ -537,7 +537,7 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                     support_member.user_status = NEW_TICKET_ACCEPT_MODE
                     support_member.save()
                     message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
-                    message += '\n\n⚠️ You have a pending inquiry, if you accept this one, the pending inquiry will be paused.\n\n1. Accept this new ticket\n2. Skip this ticket'
+                    message += '\n\n⚠️ You have a pending inquiry, if you accept this one, the pending inquiry will be paused.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.'
                     data = get_text_message_input(user_mobile, message, None)
                     send_message(data)
             try:
