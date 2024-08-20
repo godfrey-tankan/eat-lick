@@ -7,6 +7,7 @@ resolve_ticket_responses = ['#done','#resolved','#helped','##done','##resolved',
 close_ticket_responses = ['#close','#closed','##close']
 is_inquirer_helped = 'Hi {}!\n*Please confirm if your inquiry has been resolved*\n`INQUIRY`:\n- *"{}"*\n\n*1*.yes resolved\n*2*.completed but unresolved \n\nReply with the number of your choice.'
 ACCEPT_TICKET_MODE = "ticket_acceptance"
+NEW_TICKET_ACCEPT_MODE = "new_ticket_acceptance"
 confirm_open_new_ticket = ['yes','yeah','sure','yea']
 deny_open_new_ticket = ['no','nah','nope','not']
 new_inquiry_opened_response='Your inquiry has been created.A support member will be assisting you shortly.\n\nYou can *close* or *mark this inquiry as helped* by replying with #close or #done respectively.'

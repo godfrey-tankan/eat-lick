@@ -522,6 +522,13 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                     support_member.user_mode = ACCEPT_TICKET_MODE
                     support_member.save()
                     message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
+                else:
+                    support_member.user_status = NEW_TICKET_ACCEPT_MODE
+                    support_member.save()
+                    message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
+                    message += '\n\n⚠️ You have a pending inquiry, if you accept this one, the pending inquiry will be paused.Reply with the ticket ID to assist anyway.?'
+                    data = get_text_message_input(user_mobile, message, None)
+                    send_message(data)
             try:
                 data = get_text_message_input(user_mobile, message, None)
                 response = send_message(data)
@@ -539,14 +546,6 @@ def accept_ticket(wa_id,name, ticket_id):
     if wa_id[0] not in support_team_mobiles:
         return "You are not authorized to accept tickets"
     support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
-    # try:
-    #     assigned_tickets = Ticket.objects.filter(
-    #         assigned_to=support_member.id, status=PENDING_MODE
-    #     ).first()
-    #     if assigned_tickets:
-    #         return "You already have a pending inquiry assigned to you. Do you want to accept this new inquiry anyway?"
-    # except Ticket.DoesNotExist:
-    #     assigned_tickets = None
     is_ticket_open = False
     try:
         check_ticket = Ticket.objects.get(id=ticket_id)
@@ -557,6 +556,15 @@ def accept_ticket(wa_id,name, ticket_id):
     except Ticket.DoesNotExist:
         return "error ticket not available or already assigned "
     if is_ticket_open:
+        try:
+            assigned_tickets = Ticket.objects.filter(
+                assigned_to=support_member.id, status=PENDING_MODE
+            ).first()
+            if assigned_tickets:
+                assigned_tickets.ticket_mode = QUEUED_MODE
+                assigned_tickets.save()
+        except Ticket.DoesNotExist:
+            assigned_tickets = None
         ticket = Ticket.objects.get(id=ticket_id)
         ticket.assigned_to = support_member
         ticket.status = PENDING_MODE
@@ -655,7 +663,6 @@ def get_video_message(recipient, video_id):
         }
     )
 
-    
 
 def mark_as_resolved( ticket_id,is_closed=False):
     naive_datetime = datetime.now()
