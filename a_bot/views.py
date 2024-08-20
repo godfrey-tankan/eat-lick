@@ -330,7 +330,8 @@ def handle_inquiry(wa_id, response, name):
                 return 'What is your inquiry?'
         if 'no' == response.lower():
             return 'Your inquiry is still being attended to.Please wait for a response.'
-        
+    if len(response) < 4:
+        return 'Please provide a detailed inquiry'
     ticket = Ticket.objects.create(
         title=f"Inquiry from {name}",
         description=response,
