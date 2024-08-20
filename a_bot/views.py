@@ -13,6 +13,7 @@ from home.models import *
 from .responses import *
 from django.core.files.base import ContentFile
 from django.utils import timezone
+import re
 
 def get_greeting():
     current_hour = datetime.now().hour
@@ -38,12 +39,14 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return handle_inquiry(wa_id, response, name)
     else:
         check_ticket = None
-    
+        
     if response.lower() in greeting_messages:
         time_of_day = get_greeting()
         name = inquirer.username.split()[0] if inquirer else support_member.username.split()[0]
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     if support_member:
+        if '#resume' in response.lower():
+            return resume_assistance(support_member,response)
         if response.lower() in support_member_help_requests:
             return request_assistance_support_member(support_member.id)
         if support_member.user_status in [
@@ -83,6 +86,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 return handle_inquiry(wa_id, response, name)
     
     return f"Hello,golden greetings. How can i help you today?"    
+
+
 
 def get_text_message_input(recipient, text,name=None,template=False):
 
@@ -183,7 +188,15 @@ def process_message_file_type(body, phone_number_id, profile_name):
         if inquirer and inquirer_pending_ticket:
             data = get_audio_message_input(inquirer_pending_ticket.assigned_to.phone_number, message_id)
         return send_message(data)
-
+    
+    elif message_type == "video":
+        message_id = message["video"]["id"]
+        if support_member and support_member_pending_ticket:
+            data = get_video_message(support_member_pending_ticket.created_by.phone_number, message_id)
+        if inquirer and inquirer_pending_ticket:
+            data = get_video_message(inquirer_pending_ticket.assigned_to.phone_number, message_id)
+        return send_message(data)
+    
     elif message_type == "document":
         message_id = message["document"]["id"]
         if support_member and support_member_pending_ticket:
@@ -213,8 +226,7 @@ def get_audio_message_input(phone_number_id, audio_id):
             "to": phone_number_id,
             "type": "audio",
             "audio": {
-                'id':f'{audio_id}',
-                "caption": "New audio message"
+                'id':audio_id
             },
         }
     )
@@ -279,8 +291,7 @@ def handle_inquiry(wa_id, response, name):
     except Ticket.DoesNotExist:
         open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj.id).first()
     if open_inquiries:
-        return "You have an open inquiry, Do you want to open a new inquiry?"
-        
+        # return "You have an open inquiry, Do you want to open a new inquiry?"
         if not inquirer_obj.user_status == NEW_TICKET_MODE:
             return "You have an open inquiry, Do you want to open a new inquiry?"
         if inquirer_obj.user_status == NEW_TICKET_MODE:
@@ -296,15 +307,21 @@ def handle_inquiry(wa_id, response, name):
                 status=OPEN_MODE,
                 changed_by=inquirer_obj
             )
-            inquirer_obj.user_status = WAITING_MODE
+            inquirer_obj.user_status = INQUIRY_MODE
             inquirer_obj.save()
             with contextlib.suppress(SupportMember.DoesNotExist):
                 broadcast_messages(name,ticket)
             return new_inquiry_opened_response
-        if 'yes' in response.lower():
-            inquirer_obj.user_status = NEW_TICKET_MODE
-            inquirer_obj.save()
-            return 'What is your inquiry?'
+        for yes_response in confirm_open_new_ticket:
+            if yes_response in response.lower():
+                inquirer_obj.user_status = NEW_TICKET_MODE
+                inquirer_obj.save()
+                open_inquiries.ticket_mode = QUEUED_MODE
+                open_inquiries.save()
+                return 'What is your inquiry?'
+        if 'no' == response.lower():
+            return 'Your inquiry is still being attended to.Please wait for a response.'
+        
     ticket = Ticket.objects.create(
         title=f"Inquiry from {name}",
         description=response,
@@ -325,12 +342,12 @@ def handle_help(wa_id, response, name,message_type,message_id):
     support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
     inquirer = Inquirer.objects.filter(phone_number=wa_id[0]).first()
     try:
-        open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer).first()
+        open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer,ticket_mode='other').first()
     except Ticket.DoesNotExist:
         open_inquiries = None
     if support_member:
         try:
-            open_inquiries = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member).first()
+            open_inquiries = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
         except Ticket.DoesNotExist:
             open_inquiries = None
         if message_type == "document":
@@ -387,7 +404,92 @@ def handle_help(wa_id, response, name,message_type,message_id):
                 else:
                     data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
                 return send_message(data)
-    return "You have no open inquiries"
+    if inquirer:
+        return process_queued_tickets(inquirer, None,response)
+    else:
+        return process_queued_tickets(None,support_member,response)
+        
+def process_queued_tickets(inquirer=None, support_member=None,response=None):
+    if support_member:
+        all_queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,assigned_to=support_member)
+        if all_queued_tickets:
+            if not '#' in response:
+                tickets_info = 'Please select the ticket you want to resume assisting:\n\n'
+                for queued_ticket in all_queued_tickets:
+                    tickets_info +=f"- Ticket Number: # *{queued_ticket.id}*\nDescription: {queued_ticket.description}\n"
+                tickets_info += '\nReply with #ticketNo eg *#4* to resume assisting the inquirer.'
+                data = get_text_message_input(support_member.phone_number, tickets_info, None)
+                return send_message(data)
+            else:
+                match = re.search(r'#(\d+)', response)
+                if match:
+                    ticket_obj = Ticket.objects.filter(id=match.group(1)).first()
+                    if ticket_obj:
+                        ticket_obj.ticket_mode = 'other'
+                        ticket_obj.save()
+                        message= f'You are now assisting the inquirer with ticket number *{ticket_obj.id}*'
+                        data = get_text_message_input(support_member.phone_number,message , None)
+                        return send_message(data)
+                    else:
+                        return "Ticket not found"
+                else:
+                    return "Please check the ticket number and try again, use #ticketNo eg *#4*"
+    
+    if inquirer:
+        queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,created_by=inquirer)
+        if queued_tickets:
+            if not '#' in response:
+                tickets_info = 'Please select the ticket you want get help on:\n\n'
+                for queued_ticket in queued_tickets:
+                    tickets_info +=f"- Ticket Number: # *{queued_ticket.id}*\nDescription: {queued_ticket.description}\n"
+                tickets_info += '\nReply with #ticketNo eg *#4* to start asking for help on the ticket.'
+                data = get_text_message_input(inquirer.phone_number, tickets_info, None)
+                return send_message(data)
+            else:
+                match = re.search(r'#(\d+)', response)
+                if match:
+                    support_member_pending_ticket = Ticket.objects.filter(id=match.group(1),ticket_mode=QUEUED_MODE).first()
+                    if support_member_pending_ticket:
+                        other_tickets_pending = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member_pending_ticket.assigned_to ).exclude(id=support_member_pending_ticket.id).first()
+                        if other_tickets_pending:
+                            data = get_text_message_input(inquirer.phone_number, 'Please wait, the support member will be in touch shortly.', None)
+                            send_message(data)
+                            msg =f'*{inquirer.username.title()}* from *{inquirer.branch}* is requesting assistance on ticket #*{support_member_pending_ticket.id}* which is assigned to you,finish or close the current ticket your on to respond to the inquirer.'
+                            data = get_text_message_input(support_member_pending_ticket.assigned_to.phone_number, msg, None)
+                            send_message(data)
+                    else:
+                        return "Ticket not found"
+                else:
+                    return "Please check the ticket number and try again, use #ticketNo eg *#4*"
+    return "You have no queued tickets"
+
+def resume_assistance(support_member,response):
+    all_queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,assigned_to=support_member)
+    if all_queued_tickets:
+        if not '#' in response:
+            tickets_info = 'Please select the ticket you want to resume assisting:\n\n'
+            for queued_ticket in all_queued_tickets:
+                tickets_info +=f"- Ticket Number: # *{queued_ticket.id}*\nDescription: {queued_ticket.description}\n"
+            tickets_info += '\nReply with #ticketNo eg *#1* to resume assisting the inquirer.'
+            data = get_text_message_input(support_member.phone_number, tickets_info, None)
+            return send_message(data)
+        else:
+            match = re.search(r'#(\d+)', response)
+            if match:
+                ticket_obj = Ticket.objects.filter(id=match.group(1),assigned_to=support_member,ticket_mode=QUEUED_MODE).first()
+                if ticket_obj:
+                    ticket_obj.ticket_mode = 'other'
+                    ticket_obj.save()
+                    message= f'You are now assisting the inquirer with ticket number *{ticket_obj.id}*'
+                    data = get_text_message_input(support_member.phone_number,message , None)
+                    return send_message(data)
+                else:
+                    return "No tickets with That ticket number assigned to you found"
+            else:
+                return "Please check the ticket number and try again, use #ticketNo eg *#6*"
+    return "You have no queued tickets"
+
+
 
 def inquirer_assistance_response(response, open_inquiries, inquirer):
     open_inquiries.support_level = response
@@ -542,6 +644,21 @@ def get_document_message(recipient, document_id, caption='New document'):
             },
         }
     )
+
+def get_video_message(recipient, video_id):
+    return json.dumps(
+        {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": recipient,
+            "type": "video",
+            "video": {
+                "id": video_id,
+            },
+        }
+    )
+
+    
 
 def mark_as_resolved( ticket_id,is_closed=False):
     naive_datetime = datetime.now()
