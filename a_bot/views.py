@@ -97,7 +97,6 @@ def generate_response(response, wa_id, name,message_type,message_id):
     
     return f"Hello,golden greetings. How can i help you today?"    
 
-
 def get_text_message_input(recipient, text,name=None,template=False):
 
     if template:
@@ -182,11 +181,11 @@ def process_message_file_type(body, phone_number_id, profile_name):
         inquirer = None
     
     try:
-        support_member_pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member).first()
+        support_member_pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
     except Ticket.DoesNotExist:
         support_member_pending_ticket = None
     try:
-        inquirer_pending_ticket = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer).first()
+        inquirer_pending_ticket = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer,ticket_mode='other').first()
     except Ticket.DoesNotExist:
         inquirer_pending_ticket = None
         
