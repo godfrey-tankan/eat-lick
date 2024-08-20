@@ -3,6 +3,8 @@
 
 {% block content %}
 <div id='home-container' class='home-container'></div>
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
 
     <div class="container-fluid py-4" id='home-container-main'>
       {% if request.user.is_authenticated and not request.user.is_superuser %}
@@ -156,7 +158,10 @@
           <a href="{% url 'generate_weekly_report' %}" class="btn btn-primary">Generate Report</a>
         </div> {% endcomment %}
         <div class="col-12 mb-4">
-          <button id="generate-report-button" class="btn btn-primary">Generate Report</button>
+          
+          <button id="generate-report-button " class="btn btn-primary">
+            <i class='bx bxs-report' ></i>
+            Generate Report</button>
       </div>
         <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4 home-cards-hover">
           <a href="{% url 'ticket_list_by_status' 'open' %}" class="card">
@@ -275,8 +280,9 @@
         <div class="col-lg-4">
           <div class="card custom-card z-index-2">
               <div class="card-header pb-0">
-                  <h6>Top Resolvers
-                      <i class="ni ni-done text-success"></i>
+                  <h6>
+                    <i class='bx bx-trending-up text-success' ></i>
+                    Top Resolvers
                   </h6>
                   {% comment %} <p class="text-sm">
                       <span class="font-weight-bold">4% more</span> in Aug
@@ -294,9 +300,9 @@
                             </a>
                           </div>
                           <div class="text-end">
-                              <p class="mb-0 text-success custom-small-text">Resolved: {{ member.total_resolved }}</p>
-                              <p class="mb-0 text-danger custom-small-text">Closed: {{ member.total_closed_tickets }}</p>
-                              <p class="mb-0 text-warning custom-small-text">In Progress: {{ member.total_pending_tickets }}</p>
+                              <p class="mb-0 text-success custom-small-text"><i class='bx bx-check' ></i>Resolved: {{ member.total_resolved }}</p>
+                              <p class="mb-0 text-danger custom-small-text"><i class='bx bx-x' ></i>Closed: {{ member.total_closed_tickets }}</p>
+                              <p class="mb-0 text-warning custom-small-text"><i class='bx bx-dots-horizontal' ></i>In Progress: {{ member.total_pending_tickets }}</p>
                               <p class="mb-0 text-info custom-small-text">{{ member.percentage_resolved|floatformat:2 }}% Resolved</p>
                           </div>
                       </li>
