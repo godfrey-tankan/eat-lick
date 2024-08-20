@@ -4,7 +4,7 @@ from weasyprint import HTML
 from datetime import timedelta,datetime
 from django.utils.timezone import now
 from .models import Ticket, SupportMember, Inquirer, Branch, TicketLog
-from django.db.models import Count, Q,OuterRef,Exists,Avg,FloatField
+from django.db.models import Count, Q,OuterRef,Exists,Avg,FloatField,Case,When
 from django.db.models.functions import Cast
 from .helpers import *
 import json

@@ -83,7 +83,12 @@ def prepare_overall_report_context(tickets, start_date, end_date):
         open_count=Count('id', filter=Q(status='open')),
         pending_count=Count('id', filter=Q(status='pending')),
         closed_count=Count('id', filter=Q(status='closed')),
-        resolved_count=Count('id', filter=Q(status='resolved'))
+        resolved_count=Count('id', filter=Q(status='resolved')),
+        percentage_resolved=Case(
+        When(total_tickets=0, then=0),  # Handle division by zero
+        default=(F('resolved_count') * 100.0 / F('total_tickets')),
+        output_field=FloatField(),
+    )
     ).order_by('-total_tickets')
     branch_most_inquiries = branch_stats.first()
     total_inquiries = Ticket.objects.count()

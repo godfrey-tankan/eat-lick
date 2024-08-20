@@ -52,18 +52,19 @@
                         <th>Pending Tickets</th>
                         <th>Closed Tickets</th>
                         <th>Resolved Tickets</th>
-
+                        <th>% Completed</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for branch in branch_stats %}
                     <tr>
                         <td>{{ branch.branch_opened }}</td>
-                        <td>{{ branch.branch_opened }}</td>
+                        <td>{{ branch.total_tickets }}</td>
                         <td>{{ branch.open_count }}</td>
                         <td>{{ branch.pending_count }}</td>
                         <td>{{ branch.closed_count }}</td>
                         <td>{{ branch.resolved_count }}</td>
+                        <td>{{ branch.percentage_resolved|floatformat:2 }} %</td>
                     </tr>
                     {% empty %}
                     <tr>
