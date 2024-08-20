@@ -47,7 +47,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     if support_member:
         if support_member.user_status==NEW_TICKET_ACCEPT_MODE:
-            if '2' in response:
+            if '1' in response:
                 support_member.user_status = HELPING_MODE
                 support_member.save()
                 return 'You have skipped the ticket, you can now continue with your current task.'
