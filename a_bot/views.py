@@ -27,10 +27,12 @@ def get_greeting():
 def generate_response(response, wa_id, name,message_type,message_id):
     try:
         support_member = SupportMember.objects.get(phone_number=wa_id[0])
+        name = support_member.username.split()[0]
     except SupportMember.DoesNotExist:
         support_member = None
     try:
         inquirer = Inquirer.objects.get(phone_number=wa_id[0])
+        name = inquirer.username.split()[0]
     except Inquirer.DoesNotExist:
         inquirer = None
     if inquirer:
@@ -42,7 +44,6 @@ def generate_response(response, wa_id, name,message_type,message_id):
         
     if response.lower() in greeting_messages:
         time_of_day = get_greeting()
-        name = inquirer.username.split()[0] if inquirer else support_member.username.split()[0]
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     if support_member:
         if support_member.user_status==NEW_TICKET_ACCEPT_MODE:
