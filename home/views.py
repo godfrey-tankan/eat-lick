@@ -171,6 +171,7 @@ def get_support_members_stats():
         total_closed_tickets=Count('assigned_tickets', filter=Q(assigned_tickets__status='closed')),
         total_pending_tickets=Count('assigned_tickets', filter=Q(assigned_tickets__status='pending')),
         total_assigned_tickets=Count('assigned_tickets'),
+        average_rating=Avg(Cast('assigned_tickets__support_level', FloatField())),
         percentage_resolved=ExpressionWrapper(
             Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='resolved')), 0) * 100.0 /
             Coalesce(Count('assigned_tickets'), 1),
@@ -192,6 +193,8 @@ def get_support_members_stats():
             output_field=FloatField()
         )
     ).order_by('-total_resolved')
+    
+        
 
     return support_members
 

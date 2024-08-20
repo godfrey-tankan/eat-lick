@@ -364,11 +364,11 @@ fieldset {
 }
 
 .custom-list-item:hover {
-    background-color: #f8f9fa; /* Light hover background */
+    background-color: #f0fdfa; /* Light hover background */
 }
 
 .custom-small-text {
-    font-size: 0.75rem; /* Smaller font size */
+    font-size: 0.85rem; /* Smaller font size */
 }
 
 .custom-card-body {
