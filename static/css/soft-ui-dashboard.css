@@ -346,6 +346,14 @@ fieldset {
 
   /* CUSTOM STYLES ADDITIONS========================================================================================================= */
 
+
+  .home-cards-hover:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color:transparent;
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
   #home-container {
     position: fixed;
     top: 0;
