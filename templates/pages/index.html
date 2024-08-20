@@ -296,7 +296,7 @@
                             <a href="{% url 'tickets_by_assignee' member.id %}" class="text-secondary text-xs font-weight-bold">
                               <h6 class="mb-0 custom-small-text">{{ member.username }}</h6> <!-- Tiny text -->
                               <p class="custom-small-text">Assigned: {{ member.total_assigned_tickets }}</p>
-                              <p class="custom-small-text">Rating: {{ member.average_rating|floatformat:2 }}</p>
+                              <p class="custom-small-text">Rating: {{ member.average_rating|floatformat:2 }} {%if member.average_rating%} / 5 {%endif%}</p>
                             </a>
                           </div>
                           <div class="text-end">
@@ -304,6 +304,7 @@
                               <p class="mb-0 text-danger custom-small-text"><i class='bx bx-x' ></i>Closed: {{ member.total_closed_tickets }}</p>
                               <p class="mb-0 text-warning custom-small-text"><i class='bx bx-dots-horizontal' ></i>In Progress: {{ member.total_pending_tickets }}</p>
                               <p class="mb-0 text-info custom-small-text">{{ member.percentage_resolved|floatformat:2 }}% Resolved</p>
+                              <p class="mb-0 text-secondary custom-small-text">{{ member.percentage_closed|floatformat:2 }}% Closed</p>
                           </div>
                       </li>
                       {% endfor %}
@@ -333,7 +334,7 @@
           <div class="col-lg-4 mt-3">
             <div class="card z-index-2">
               <div class="card-header pb-0">
-                <h6>Status Distribution</h6>
+                <h6>Inquiries Status Distribution</h6>
               </div>
               <div class="card-body p-3">
                 <div class="chart">
