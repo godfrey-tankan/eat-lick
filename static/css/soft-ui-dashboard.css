@@ -346,6 +346,37 @@ fieldset {
 
   /* CUSTOM STYLES ADDITIONS========================================================================================================= */
 
+
+  .custom-card {
+    border: 1px solid #ddd; /* Light border */
+    border-radius: 0.5rem; /* Rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: transform 0.3s, box-shadow 0.3s; /* Smooth transitions */
+}
+
+.custom-card:hover {
+    transform: translateY(-2px); /* Slightly raise the card on hover */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+}
+
+.custom-list-item {
+    transition: background-color 0.3s; /* Smooth background transition */
+}
+
+.custom-list-item:hover {
+    background-color: #f8f9fa; /* Light hover background */
+}
+
+.custom-small-text {
+    font-size: 0.75rem; /* Smaller font size */
+}
+
+.custom-card-body {
+    height: 300px; /* Fixed height */
+    overflow-y: auto; /* Enable vertical scrolling */
+}
+
+  
 .text-black{
   color: #000;
 }
