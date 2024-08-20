@@ -45,6 +45,12 @@ def generate_response(response, wa_id, name,message_type,message_id):
         name = inquirer.username.split()[0] if inquirer else support_member.username.split()[0]
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     if support_member:
+        if support_member.user_status==NEW_TICKET_ACCEPT_MODE:
+            if '2' in response:
+                support_member.user_status = HELPING_MODE
+                support_member.save()
+                return 'You have skipped the ticket, you can now continue with your current task.'
+            
         if '#resume' in response.lower() or '#conti' in response.lower():
             return resume_assistance(support_member,response)
         if response.lower() in support_member_help_requests:
@@ -55,26 +61,28 @@ def generate_response(response, wa_id, name,message_type,message_id):
         ]:
             return assist_support_member(support_member.id,response,message_type,message_id)
 
+        if support_member.user_mode == ACCEPT_TICKET_MODE or support_member.user_status == NEW_TICKET_ACCEPT_MODE:
+            return accept_ticket(wa_id,name, response)
+        
         if support_member and support_member.user_mode == HELPING_MODE:
             return handle_help(wa_id, response, name,message_type,message_id)
-        if support_member.user_mode == ACCEPT_TICKET_MODE:
-            return accept_ticket(wa_id,name, response)
 
         return 'hello! how can i help you today?'
+    
     if inquirer and inquirer.user_status == SUPPORT_RATING:
         if not '/' in response:
             return 'Please rate the support member by replying with the rating and the support member name separated by a forward slash e.g 5/John Doe'
         return inquirer_assistance_response(response, check_ticket, inquirer)
     if check_ticket:
         if inquirer and inquirer.user_mode== CONFIRM_RESPONSE:
-            if response == '1':
+            if '1' in response:
+                mark_as_resolved(check_ticket.id)
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
-                send_message(data)
-                return mark_as_resolved(check_ticket.id)
-            elif response == '2':
+                return send_message(data)
+            elif '2' in response:
+                mark_as_resolved(check_ticket.id,True)
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
-                send_message(data)
-                return mark_as_resolved(check_ticket.id,True)
+                return send_message(data)
         return handle_help(wa_id, response, name,message_type,message_id)
 
     if not support_member :
@@ -526,7 +534,7 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                     support_member.user_status = NEW_TICKET_ACCEPT_MODE
                     support_member.save()
                     message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
-                    message += '\n\n⚠️ You have a pending inquiry, if you accept this one, the pending inquiry will be paused.Reply with the ticket ID to assist anyway.?'
+                    message += '\n\n⚠️ You have a pending inquiry, if you accept this one, the pending inquiry will be paused.\n\n1. Accept this new ticket\n2. Skip this ticket'
                     data = get_text_message_input(user_mobile, message, None)
                     send_message(data)
             try:
@@ -663,7 +671,6 @@ def get_video_message(recipient, video_id):
         }
     )
 
-
 def mark_as_resolved( ticket_id,is_closed=False):
     naive_datetime = datetime.now()
     aware_datetime = timezone.make_aware(naive_datetime)
@@ -678,14 +685,17 @@ def mark_as_resolved( ticket_id,is_closed=False):
             changed_by=ticket.assigned_to
         )
         support_member = SupportMember.objects.filter(id=ticket.assigned_to.id).first()
-        support_member.user_mode = ACCEPT_TICKET_MODE
-        support_member.user_status = ACCEPT_TICKET_MODE
-        support_member.save()
+        support_member_pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member).exclude(id=ticket_id).first()
+        if not support_member_pending_ticket:
+            support_member.user_mode = ACCEPT_TICKET_MODE
+            support_member.user_status = ACCEPT_TICKET_MODE
+            support_member.save()
         try:
             inquirer = Inquirer.objects.get(id=ticket.created_by.id)
-            inquirer.user_status = INQUIRY_MODE
-            inquirer.user_mode = INQUIRY_MODE
-            inquirer.save()
+            if not inquirer.user_status == SUPPORT_RATING and inquirer.user_mode == CONFIRM_RESPONSE:
+                inquirer.user_status = INQUIRY_MODE
+                inquirer.user_mode = INQUIRY_MODE
+                inquirer.save()
         except Inquirer.DoesNotExist:
             ...
         message=f"ticket *#{ticket.id}* has been closed ❌."
@@ -705,14 +715,17 @@ def mark_as_resolved( ticket_id,is_closed=False):
         changed_by=ticket.assigned_to
     )
     support_member = SupportMember.objects.filter(id=ticket.assigned_to.id).first()
-    support_member.user_mode = ACCEPT_TICKET_MODE
-    support_member.user_status = ACCEPT_TICKET_MODE
-    support_member.save()
+    support_member_pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member).exclude(id=ticket_id).first()
+    if not support_member_pending_ticket:
+        support_member.user_mode = ACCEPT_TICKET_MODE
+        support_member.user_status = ACCEPT_TICKET_MODE
+        support_member.save()
     try:
         inquirer = Inquirer.objects.get(id=ticket.created_by.id)
-        inquirer.user_status = INQUIRY_MODE
-        inquirer.user_mode = INQUIRY_MODE
-        inquirer.save()
+        if not inquirer.user_status == SUPPORT_RATING and inquirer.user_mode == CONFIRM_RESPONSE:
+            inquirer.user_status = INQUIRY_MODE
+            inquirer.user_mode = INQUIRY_MODE
+            inquirer.save()
     except Inquirer.DoesNotExist:
         ...
     message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."

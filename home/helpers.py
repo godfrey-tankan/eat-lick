@@ -77,7 +77,6 @@ def prepare_empty_branch_report_context(branch, start_date, end_date):
 def prepare_overall_report_context(tickets, start_date, end_date):
     support_members = SupportMember.objects.all()
     
-    # Branch Stats
     branch_stats = tickets.values('branch_opened').annotate(
         total_tickets=Count('id'),
         open_count=Count('id', filter=Q(status='open')),
@@ -85,7 +84,7 @@ def prepare_overall_report_context(tickets, start_date, end_date):
         closed_count=Count('id', filter=Q(status='closed')),
         resolved_count=Count('id', filter=Q(status='resolved')),
         percentage_resolved=Case(
-        When(total_tickets=0, then=0),  # Handle division by zero
+        When(total_tickets=0, then=0), 
         default=(F('resolved_count') * 100.0 / F('total_tickets')),
         output_field=FloatField(),
     )
@@ -93,13 +92,11 @@ def prepare_overall_report_context(tickets, start_date, end_date):
     branch_most_inquiries = branch_stats.first()
     total_inquiries = Ticket.objects.count()
     
-    # Ticket Counts
     total_resolved = tickets.filter(status='resolved').count()
     total_closed = tickets.filter(status='closed').count()
     total_pending = tickets.filter(status='pending').count()
     total_open = tickets.filter(status='open').count()
     
-    # Prepare Report Data
     report_data = []
     for member in support_members:
         tickets_for_member = tickets.filter(assigned_to=member.id, status='resolved')
