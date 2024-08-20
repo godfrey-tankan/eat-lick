@@ -91,9 +91,9 @@ def generate_response(response, wa_id, name,message_type,message_id):
         for thank_you_message in thank_you_messages:
             if thank_you_message in response.lower():
                 return "You are welcome."
-        for help_message in help_messages:
-            if help_message in response.lower() or len(response) > 5:
-                return handle_inquiry(wa_id, response, name)
+        # for help_message in help_messages:
+        #     if help_message in response.lower() or len(response) > :
+        return handle_inquiry(wa_id, response, name)
     
     return f"Hello,golden greetings. How can i help you today?"    
 
