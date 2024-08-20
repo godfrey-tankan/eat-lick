@@ -45,7 +45,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         name = inquirer.username.split()[0] if inquirer else support_member.username.split()[0]
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     if support_member:
-        if '#resume' in response.lower():
+        if '#resume' in response.lower() or '#conti' in response.lower():
             return resume_assistance(support_member,response)
         if response.lower() in support_member_help_requests:
             return request_assistance_support_member(support_member.id)
@@ -86,7 +86,6 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 return handle_inquiry(wa_id, response, name)
     
     return f"Hello,golden greetings. How can i help you today?"    
-
 
 
 def get_text_message_input(recipient, text,name=None,template=False):
@@ -488,8 +487,6 @@ def resume_assistance(support_member,response):
             else:
                 return "Please check the ticket number and try again, use #ticketNo eg *#6*"
     return "You have no queued tickets"
-
-
 
 def inquirer_assistance_response(response, open_inquiries, inquirer):
     open_inquiries.support_level = response
