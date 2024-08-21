@@ -76,11 +76,6 @@ def generate_response(response, wa_id, name,message_type,message_id):
 
         return 'hello! how can i help you today?'
     
-    if inquirer and inquirer.user_status == SUPPORT_RATING:
-        if not '/' in response:
-            data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
-            return send_message(data)
-        return inquirer_assistance_response(response, check_ticket, inquirer)
     if check_ticket:
         if inquirer and inquirer.user_mode== CONFIRM_RESPONSE:
             if response == '1' or response == '1.':
@@ -93,6 +88,12 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 return send_message(data)
         return handle_help(wa_id, response, name,message_type,message_id)
 
+    if inquirer and inquirer.user_status == SUPPORT_RATING:
+        if not '/' in response:
+            data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
+            return send_message(data)
+        return inquirer_assistance_response(response, check_ticket, inquirer)
+    
     if not support_member :
         for thank_you_message in thank_you_messages:
             if thank_you_message in response.lower():
@@ -789,7 +790,6 @@ def mark_as_resolved( ticket_id,is_closed=False):
         data = get_text_message_input(ticket.created_by.phone_number, reply, None)
         send_message(data)
         return broadcast_messages(None,ticket,message)
-    
     
     ticket = Ticket.objects.get(id=ticket_id)
     ticket.status = RESOLVED_MODE
