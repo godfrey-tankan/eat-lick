@@ -613,7 +613,7 @@ def assist_support_member(support_member_id, response,message_type,message_id):
     support_member = SupportMember.objects.filter(id=support_member_id).first()
     support_members = SupportMember.objects.all()
     if support_member.user_status == SUPPORT_MEMBER_ASSISTING_MODE:
-        if 'pass' in response.lower():
+        if 'pass' in response.lower() or 'skip' in response.lower():
             support_member.user_status = HELPING_MODE
             support_member.save()
             data = get_text_message_input(support_member.phone_number, passed_support_helping, None)
