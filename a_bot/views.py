@@ -79,13 +79,10 @@ def generate_response(response, wa_id, name,message_type,message_id):
     if check_ticket:
         if inquirer and inquirer.user_mode== CONFIRM_RESPONSE:
             if response == '1' or response == '1.':
-                mark_as_resolved(check_ticket.id)
-                data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
-                return send_message(data)
+                return mark_as_resolved(check_ticket.id)
             elif response =='2' or response == '2.':
-                mark_as_resolved(check_ticket.id,True)
-                data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
-                return send_message(data)
+                return mark_as_resolved(check_ticket.id,True)
+            
         return handle_help(wa_id, response, name,message_type,message_id)
 
     if inquirer and inquirer.user_status == SUPPORT_RATING:
