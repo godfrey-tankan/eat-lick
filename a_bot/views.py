@@ -180,7 +180,6 @@ def process_message_file_type(body, phone_number_id, profile_name):
         inquirer = Inquirer.objects.get(phone_number=phone_number_id[0])
     except Inquirer.DoesNotExist:
         inquirer = None
-    
     try:
         support_member_pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
     except Ticket.DoesNotExist:
@@ -487,7 +486,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
 def resume_assistance(support_member,response):
     all_queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,assigned_to=support_member)
     if all_queued_tickets:
-        if not '#' in response:
+        if not '#re' in response or '#cont' in response:
             tickets_info = 'Please select the ticket you want to resume assisting:\n\n'
             for queued_ticket in all_queued_tickets:
                 tickets_info +=f"- Ticket Number: # *{queued_ticket.id}*\nDescription: {queued_ticket.description}\n"
