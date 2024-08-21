@@ -487,7 +487,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                         if other_tickets_pending:
                             data = get_text_message_input(inquirer.phone_number, 'Please wait, the support member will be in touch shortly.', None)
                             send_message(data)
-                            msg =f'*{inquirer.username.title()}* from *{inquirer.branch}* is requesting assistance on ticket #*{support_member_pending_ticket.id}* which is assigned to you,finish or close the current ticket your on to respond to the inquirer.'
+                            msg =f'*{inquirer.username.title()}* from *{inquirer.branch}* is requesting assistance on ticket #*{support_member_pending_ticket.id}* which is assigned to you,finish or close the current ticket you are on to respond to the inquirer.'
                             data = get_text_message_input(support_member_pending_ticket.assigned_to.phone_number, msg, None)
                             send_message(data)
                     else:
@@ -535,8 +535,11 @@ def resume_assistance(support_member,response):
     return "You have no queued tickets"
 
 def inquirer_assistance_response(response, open_inquiries, inquirer):
-    open_inquiries.support_level = response
-    open_inquiries.save()
+    check_ticket = Ticket.objects.filter(created_by=inquirer.id).order_by('-date_updated').first()
+    if not check_ticket:
+        return 'Thank you for your response.'
+    check_ticket.support_level = response
+    check_ticket.save()
     data = get_text_message_input(inquirer.phone_number, '✨Thank you for your feedback.', None)
     send_message(data)
     inquirer.user_mode = INQUIRY_MODE
@@ -786,6 +789,19 @@ def mark_as_resolved( ticket_id,is_closed=False):
         except Inquirer.DoesNotExist:
             ...
         message=f"ticket *#{ticket.id}* has been closed ❌."
+        try:
+            other_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,assigned_to=ticket.assigned_to,ticket_mode=QUEUED_MODE)
+            if other_pending_tickets:
+                message=f'Hello {ticket.assigned_to.username.title()},\nYou still have pending tickets in the queue, pick one to resume assisting the inquirer now.\n\n'
+                for ticket in other_pending_tickets:
+                    message += f'Ticket Number: *#{ticket.id}*\nOpened by {ticket.created_by.username.title()} from {ticket.created_by.branch.upper()}\n- {ticket.description}\n\n'
+                message += 'Reply with #ticketNo eg *#4* to resume assisting the inquirer.'
+                support_member.user_status = RESUME_MODE
+                support_member.save()
+                data = get_text_message_input(ticket.assigned_to.phone_number, message, None)
+                send_message(data)
+        except Ticket.DoesNotExist:
+            ...
         reply = f'Your inquiry has been closed.'
         data = get_text_message_input(ticket.created_by.phone_number, reply, None)
         send_message(data)
@@ -815,6 +831,19 @@ def mark_as_resolved( ticket_id,is_closed=False):
     except Inquirer.DoesNotExist:
         ...
     message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."
+    try:
+        other_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,assigned_to=ticket.assigned_to,ticket_mode=QUEUED_MODE)
+        if other_pending_tickets:
+            message=f'Hello {ticket.assigned_to.username.title()},\nYou still have pending tickets in the queue, pick one to resume assisting the inquirer now.\n\n'
+            for ticket in other_pending_tickets:
+                message += f'Ticket Number: *#{ticket.id}*\nOpened by {ticket.created_by.username.title()} from {ticket.created_by.branch.upper()}\n- {ticket.description}\n\n'
+            message += 'Reply with #ticketNo eg *#4* to resume assisting the inquirer.'
+            support_member.user_status = RESUME_MODE
+            support_member.save()
+            data = get_text_message_input(ticket.assigned_to.phone_number, message, None)
+            send_message(data)
+    except Ticket.DoesNotExist:
+        ...
     reply = f'Your inquiry ( *{ticket.description}*) has been marked as resolved'
     data = get_text_message_input(ticket.created_by.phone_number, reply, None)
     send_message(data)
