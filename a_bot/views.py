@@ -377,22 +377,13 @@ def handle_help(wa_id, response, name,message_type,message_id):
             open_inquiries = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
         except Ticket.DoesNotExist:
             open_inquiries = None
-        if message_type == "document":
-            data = get_document_message(open_inquiries.created_by.phone_number, message_id)
-            return send_message(data)
-        if message_type == "image":
-            data = get_image_message(open_inquiries.created_by.phone_number, message_id)
-            return send_message(data)
-        if message_type == "audio":
-            data = get_audio_message_input(open_inquiries.created_by.phone_number, message_id)
-            return send_message(data)
-
+   
     if open_inquiries:
         if support_member:
             try:
                 Message.objects.create(ticket_id=open_inquiries,inquirer=None, support_member=support_member, content=response)
             except Exception as e:
-                print('error saving message')
+                ...
             if response in resolve_ticket_responses:
                 return mark_as_resolved(open_inquiries.id)
             if response in close_ticket_responses:
@@ -400,15 +391,8 @@ def handle_help(wa_id, response, name,message_type,message_id):
             data = get_text_message_input(open_inquiries.created_by.phone_number, response, None)
             return send_message(data)
         else:
-            if message_type == "document":
-                data = get_document_message(open_inquiries.assigned_to.phone_number, message_id)
-                return send_message(data)
-            if message_type == "image":
-                data = get_image_message(open_inquiries.assigned_to.phone_number, message_id)
-                return send_message(data)
-            if message_type == "audio":
-                data = get_audio_message_input(open_inquiries.assigned_to.phone_number, message_id)
-                return send_message(data)
+            if response in resolve_ticket_responses:
+                return mark_as_resolved(open_inquiries.id)
             try:
                 inquirer = Inquirer.objects.filter(phone_number=wa_id[0]).first()
                 Message.objects.create(ticket_id=open_inquiries,inquirer=inquirer, support_member=None, content=response)
