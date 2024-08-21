@@ -345,8 +345,10 @@ def handle_inquiry(wa_id, response, name):
                 send_message(data)
                 return 'What is your inquiry?'
 
-    if len(response) < 4:
+    if len(response) < 5:
         return 'Please provide a detailed inquiry'
+    if response == 'hello i want help':
+        return 'Hello what do you need help with?'
     ticket = Ticket.objects.create(
         title=f"Inquiry from {name}",
         description=response,
