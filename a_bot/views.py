@@ -188,6 +188,21 @@ def process_message_file_type(body, phone_number_id, profile_name):
         inquirer_pending_ticket = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer,ticket_mode='other').first()
     except Ticket.DoesNotExist:
         inquirer_pending_ticket = None
+    if support_member and support_member.user_status == SUPPORT_MEMBER_ASSISTANCE_MODE or support_member.user_status == SUPPORT_MEMBER_ASSISTING:
+        message_body =message_id= None
+        if message_type == "audio":
+            message_id = message["audio"]["id"]
+        if message_type == "video":
+            message_id = message["video"]["id"]
+            
+        if message_type == "document":
+            message_id = message["document"]["id"]
+            
+        if message_type == "image":
+            message_id = message["image"]["id"]
+        if message_type == "text":
+            message_body = message["text"]["body"]
+        return assist_support_member(support_member.id, message_body,message_type,message_id)
         
     if message_type == "audio":
         message_id = message["audio"]["id"]
@@ -604,30 +619,81 @@ def request_assistance_support_member(id):
         else:
             member.user_status = SUPPORT_MEMBER_ASSISTANCE_MODE
             member.save()
-    message = f'🔔 *{request_user.username}* is requesting assistance,please reply to assist. or type pass to skip this request.'
+    message = f'🔔 *Support Member {request_user.username.title()}* is requesting assistance.\nPlease select:\n\n1. Assist\n2. Skip \n\n `please choose an option to continue!`'
     broadcast_messages(None,None,message,request_user.phone_number)
     data = get_text_message_input(request_user.phone_number, support_users_interaction, None)
     return send_message(data)
 
 def assist_support_member(support_member_id, response,message_type,message_id):
     support_member = SupportMember.objects.filter(id=support_member_id).first()
-    support_members = SupportMember.objects.all()
+    support_members = SupportMember.objects.all().exclude(user_status=HELPING_MODE)
+    assisting_member = SupportMember.objects.filter(user_status=SUPPORT_MEMBER_ASSISTING).first()
     if support_member.user_status == SUPPORT_MEMBER_ASSISTING_MODE:
-        if 'pass' in response.lower() or 'skip' in response.lower():
+        if '2' == response.lower() or 'skip' in response.lower():
             support_member.user_status = HELPING_MODE
             support_member.save()
             data = get_text_message_input(support_member.phone_number, passed_support_helping, None)
             return send_message(data)
-        broadcast_messages(None,None,response,support_member.phone_number,message_type,message_id)
+        elif '1' == response.lower() or 'assist' in response.lower():
+            support_member.user_status = SUPPORT_MEMBER_ASSISTING
+            support_member.save()
+            data = get_text_message_input(support_member.phone_number, support_user_helper, None)
+            return send_message(data)
+        else:
+            support_member.user_status = HELPING_MODE
+            support_member.save()
+            message ='you skipped assisting the support member who was requesting assistance.You can now continue with your current task.'
+            data = get_text_message_input(support_member.phone_number, message, None)
+            return send_message(data)
     elif support_member.user_status == SUPPORT_MEMBER_ASSISTANCE_MODE:
         for thank_you_message in thank_you_messages:
             if thank_you_message in response.lower():
                 for member in support_members:
+                    if member.user_status == SUPPORT_MEMBER_ASSISTING:
+                        message = '*Support Member is now helped,You can now proceed with your previous tasks*'
+                        data = get_text_message_input(member.phone_number, message, None)
+                        send_message(data)
                     member.user_status = HELPING_MODE
                     member.save()
                 data = get_text_message_input(support_member.phone_number, back_to_helping_mode, None)
                 return send_message(data)
-        broadcast_messages(None,None,response,support_member.phone_number,message_type,message_id)
+        if assisting_member:
+            if message_type == "document":
+                data = get_document_message(assisting_member.phone_number, message_id)
+                return send_message(data)
+            elif message_type == "image":
+                data = get_image_message(assisting_member.phone_number, message_id)
+                return send_message(data)
+            elif message_type == "audio":
+                data = get_audio_message_input(assisting_member.phone_number, message_id)
+                return send_message(data)
+            elif message_type == "video":
+                data = get_video_message(assisting_member.phone_number, message_id)
+                return send_message(data)
+            data = get_text_message_input(assisting_member.phone_number, response, None)
+            return send_message(data)
+        return 'wait for the support member to accept  assisting you first or reply with *#exit* to quit.'
+    elif support_member.user_status == SUPPORT_MEMBER_ASSISTING:
+        member_to_assist = SupportMember.objects.filter(user_status=SUPPORT_MEMBER_ASSISTANCE_MODE).first()
+        if member_to_assist:
+            if message_type == "document":
+                data = get_document_message(member_to_assist.phone_number, message_id)
+                return send_message(data)
+            elif message_type == "image":
+                data = get_image_message(member_to_assist.phone_number, message_id)
+                return send_message(data)
+            elif message_type == "audio":
+                data = get_audio_message_input(member_to_assist.phone_number, message_id)
+                return send_message(data)
+            elif message_type == "video":
+                data = get_video_message(member_to_assist.phone_number, message_id)
+                return send_message(data)
+            data = get_text_message_input(member_to_assist.phone_number, response, None)
+            return send_message(data)
+        support_member.user_status = HELPING_MODE
+        support_member.save()
+        return 'There is no support member requesting assistance at the moment, you can continue with your current task.'
+        
     
 def get_image_message(recipient, image_id):
     return json.dumps(
