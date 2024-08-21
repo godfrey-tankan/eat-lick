@@ -12,6 +12,7 @@ confirm_open_new_ticket = ['yes','yeah','sure','yea']
 deny_open_new_ticket = ['no','nah','nope','not']
 new_inquiry_opened_response='Your inquiry has been created.A support member will be assisting you shortly.\n\nYou can *close* or *mark this inquiry as helped* by replying with #close or #done respectively.'
 HELPING_MODE = "helping"
+RESUME_MODE = "resuming"
 INQUIRY_MODE = "inquiry"
 RESOLVED_MODE = "resolved"
 PENDING_MODE = "pending"

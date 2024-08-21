@@ -51,8 +51,13 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 support_member.user_status = HELPING_MODE
                 support_member.save()
                 return 'You have skipped the ticket, you can now continue with your current task.'
-            
+        
+        if support_member.user_status == RESUME_MODE:
+            return resume_assistance(support_member,response)
+
         if '#resume' in response.lower() or '#conti' in response.lower():
+            support_member.user_status = RESUME_MODE
+            support_member.save()
             return resume_assistance(support_member,response)
         if response.lower() in support_member_help_requests:
             return request_assistance_support_member(support_member.id)
@@ -492,7 +497,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
 def resume_assistance(support_member,response):
     all_queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,assigned_to=support_member)
     if all_queued_tickets:
-        if not '#re' in response or '#cont' in response:
+        if not '#resume' in response or '#cont' in response:
             tickets_info = 'Please select the ticket you want to resume assisting:\n\n'
             for queued_ticket in all_queued_tickets:
                 tickets_info +=f"- Ticket Number: # *{queued_ticket.id}*\nDescription: {queued_ticket.description}\n"
@@ -504,15 +509,21 @@ def resume_assistance(support_member,response):
             if match:
                 ticket_obj = Ticket.objects.filter(id=match.group(1),assigned_to=support_member,ticket_mode=QUEUED_MODE).first()
                 if ticket_obj:
+                    check_other_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member).exclude(id=ticket_obj.id).first()
+                    if check_other_pending_tickets:
+                        check_other_pending_tickets.ticket_mode = QUEUED_MODE
+                        check_other_pending_tickets.save()
                     ticket_obj.ticket_mode = 'other'
                     ticket_obj.save()
-                    message= f'You are now assisting the inquirer with ticket number *{ticket_obj.id}*'
+                    message= f'You are now assisting {ticket_obj.created_by.username.title()} - *{ticket_obj.created_by.branch}* \nTicket number *{ticket_obj.id}* .'
                     data = get_text_message_input(support_member.phone_number,message , None)
                     return send_message(data)
                 else:
                     return "No tickets with That ticket number assigned to you found"
             else:
                 return "Please check the ticket number and try again, use #ticketNo eg *#6*"
+    support_member.user_status = HELPING_MODE
+    support_member.save()
     return "You have no queued tickets"
 
 def inquirer_assistance_response(response, open_inquiries, inquirer):
