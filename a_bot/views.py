@@ -497,6 +497,10 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
 def resume_assistance(support_member,response):
     all_queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,assigned_to=support_member)
     if all_queued_tickets:
+        if "#exit" in response.lower() or "#cancel" in response.lower():
+            support_member.user_status = HELPING_MODE
+            support_member.save()
+            return "You have exited the resume mode."
         if '#resume' in response or '#cont' in response:
             tickets_info = 'Please select the ticket you want to resume assisting:\n\n'
             for queued_ticket in all_queued_tickets:
@@ -523,7 +527,7 @@ def resume_assistance(support_member,response):
                 else:
                     return "No tickets with That ticket number assigned to you found"
             else:
-                return "Please check the ticket number and try again, reply with *#resume* to see all your queued tickets."
+                return "Please check the ticket number and try again, reply with *#resume* to see all your queued tickets. or reply with *#exit* to exit the resume mode."
     support_member.user_status = HELPING_MODE
     support_member.save()
     return "You have no queued tickets"
