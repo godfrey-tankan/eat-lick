@@ -27,15 +27,16 @@ def get_greeting():
 def generate_response(response, wa_id, name,message_type,message_id):
     try:
         support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
-        name = support_member.username.split()[0]
+        if support_member:
+            name = support_member.username.split()[0]
     except SupportMember.DoesNotExist:
         support_member = None
     try:
         inquirer = Inquirer.objects.filter(phone_number=wa_id[0]).first()
-        name = inquirer.username.split()[0]
     except Inquirer.DoesNotExist:
         inquirer = None
     if inquirer:
+        name = inquirer.username.split()[0]
         check_ticket = Ticket.objects.filter(created_by=inquirer.id,status=PENDING_MODE).first()
         if inquirer.user_status == NEW_TICKET_MODE:
             return handle_inquiry(wa_id, response, name)
