@@ -535,7 +535,7 @@ def resume_assistance(support_member,response):
     return "You have no queued tickets"
 
 def inquirer_assistance_response(response, open_inquiries, inquirer):
-    check_ticket = Ticket.objects.filter(created_by=inquirer.id).order_by('-date_updated').first()
+    check_ticket = Ticket.objects.filter(created_by=inquirer.id).order_by('-updated_at').first()
     if not check_ticket:
         return 'Thank you for your response.'
     check_ticket.support_level = response
