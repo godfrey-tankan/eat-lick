@@ -193,7 +193,7 @@ def process_message_file_type(body, phone_number_id, profile_name):
         inquirer_pending_ticket = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer,ticket_mode='other').first()
     except Ticket.DoesNotExist:
         inquirer_pending_ticket = None
-    if support_member and support_member.user_status == SUPPORT_MEMBER_ASSISTANCE_MODE or support_member.user_status == SUPPORT_MEMBER_ASSISTING:
+    if support_member and support_member.user_status in  [SUPPORT_MEMBER_ASSISTANCE_MODE ,SUPPORT_MEMBER_ASSISTING]:
         message_body =message_id= None
         if message_type == "audio":
             message_id = message["audio"]["id"]
