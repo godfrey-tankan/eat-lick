@@ -497,17 +497,17 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
 def resume_assistance(support_member,response):
     all_queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,assigned_to=support_member)
     if all_queued_tickets:
-        if not '#resume' in response or '#cont' in response:
+        if '#resume' in response or '#cont' in response:
             tickets_info = 'Please select the ticket you want to resume assisting:\n\n'
             for queued_ticket in all_queued_tickets:
-                tickets_info +=f"- Ticket Number: # *{queued_ticket.id}*\nDescription: {queued_ticket.description}\n"
+                tickets_info +=f"Ticket Number: # *{queued_ticket.id}*\n- {queued_ticket.description}\n"
             tickets_info += '\nReply with #ticketNo eg *#1* to resume assisting the inquirer.'
             data = get_text_message_input(support_member.phone_number, tickets_info, None)
             return send_message(data)
         else:
             match = re.search(r'#(\d+)', response)
             if match:
-                ticket_obj = Ticket.objects.filter(id=match.group(1),assigned_to=support_member,ticket_mode=QUEUED_MODE).first()
+                ticket_obj = Ticket.objects.filter(id=int(match.group(1)),assigned_to=support_member,ticket_mode=QUEUED_MODE).first()
                 if ticket_obj:
                     check_other_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member).exclude(id=ticket_obj.id).first()
                     if check_other_pending_tickets:
@@ -704,7 +704,6 @@ def assist_support_member(support_member_id, response,message_type,message_id):
         support_member.user_status = HELPING_MODE
         support_member.save()
         return 'There is no support member requesting assistance at the moment, you can continue with your current task.'
-        
     
 def get_image_message(recipient, image_id):
     return json.dumps(
