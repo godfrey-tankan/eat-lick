@@ -515,13 +515,15 @@ def resume_assistance(support_member,response):
                         check_other_pending_tickets.save()
                     ticket_obj.ticket_mode = 'other'
                     ticket_obj.save()
+                    support_member.user_status = HELPING_MODE
+                    support_member.save()
                     message= f'You are now assisting {ticket_obj.created_by.username.title()} - *{ticket_obj.created_by.branch}* \nTicket number *{ticket_obj.id}* .'
                     data = get_text_message_input(support_member.phone_number,message , None)
                     return send_message(data)
                 else:
                     return "No tickets with That ticket number assigned to you found"
             else:
-                return "Please check the ticket number and try again, use #ticketNo eg *#6*"
+                return "Please check the ticket number and try again, reply with *#resume* to see all your queued tickets."
     support_member.user_status = HELPING_MODE
     support_member.save()
     return "You have no queued tickets"
