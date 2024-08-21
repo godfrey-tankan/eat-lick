@@ -26,12 +26,12 @@ def get_greeting():
 
 def generate_response(response, wa_id, name,message_type,message_id):
     try:
-        support_member = SupportMember.objects.get(phone_number=wa_id[0])
+        support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
         name = support_member.username.split()[0]
     except SupportMember.DoesNotExist:
         support_member = None
     try:
-        inquirer = Inquirer.objects.get(phone_number=wa_id[0])
+        inquirer = Inquirer.objects.filter(phone_number=wa_id[0]).first()
         name = inquirer.username.split()[0]
     except Inquirer.DoesNotExist:
         inquirer = None
