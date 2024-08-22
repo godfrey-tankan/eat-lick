@@ -238,7 +238,7 @@
     .messages {
         display: flex;
         flex-direction: column;
-        padding-bottom: 15px;
+        padding-bottom: 30px;
     }
     
     .message {
@@ -488,8 +488,11 @@
 </body>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
+    localStorage.removeItem('ticketId');
+    localStorage.removeItem('userPhoneNumber');
     let ticketId = localStorage.getItem('ticketId');  // Replace with the actual ticket ID
     let fetchingInterval;
+
     document.getElementById('open-chat-btn').addEventListener('click', function () {
         document.getElementById('chat-popup').style.display = 'block';
 
@@ -565,11 +568,20 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    displayMessage(data.message, 'received');
+                    if( 'secrete_code' in data.message){
+                        console.log('Secret code:', data.message);
+                    }else if('Thank you for reaching out' in data){
+                        localStorage.removeItem('ticketId');
+                    }
+                    else{
+                        displayMessage(data.message, 'received');
+                    }
                     const ticketIdMatch = data.message.match(/#(\d+)/);
                     if (ticketIdMatch) {
                         ticketId = ticketIdMatch[1]; 
                         localStorage.setItem('ticketId', ticketId);
+                    }else{
+                        console.log('No ticket ID found in the message', data.message);
                     }
                     if (!fetchingInterval) {
                         startFetchingMessages(ticketId); 
