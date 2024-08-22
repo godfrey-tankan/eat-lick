@@ -31,6 +31,7 @@ SUPPORT_MEMBER_ASSISTING_MODE="support_assisting"
 SUPPORT_MEMBER_ASSISTING='support_member_assisting'
 support_member_help_requests = ["#help","#assist","#support","#trouble"]
 back_to_helping_mode = "You are now back to helping mode, you're now chatting with the inquirer."
+tankan_self='This bot was created by tnqn @ clava.co.zw'
 passed_support_helping ="You have passed the request,you can now continue with your current task."
 support_users_interaction = "You are now interacting with other support members,What do you need help with?"
 support_user_helper = "You are now helping a support member,send a message to start assisting."
