@@ -332,7 +332,7 @@ def handle_inquiry(wa_id, response, name):
         open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj.id).first()
     if open_inquiries:
         for no_response in deny_open_new_ticket:
-            if no_response in response.lower():
+            if no_response == response.lower():
                 return 'Your inquiry is still being attended to.Please wait for a response.'
         # return "You have an open inquiry, Do you want to open a new inquiry?"
         if not inquirer_obj.user_status == NEW_TICKET_MODE:
