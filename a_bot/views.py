@@ -848,7 +848,8 @@ def mark_as_resolved( ticket_id,is_closed=False):
         data = get_text_message_input(ticket.assigned_to.phone_number, message, None)
         send_message(data)
     message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."
-    reply = f'Your inquiry (*{ticket.description}*) has been marked as resolved'
+    ticket_description = ticket.description.split('Web:')[1] if 'Web:' in ticket.description else ticket.description
+    reply = f'Your inquiry (*{ticket_description}*) has been marked as resolved'
     data = get_text_message_input(ticket.created_by.phone_number, reply, None)
     send_message(data)
     return broadcast_messages(None,ticket,message)
