@@ -568,19 +568,28 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    if( 'secrete_code' in data.message){
-                        console.log('Secret code:', data.message);
-                    }else if('Thank you for reaching out' in data){
-                        localStorage.removeItem('ticketId');
+                    // Check if the response contains "is now active"
+                    if (data.message.includes('is now active')) {
+                        // Do nothing, effectively skipping the display of the message
+                        console.log('Message indicates the inquiry is now active, not displaying it.');
+                    } else {
+                        if (data.message.includes('Thank you for reaching out')) {
+                            localStorage.removeItem('ticketId');
+                            if (fetchingInterval) {
+                                clearInterval(fetchingInterval);
+                                fetchingInterval = null;
+                            }
+
+                        } else {
+                            displayMessage(data.message, 'received');
+                        }
                     }
-                    else{
-                        displayMessage(data.message, 'received');
-                    }
+            
                     const ticketIdMatch = data.message.match(/#(\d+)/);
                     if (ticketIdMatch) {
                         ticketId = ticketIdMatch[1]; 
                         localStorage.setItem('ticketId', ticketId);
-                    }else{
+                    } else {
                         console.log('No ticket ID found in the message', data.message);
                     }
                     if (!fetchingInterval) {

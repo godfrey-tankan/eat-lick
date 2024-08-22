@@ -69,7 +69,7 @@ def create_web_inquiry(inquirer, message):
             return JsonResponse({'success': True, 'message': f'Golden greetings {inquirer.username.split()[0]}, how can we help you today?'})
     if pending_tickets:
         if len(message) < 5:
-            return JsonResponse({'success': True, 'message': f'Hello {inquirer.username.split()[0]}, you have a pending ticket. Ticke ID: #{pending_tickets.last().id} Please wait for a support member to respond. You just reply with #done or #resolved when you are helped.'})
+            return JsonResponse({'success': True, 'message': f'Hello {inquirer.username.split()[0]}, you have a pending Inquiry,Inquiry ID: #{pending_tickets.last().id} Please wait for a support member to respond or Do you want to open another one?. You just reply with #done or #resolved when you are helped.'})
         new_msg = Message.objects.create(ticket_id=pending_tickets.last(),inquirer=inquirer, content=message)
         if pending_tickets.last().ticket_mode =='other':
             alert_support_members('name',pending_tickets.last(), message)
