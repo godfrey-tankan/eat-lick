@@ -569,10 +569,34 @@
                 data: {
                     labels: data.labels_weekly,
                     datasets: [
-                        { label: "Resolved", backgroundColor: "#16a34a", data: data.resolved_counts_weekly },
-                        { label: "Open", backgroundColor: "#86efac", data: data.open_counts_weekly },
-                        { label: "Closed", backgroundColor: "#dc2626", data: data.closed_counts_weekly },
-                        { label: "Pending", backgroundColor: "#fde047", data: data.pending_counts_weekly }
+                        { 
+                            label: "Resolved", 
+                            backgroundColor: "#16a34a", 
+                            data: data.resolved_counts_weekly,
+                            barThickness: 30, // Set the bar thickness here
+                            maxBarThickness: 35 // Optional: max thickness to limit the width
+                        },
+                        { 
+                            label: "Open", 
+                            backgroundColor: "#86efac", 
+                            data: data.open_counts_weekly,
+                            barThickness: 30, // Set the bar thickness here
+                            maxBarThickness: 35 // Optional: max thickness to limit the width
+                        },
+                        { 
+                            label: "Closed", 
+                            backgroundColor: "#dc2626", 
+                            data: data.closed_counts_weekly,
+                            barThickness: 30, // Set the bar thickness here
+                            maxBarThickness: 35 // Optional: max thickness to limit the width
+                        },
+                        { 
+                            label: "Pending", 
+                            backgroundColor: "#fde047", 
+                            data: data.pending_counts_weekly,
+                            barThickness: 30, // Set the bar thickness here
+                            maxBarThickness: 35 // Optional: max thickness to limit the width
+                        }
                     ]
                 },
                 options: {
@@ -582,12 +606,19 @@
                         legend: { display: true }
                     },
                     scales: {
-                        y: { stacked: true, grid: { drawBorder: false, display: true }, ticks: { beginAtZero: true, color: "#000" } },
-                        x: { stacked: true, grid: { drawBorder: false, display: false }, ticks: { color: "#000" } }
+                        y: { 
+                            stacked: true, 
+                            grid: { drawBorder: false, display: true }, 
+                            ticks: { beginAtZero: true, color: "#000" } 
+                        },
+                        x: { 
+                            stacked: true, 
+                            grid: { drawBorder: false, display: false }, 
+                            ticks: { color: "#000" } 
+                        }
                     }
                 }
             });
-
             // Line Chart (Monthly Data)
             var ctx2 = document.getElementById("chart-line").getContext("2d");
             new Chart(ctx2, {
@@ -595,10 +626,30 @@
                 data: {
                     labels: data.labels_monthly,
                     datasets: [
-                        { label: "Resolved", borderColor: "#16a34a", data: data.resolved_counts_monthly },
-                        { label: "Open", borderColor: "#86efac", data: data.open_counts_monthly },
-                        { label: "Closed", borderColor: "#dc2626", data: data.closed_counts_monthly },
-                        { label: "Pending", borderColor: "#fde047", data: data.pending_counts_monthly }
+                        { 
+                            label: "Resolved", 
+                            borderColor: "#16a34a", 
+                            data: data.resolved_counts_monthly, 
+                            borderWidth: 3 // Set line thickness here
+                        },
+                        { 
+                            label: "Open", 
+                            borderColor: "#86efac", 
+                            data: data.open_counts_monthly, 
+                            borderWidth: 3 // Set line thickness here
+                        },
+                        { 
+                            label: "Closed", 
+                            borderColor: "#dc2626", 
+                            data: data.closed_counts_monthly, 
+                            borderWidth: 3 // Set line thickness here
+                        },
+                        { 
+                            label: "Pending", 
+                            borderColor: "#fde047", 
+                            data: data.pending_counts_monthly, 
+                            borderWidth: 3 // Set line thickness here
+                        }
                     ]
                 },
                 options: {
@@ -612,8 +663,14 @@
                         mode: 'index'
                     },
                     scales: {
-                        y: { grid: { drawBorder: false, display: true }, ticks: { color: '#b2b9bf' } },
-                        x: { grid: { drawBorder: false }, ticks: { color: '#b2b9bf' } }
+                        y: { 
+                            grid: { drawBorder: false, display: true }, 
+                            ticks: { color: '#b2b9bf' } 
+                        },
+                        x: { 
+                            grid: { drawBorder: false }, 
+                            ticks: { color: '#b2b9bf' } 
+                        }
                     }
                 }
             });
@@ -641,8 +698,7 @@
                         legend: { display: true }
                     }
                 }
-            });
-
+              });
             // Stacked Bar Chart (Monthly Data)
             var ctx4 = document.getElementById("chart-stacked").getContext("2d");
             new Chart(ctx4, {
@@ -650,10 +706,34 @@
                 data: {
                     labels: data.labels_monthly,
                     datasets: [
-                        { label: "Resolved", backgroundColor: "#16a34a", data: data.resolved_counts_monthly },
-                        { label: "Open", backgroundColor: "#86efac", data: data.open_counts_monthly },
-                        { label: "Closed", backgroundColor: "#dc2626", data: data.closed_counts_monthly },
-                        { label: "Pending", backgroundColor: "#fde047", data: data.pending_counts_monthly }
+                        { 
+                            label: "Resolved", 
+                            backgroundColor: "#16a34a", 
+                            data: data.resolved_counts_monthly,
+                            barThickness: 30, // Set bar thickness here
+                            maxBarThickness: 35 // Optional: limit max thickness
+                        },
+                        { 
+                            label: "Open", 
+                            backgroundColor: "#86efac", 
+                            data: data.open_counts_monthly,
+                            barThickness: 30, // Set bar thickness here
+                            maxBarThickness: 35 // Optional: limit max thickness
+                        },
+                        { 
+                            label: "Closed", 
+                            backgroundColor: "#dc2626", 
+                            data: data.closed_counts_monthly,
+                            barThickness: 30, // Set bar thickness here
+                            maxBarThickness: 35 // Optional: limit max thickness
+                        },
+                        { 
+                            label: "Pending", 
+                            backgroundColor: "#fde047", 
+                            data: data.pending_counts_monthly,
+                            barThickness: 30, // Set bar thickness here
+                            maxBarThickness: 35 // Optional: limit max thickness
+                        }
                     ]
                 },
                 options: {
@@ -663,8 +743,12 @@
                         legend: { display: true }
                     },
                     scales: {
-                        y: { stacked: true },
-                        x: { stacked: true }
+                        y: { 
+                            stacked: true 
+                        },
+                        x: { 
+                            stacked: true 
+                        }
                     }
                 }
             });
