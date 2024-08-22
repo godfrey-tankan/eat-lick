@@ -25,6 +25,7 @@ def get_greeting():
         return "evening"
 
 def generate_response(response, wa_id, name,message_type,message_id):
+    
     try:
         support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
         if support_member:
@@ -47,6 +48,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
         time_of_day = get_greeting()
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     if support_member:
+        if response.lower() == 'help':
+            return support_member_help_menu
         if support_member.user_status==NEW_TICKET_ACCEPT_MODE:
             if response == '1' or response == '1.':
                 support_member.user_status = HELPING_MODE
@@ -95,6 +98,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
         return inquirer_assistance_response(response, check_ticket, inquirer)
     
     if not support_member :
+        if response.lower() == 'help':
+            return inquirers_help_menu
         for thank_you_message in thank_you_messages:
             if thank_you_message in response.lower():
                 return "You are welcome."
@@ -668,6 +673,10 @@ def assist_support_member(support_member_id, response,message_type,message_id):
             data = get_text_message_input(support_member.phone_number, message, None)
             return send_message(data)
     elif support_member.user_status == SUPPORT_MEMBER_ASSISTANCE_MODE:
+        if '#exit' in response.lower() or '#cancel' in response.lower():
+            support_member.user_status = HELPING_MODE
+            support_member.save()
+            return 'You have exited the Support member assistance mode, you can now continue interacting with the inquirer.'
         for thank_you_message in thank_you_messages:
             if thank_you_message in response.lower():
                 for member in support_members:
