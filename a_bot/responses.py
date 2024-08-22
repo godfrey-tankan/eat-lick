@@ -52,5 +52,5 @@ support_member_help_menu = '''*👨‍💻 SUPPORT MEMBER GUIDE*\n\n
    \n- All support members will be notified of your request, and those who choose to assist will follow the prompts.\n\n
 6. *Exiting Assistance Mode*
    \n- If you decide to exit the support member assistance mode, send *#exit* or *#cancel*. This will allow you to continue interacting with inquirers directly.\n\n
-*Remember:* Your role is crucial in providing timely and effective support. Keep track of your tickets, prioritize as needed, and don’t hesitate to ask for help when necessary.you can always refer to this by sending word *help*!
+*Remember:* Your role is crucial in providing timely and effective support. Keep track of your tickets, prioritize as needed, and don’t hesitate to ask for help when necessary,you can always refer to this by sending word *help*.
 '''
