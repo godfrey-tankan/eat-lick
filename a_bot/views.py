@@ -91,6 +91,9 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 return send_message(data)
         return handle_help(wa_id, response, name,message_type,message_id)
 
+    if response.lower() == 'help' or response.lower() == 'usage help':
+        return inquirers_help_menu
+    
     if inquirer and inquirer.user_status == SUPPORT_RATING:
         if not '/' in response:
             data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
@@ -98,8 +101,6 @@ def generate_response(response, wa_id, name,message_type,message_id):
         return inquirer_assistance_response(response, check_ticket, inquirer)
     
     if not support_member :
-        if response.lower() == 'help' or response.lower() == 'usage help':
-            return inquirers_help_menu
         for thank_you_message in thank_you_messages:
             if thank_you_message in response.lower():
                 return "You are welcome."
