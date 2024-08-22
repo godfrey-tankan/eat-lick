@@ -379,6 +379,25 @@ def support_users_list(request):
     support_members = SupportMember.objects.all()
     return render(request, 'pages/tables.html', {'support_members': support_members})
 
+def branch_tickets(request, branch_name):
+    tickets = Ticket.objects.filter(branch_opened__icontains=branch_name)
+    return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'branch': branch_name})
+
+def escalated_tickets(request):
+    escalated_subquery = TicketLog.objects.filter(
+        ticket=OuterRef('pk'),
+        changed_by__icontains='escalated'
+    ).values('id')
+    tickets = Ticket.objects.annotate(
+        is_escalated=Exists(escalated_subquery)
+    ).filter(is_escalated=True)
+    return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'escalated': True})
+
+def creator_tickets(request, creator):
+    creator = Ticket.objects.filter(id=creator).first().created_by
+    tickets = Ticket.objects.filter(created_by=creator)
+    return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'creator': creator})
+
 def support_member_tickets(request, member_id):
     try:
         member = SupportMember.objects.get(id=member_id)

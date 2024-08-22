@@ -376,6 +376,7 @@
                                     <tr class='text-black'>
                                         <th class="text-black text-uppercase  text-xxs font-weight-bolder ">Opened By</th>
                                         <th class="text-black text-uppercase  text-xxs font-weight-bolder ps-2">Description</th>
+                                        <th class="text-black text-uppercase  text-xxs font-weight-bolder ps-2">Branch</th>
                                         <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder">Status</th>
                                         <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder">Created At</th>
                                         <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder opacity-7">Assigned to</th>
@@ -386,9 +387,12 @@
                                     <tr>
                                         <td class='username-class'>
                                             <div class="d-flex px-2 py-1">
-                                              <a href="{% url 'ticket_detail' ticket.id %}" class="text-secondary text-xs font-weight-bold">
-                                                <div class="d-flex flex-column justify-content-center">
+                                              <div class="d-flex flex-column justify-content-center">
+                                                <a href="{% url 'tickets_by_creator' ticket.id %}" class="text-xs font-weight-bold">
+                                                  
                                                   <h6 class="mb-0 text-sm">{{ ticket.created_by.username|title }}
+                                                  </a>
+                                                  <a href="{% url 'ticket_detail' ticket.id %}" class="text-secondary text-xs font-weight-bold">
 
                                                     <span class=" start-100 translate-middle p-1 bg-secondary border border-light semi-rounded">
                                                       <span class="text-xs " ><span class='ticket-messages'>{{ticket.message_count}}</span> messages</span>
@@ -400,6 +404,12 @@
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ ticket.description }}</p>
+                                        </td>
+
+                                        <td>
+                                          <a href="{% url 'tickets_by_branch' ticket.branch_opened %}" class="text-xs font-weight-bold">
+                                            <p class="text-xs font-weight-bold mb-0">{{ ticket.branch_opened }}</p>
+                                          </a>
                                         </td>
                                         <td class="align-middle text-center text-sm position-relative">
                                             <a href="{% url 'ticket_list_by_status' ticket.status %}" class="badge badge-sm position-relative" style="background-color: 
@@ -423,11 +433,13 @@
                                             <td class="align-middle text-center assigned-user">
                                               <a href="{% url 'tickets_by_assignee' ticket.assigned_to.id %}" class="text-xs font-weight-bold">
                                                 {{ ticket.assigned_to.username }}
-                                                
                                             </a>
+                                            <a href="{% url 'escalated_tickets' %}" class="escalate-ticket">
+                                              <i class='bx bxs-up-arrow-square'></i>
                                             {% if ticket.is_escalated %}
                                               <span class='escaleted-ticket'>escalated</span>
                                             {% endif %}
+                                            </a>
                                         </td>
                                         {% else %}
                                         <td class="align-middle text-center">

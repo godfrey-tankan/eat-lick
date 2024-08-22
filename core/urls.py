@@ -85,6 +85,9 @@ urlpatterns += [
     path('inquiries/', all_tickets_list, name='inquiries_list'),
     path('tickets/status/<str:status>/', ticket_list_by_status, name='ticket_list_by_status'),
     path('tickets/assigned-to/<int:member_id>/', support_member_tickets, name='tickets_by_assignee'),
+    path('tickets/branch/<str:branch_name>/', branch_tickets, name='tickets_by_branch'),
+    path('tickets/escalated/', escalated_tickets, name='escalated_tickets'),
+    path('tickets/creator/<str:creator>/', creator_tickets, name='tickets_by_creator'),
 ]
 all_tickets_list
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
