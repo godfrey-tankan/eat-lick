@@ -473,7 +473,9 @@ def escalated_tickets(request):
 
 def creator_tickets(request, creator):
     creator = Ticket.objects.filter(id=creator).first().created_by
-    tickets = Ticket.objects.filter(created_by=creator)
+    tickets = Ticket.objects.filter(created_by=creator).annotate(
+        message_count=Count('messages'),
+    )
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
     if filter_time:
@@ -526,7 +528,8 @@ def support_member_tickets(request, member_id):
     ).values('id')
 
     tickets = Ticket.objects.filter(assigned_to=member.id).annotate(
-        is_escalated=Exists(escalated_subquery)
+        is_escalated=Exists(escalated_subquery),
+        message_count=Count('messages'),
     )
     
     for ticket in tickets:
@@ -578,7 +581,7 @@ def support_member_tickets(request, member_id):
         except ValueError:
             pass  # Ig
 
-    return render(request, 'tickets/tickets_by_assignee.html', {'tickets': tickets, 'member': member})
+    return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'member': member})
 
 def all_tickets_list(request):
     operator = request.GET.get('operator', '=')

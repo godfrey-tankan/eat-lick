@@ -31,6 +31,18 @@
                 >Escalated Tickets</span>
     
             </h6>
+          {% elif member %}
+          <h6>Tickets Assigned to 
+            <span 
+                style='background-color:#fde68a;
+                padding:3px;
+                border-radius:5px;
+                color:#052e16;
+                font-weight:bold;
+                '
+                >{{ member.username }}</span>
+    
+            </h6>
           {% elif creator%}
           <h6>Created by: 
             <span 
