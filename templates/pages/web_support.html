@@ -575,10 +575,9 @@
                     } else {
                         if (data.message.includes('Thank you for reaching out')) {
                             localStorage.removeItem('ticketId');
-                            if (fetchingInterval) {
-                                clearInterval(fetchingInterval);
                                 fetchingInterval = null;
-                            }
+                            displayMessage(data.message, 'received');
+
 
                         } else {
                             displayMessage(data.message, 'received');

@@ -17,7 +17,6 @@ from a_bot.views import alert_support_members
 def web_support(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        print(data)
         phone = data.get('phone')
         message = data.get('message', '')
         if phone:
@@ -69,7 +68,7 @@ def create_web_inquiry(inquirer, message):
             return JsonResponse({'success': True, 'message': f'Golden greetings {inquirer.username.split()[0]}, how can we help you today?'})
     if pending_tickets:
         if len(message) < 5:
-            return JsonResponse({'success': True, 'message': f'Hello {inquirer.username.split()[0]}, you have a pending Inquiry,Inquiry ID: #{pending_tickets.last().id} Please wait for a support member to respond or Do you want to open another one?. You just reply with #done or #resolved when you are helped.'})
+            return JsonResponse({'success': True, 'message': f'Hello {inquirer.username.split()[0]}, Welcome back to your pending Inquiry, #{pending_tickets.last().id} \n\nWhat do you want to say?.\nPlease reply with #done or #resolved when you are or have been helped.'})
         new_msg = Message.objects.create(ticket_id=pending_tickets.last(),inquirer=inquirer, content=message)
         if pending_tickets.last().ticket_mode =='other':
             alert_support_members('name',pending_tickets.last(), message)
