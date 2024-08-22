@@ -336,6 +336,16 @@ def handle_inquiry(wa_id, response, name):
                 return 'Your inquiry is still being attended to.Please wait for a response.'
         # return "You have an open inquiry, Do you want to open a new inquiry?"
         if not inquirer_obj.user_status == NEW_TICKET_MODE:
+            for yes_response in confirm_open_new_ticket:
+                if yes_response in response.lower():
+                    inquirer_obj.user_status = NEW_TICKET_MODE
+                    inquirer_obj.save()
+                    # open_inquiries.ticket_mode = QUEUED_MODE
+                    # open_inquiries.save()
+                    # new_message = f"Hi {open_inquiries.assigned_to.username.split()[0].title()}, {inquirer_obj.username} has opened a new inquiry,Your pending ticket (#{open_inquiries.id})  with them have now been queued.You can resume assisting them anytime by replying with #resume or #continue."
+                    # data = get_text_message_input(open_inquiries.assigned_to.phone_number,new_message ,None)
+                    # send_message(data)
+                    return 'What is your inquiry?'
             return "You have an open inquiry, Do you want to open a new inquiry?"
         if inquirer_obj.user_status == NEW_TICKET_MODE:
             ticket = Ticket.objects.create(
@@ -355,16 +365,6 @@ def handle_inquiry(wa_id, response, name):
             with contextlib.suppress(SupportMember.DoesNotExist):
                 broadcast_messages(name,ticket)
             return new_inquiry_opened_response
-        for yes_response in confirm_open_new_ticket:
-            if yes_response in response.lower():
-                inquirer_obj.user_status = NEW_TICKET_MODE
-                inquirer_obj.save()
-                open_inquiries.ticket_mode = QUEUED_MODE
-                open_inquiries.save()
-                new_message = f"Hi {open_inquiries.assigned_to.username.split()[0].title()}, {inquirer_obj.username} has opened a new inquiry,Your pending ticket (#{open_inquiries.id})  with them have now been queued.You can resume assisting them anytime by replying with #resume or #continue."
-                data = get_text_message_input(open_inquiries.assigned_to.phone_number,new_message ,None)
-                send_message(data)
-                return 'What is your inquiry?'
 
     if len(response) < 5:
         return 'Please provide a detailed inquiry'
