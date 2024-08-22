@@ -381,6 +381,45 @@ def support_users_list(request):
 
 def branch_tickets(request, branch_name):
     tickets = Ticket.objects.filter(branch_opened__icontains=branch_name)
+    operator = request.GET.get('operator', '=')
+    filter_time = request.GET.get('filter_time', None)
+    if filter_time:
+        try:
+            filter_time = int(filter_time)
+            # Convert minutes to a timedelta object
+            filter_time_duration = timedelta(minutes=filter_time)
+            end_time = now()
+
+            # Use expression to calculate the duration from creation to the end time
+            tickets = tickets.annotate(
+                time_to_resolve=ExpressionWrapper(
+                    F('resolved_at') - F('created_at'),
+                    output_field=DurationField()
+                )
+            )
+
+            if operator == '=':
+                tickets = tickets.filter(
+                    time_to_resolve=filter_time_duration
+                )
+            elif operator == '<':
+                tickets = tickets.filter(
+                    time_to_resolve__lt=filter_time_duration
+                )
+            elif operator == '>':
+                tickets = tickets.filter(
+                    time_to_resolve__gt=filter_time_duration
+                )
+            elif operator == '<=':
+                tickets = tickets.filter(
+                    time_to_resolve__lte=filter_time_duration
+                )
+            elif operator == '>=':
+                tickets = tickets.filter(
+                    time_to_resolve__gte=filter_time_duration
+                )
+        except ValueError:
+            pass  # Ig
     return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'branch': branch_name})
 
 def escalated_tickets(request):
@@ -391,11 +430,89 @@ def escalated_tickets(request):
     tickets = Ticket.objects.annotate(
         is_escalated=Exists(escalated_subquery)
     ).filter(is_escalated=True)
+    operator = request.GET.get('operator', '=')
+    filter_time = request.GET.get('filter_time', None)
+    if filter_time:
+        try:
+            filter_time = int(filter_time)
+            # Convert minutes to a timedelta object
+            filter_time_duration = timedelta(minutes=filter_time)
+            end_time = now()
+
+            # Use expression to calculate the duration from creation to the end time
+            tickets = tickets.annotate(
+                time_to_resolve=ExpressionWrapper(
+                    F('resolved_at') - F('created_at'),
+                    output_field=DurationField()
+                )
+            )
+
+            if operator == '=':
+                tickets = tickets.filter(
+                    time_to_resolve=filter_time_duration
+                )
+            elif operator == '<':
+                tickets = tickets.filter(
+                    time_to_resolve__lt=filter_time_duration
+                )
+            elif operator == '>':
+                tickets = tickets.filter(
+                    time_to_resolve__gt=filter_time_duration
+                )
+            elif operator == '<=':
+                tickets = tickets.filter(
+                    time_to_resolve__lte=filter_time_duration
+                )
+            elif operator == '>=':
+                tickets = tickets.filter(
+                    time_to_resolve__gte=filter_time_duration
+                )
+        except ValueError:
+            pass  # Ig
     return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'escalated': True})
 
 def creator_tickets(request, creator):
     creator = Ticket.objects.filter(id=creator).first().created_by
     tickets = Ticket.objects.filter(created_by=creator)
+    operator = request.GET.get('operator', '=')
+    filter_time = request.GET.get('filter_time', None)
+    if filter_time:
+        try:
+            filter_time = int(filter_time)
+            # Convert minutes to a timedelta object
+            filter_time_duration = timedelta(minutes=filter_time)
+            end_time = now()
+
+            # Use expression to calculate the duration from creation to the end time
+            tickets = tickets.annotate(
+                time_to_resolve=ExpressionWrapper(
+                    F('resolved_at') - F('created_at'),
+                    output_field=DurationField()
+                )
+            )
+
+            if operator == '=':
+                tickets = tickets.filter(
+                    time_to_resolve=filter_time_duration
+                )
+            elif operator == '<':
+                tickets = tickets.filter(
+                    time_to_resolve__lt=filter_time_duration
+                )
+            elif operator == '>':
+                tickets = tickets.filter(
+                    time_to_resolve__gt=filter_time_duration
+                )
+            elif operator == '<=':
+                tickets = tickets.filter(
+                    time_to_resolve__lte=filter_time_duration
+                )
+            elif operator == '>=':
+                tickets = tickets.filter(
+                    time_to_resolve__gte=filter_time_duration
+                )
+        except ValueError:
+            pass  # Ig
     return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'creator': creator})
 
 def support_member_tickets(request, member_id):
@@ -421,6 +538,45 @@ def support_member_tickets(request, member_id):
             ticket.time_taken = time_taken
         else:
             ticket.time_taken = None
+    operator = request.GET.get('operator', '=')
+    filter_time = request.GET.get('filter_time', None)
+    if filter_time:
+        try:
+            filter_time = int(filter_time)
+            # Convert minutes to a timedelta object
+            filter_time_duration = timedelta(minutes=filter_time)
+            end_time = now()
+
+            # Use expression to calculate the duration from creation to the end time
+            tickets = tickets.annotate(
+                time_to_resolve=ExpressionWrapper(
+                    F('resolved_at') - F('created_at'),
+                    output_field=DurationField()
+                )
+            )
+
+            if operator == '=':
+                tickets = tickets.filter(
+                    time_to_resolve=filter_time_duration
+                )
+            elif operator == '<':
+                tickets = tickets.filter(
+                    time_to_resolve__lt=filter_time_duration
+                )
+            elif operator == '>':
+                tickets = tickets.filter(
+                    time_to_resolve__gt=filter_time_duration
+                )
+            elif operator == '<=':
+                tickets = tickets.filter(
+                    time_to_resolve__lte=filter_time_duration
+                )
+            elif operator == '>=':
+                tickets = tickets.filter(
+                    time_to_resolve__gte=filter_time_duration
+                )
+        except ValueError:
+            pass  # Ig
 
     return render(request, 'tickets/tickets_by_assignee.html', {'tickets': tickets, 'member': member})
 

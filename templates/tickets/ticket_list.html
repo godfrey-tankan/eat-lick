@@ -7,8 +7,47 @@
     <div class="col-12">
       <div class="card mb-4">
         <div class="card-header pb-0">
+          {% if branch%}
+          <h6>Branch: 
+            <span 
+                style='background-color:#fde68a;
+                padding:3px;
+                border-radius:5px;
+                color:#052e16;
+                font-weight:bold;
+                '
+                >{{ branch }} Inquiries</span>
+    
+            </h6>
+          {% elif escalated %}
+          <h6>
+            <span 
+                style='background-color:#fde68a;
+                padding:3px;
+                border-radius:5px;
+                color:#052e16;
+                font-weight:bold;
+                '
+                >Escalated Tickets</span>
+    
+            </h6>
+          {% elif creator%}
+          <h6>Created by: 
+            <span 
+                style='background-color:#fde68a;
+                padding:3px;
+                border-radius:5px;
+                color:#052e16;
+                font-weight:bold;
+                '
+                >{{ creator }}</span>
+    
+            </h6>
+          {% else %}
+          
           <h6>Inquiries Table
           </h6>
+          {% endif %}
         </div>
         <div class="card-body px-0 pt-0 pb-2">
           <div class="table-responsive p-0">
