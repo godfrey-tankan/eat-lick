@@ -41,8 +41,8 @@ def web_support(request):
                 return JsonResponse({'success': True, 'message': f'Hello {message}, which branch are you inquiring from?'})
             elif get_inquirer.user_mode == BRANCH_MODE:
                 get_inquirer.branch = message
-                get_inquirer.user_mode = INQUIRY_MODE
-                get_inquirer.save()
+            get_inquirer.user_mode = INQUIRY_MODE
+            get_inquirer.save()
             return JsonResponse({'success': True, 'message': f'Hello {get_inquirer.username.split()[0]}, how can we help you today?.'})
         else:
             Inquirer.objects.create(phone_number=phone,user_mode =NAMES_MODE)
