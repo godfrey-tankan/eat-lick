@@ -35,22 +35,22 @@ passed_support_helping ="You have passed the request,you can now continue with y
 support_users_interaction = "You are now interacting with other support members,What do you need help with?"
 support_user_helper = "You are now helping a support member,send a message to start assisting."
 support_member_help_menu = '''*👨‍💻 Support Member Guide*\n\n
-1. *Assigning Tickets*\n
-   - When a new ticket is opened, reply with the *provided Ticket ID* to assign it to yourself.\n
-   - Once you see a message confirming the assignment, you can immediately start assisting the inquirer by sending a message.\n\n
-2. *Handling Multiple Tickets*\n
-   - If you have pending tickets, you’ll still be prompted to assign any newly opened ticket to yourself.\n
-   - *Top Priority:* If you choose to take the new ticket, it will be given top priority. The conversation will then switch to the new inquirer, and your previous pending ticket will be placed in the queue.\n
-   - *Skipping Tickets:* If you decide to skip the new ticket, you can continue working on your current tasks.\n\n
-3. *Resuming Tickets*\n
-   - If you have multiple tickets assigned and some are in the queue, send *#resume* to choose a ticket and resume providing assistance.\n\n
-4. *Closing and Resolving Tickets*\n
-   - To close a ticket, send *#close*.\n
-   - If the inquiry is resolved, send *#done*. This will mark the ticket as resolved.\n\n
-5. *Requesting Assistance*\n
-   - If you need help with a ticket, send *#help* or *#assist*.\n
-   - All support members will be notified of your request, and those who choose to assist will follow the prompts.\n\n
-6. *Exiting Assistance Mode*\n
-   - If you decide to exit the support member assistance mode, send *#exit* or *#cancel*. This will allow you to continue interacting with inquirers directly.\n\n
+1. *Assigning Tickets*\n-
+   When a new ticket is opened, reply with the *provided Ticket ID* to assign it to yourself.\n-
+   Once you see a message confirming the assignment, you can immediately start assisting the inquirer by sending a message.\n\n
+2. *Handling Multiple Tickets*\n-
+   If you have pending tickets, you’ll still be prompted to assign any newly opened ticket to yourself.\n-
+   *Top Priority:* If you choose to take the new ticket, it will be given top priority. The conversation will then switch to the new inquirer, and your previous pending ticket will be placed in the queue.\n-
+   *Skipping Tickets:* If you decide to skip the new ticket, you can continue working on your current tasks.\n\n
+3. *Resuming Tickets*\n-
+   If you have multiple tickets assigned and some are in the queue, send *#resume* to choose a ticket and resume providing assistance.\n\n
+4. *Closing and Resolving Tickets*\n-
+   To close a ticket, send *#close*.\n-
+   If the inquiry is resolved, send *#done*. This will mark the ticket as resolved.\n\n
+5. *Requesting Assistance*\n-
+   If you need help with a ticket, send *#help* or *#assist*.\n-
+   All support members will be notified of your request, and those who choose to assist will follow the prompts.\n\n
+6. *Exiting Assistance Mode*\n-
+   If you decide to exit the support member assistance mode, send *#exit* or *#cancel*. This will allow you to continue interacting with inquirers directly.\n\n
 *Remember:* Your role is crucial in providing timely and effective support. Keep track of your tickets, prioritize as needed, and don’t hesitate to ask for help when necessary.you can always refer to this by sending word *help*!
 '''
