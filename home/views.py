@@ -380,7 +380,9 @@ def support_users_list(request):
     return render(request, 'pages/tables.html', {'support_members': support_members})
 
 def branch_tickets(request, branch_name):
-    tickets = Ticket.objects.filter(branch_opened__icontains=branch_name)
+    tickets = Ticket.objects.filter(branch_opened__icontains=branch_name).annotate(
+        message_count=Count('messages'),
+    )
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
     if filter_time:
@@ -428,7 +430,8 @@ def escalated_tickets(request):
         changed_by__icontains='escalated'
     ).values('id')
     tickets = Ticket.objects.annotate(
-        is_escalated=Exists(escalated_subquery)
+        is_escalated=Exists(escalated_subquery),
+        message_count=Count('messages'),
     ).filter(is_escalated=True)
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
