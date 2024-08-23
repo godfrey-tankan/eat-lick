@@ -484,14 +484,14 @@ def branch_tickets(request, branch_name):
     if request.user.is_superuser:
         tickets = Ticket.objects.filter(branch_opened__icontains=branch_name).annotate(
             message_count=Count('messages'),
-        )
+        ).order_by('-created_at')
     else:
         support_member = SupportMember.objects.filter(user=request.user).first()
         if not support_member:
             return render(request, 'tickets/ticket_list.html', {'tickets': []})
         tickets = Ticket.objects.filter(branch_opened__icontains=branch_name, assigned_to=support_member).annotate(
             message_count=Count('messages'),
-        )
+        ).order_by('-created_at')
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
     if filter_time:
@@ -541,7 +541,7 @@ def escalated_tickets(request):
     tickets = Ticket.objects.annotate(
         is_escalated=Exists(escalated_subquery),
         message_count=Count('messages'),
-    ).filter(is_escalated=True)
+    ).filter(is_escalated=True).order_by('-created_at')
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
     if filter_time:
@@ -588,7 +588,7 @@ def creator_tickets(request, creator):
         creator = Ticket.objects.filter(id=creator).first().created_by
         tickets = Ticket.objects.filter(created_by=creator).annotate(
             message_count=Count('messages'),
-        )
+        ).order_by('-created_at')
     else:
         support_member = SupportMember.objects.filter(user=request.user).first()
         if not support_member:
@@ -596,7 +596,7 @@ def creator_tickets(request, creator):
         creator = Ticket.objects.filter(id=creator).first().created_by
         tickets = Ticket.objects.filter(created_by=creator, assigned_to=support_member).annotate(
             message_count=Count('messages'),
-        )
+        ).order_by('-created_at')
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
     if filter_time:
@@ -654,7 +654,7 @@ def support_member_tickets(request, member_id):
     tickets = Ticket.objects.filter(assigned_to=member.id).annotate(
         is_escalated=Exists(escalated_subquery),
         message_count=Count('messages'),
-    )
+    ).order_by('-created_at')
     
     for ticket in tickets:
         if ticket.status in ['resolved', 'closed']:
@@ -718,7 +718,7 @@ def all_tickets_list(request):
         tickets = Ticket.objects.order_by('-created_at').annotate(
                 message_count=Count('messages'),
                 is_escalated=Exists(escalated_subquery)
-        )
+        ).order_by('-created_at')
     else:
         support_member = SupportMember.objects.filter(user=request.user).first()
         if not support_member:
@@ -730,7 +730,7 @@ def all_tickets_list(request):
         tickets = Ticket.objects.filter(assigned_to=support_member).order_by('-created_at').annotate(
                 message_count=Count('messages'),
                 is_escalated=Exists(escalated_subquery)
-        )
+        ).order_by('-created_at')
 
     if filter_time:
         try:
