@@ -281,52 +281,27 @@ def get_chart_data(request):
             start_of_month = (today.replace(day=1) - timedelta(days=30 * month)).replace(day=1)
             end_of_month = (start_of_month + timedelta(days=31)).replace(day=1) - timedelta(seconds=1)
             
-            resolved_count = Ticket.objects.filter(
+            resolved_monthly_count = Ticket.objects.filter(
                 status='resolved',
                 resolved_at__range=[start_of_month, end_of_month]
             ).count()
-            open_count = Ticket.objects.filter(
+            open_monthly_count = Ticket.objects.filter(
                 status='open',
                 created_at__range=[start_of_month, end_of_month]
             ).count()
-            closed_count = Ticket.objects.filter(
+            closed_monthly_count = Ticket.objects.filter(
                 status='closed',
                 closed_at__range=[start_of_month, end_of_month]
             ).count()
-            pending_count = Ticket.objects.filter(
+            pending_monthly_count = Ticket.objects.filter(
                 status='pending',
                 created_at__range=[start_of_month, end_of_month]
             ).count()
 
-            resolved_counts_monthly.append(resolved_count)
-            open_counts_monthly.append(open_count)
-            closed_counts_monthly.append(closed_count)
-            pending_counts_monthly.append(pending_count)
-        for month in reversed(range(9)):
-            start_of_month = (today.replace(day=1) - timedelta(days=30 * month)).replace(day=1)
-            end_of_month = (start_of_month + timedelta(days=31)).replace(day=1) - timedelta(seconds=1)
-            
-            resolved_count = Ticket.objects.filter(
-                status='resolved',
-                resolved_at__range=[start_of_month, end_of_month]
-            ).count()
-            open_count = Ticket.objects.filter(
-                status='open',
-                created_at__range=[start_of_month, end_of_month]
-            ).count()
-            closed_count = Ticket.objects.filter(
-                status='closed',
-                closed_at__range=[start_of_month, end_of_month]
-            ).count()
-            pending_count = Ticket.objects.filter(
-                status='pending',
-                created_at__range=[start_of_month, end_of_month]
-            ).count()
-
-            resolved_counts_monthly.append(resolved_count)
-            open_counts_monthly.append(open_count)
-            closed_counts_monthly.append(closed_count)
-            pending_counts_monthly.append(pending_count)
+            resolved_counts_monthly.append(resolved_monthly_count)
+            open_counts_monthly.append(open_monthly_count)
+            closed_counts_monthly.append(closed_monthly_count)
+            pending_counts_monthly.append(pending_monthly_count)
         
     
     else:
@@ -389,35 +364,9 @@ def get_chart_data(request):
             open_counts_monthly.append(open_count)
             closed_counts_monthly.append(closed_count)
             pending_counts_monthly.append(pending_count)
-        for month in reversed(range(9)):
-            start_of_month = (today.replace(day=1) - timedelta(days=30 * month)).replace(day=1)
-            end_of_month = (start_of_month + timedelta(days=31)).replace(day=1) - timedelta(seconds=1)
-            
-            resolved_count = Ticket.objects.filter(
-                status='resolved',
-                resolved_at__range=[start_of_month, end_of_month],
-                assigned_to=support_member
-            ).count()
-            open_count = Ticket.objects.filter(
-                status='open',
-                created_at__range=[start_of_month, end_of_month],
-                assigned_to=support_member
-            ).count()
-            closed_count = Ticket.objects.filter(
-                status='closed',
-                closed_at__range=[start_of_month, end_of_month],
-                assigned_to=support_member
-            ).count()
-            pending_count = Ticket.objects.filter(
-                status='pending',
-                created_at__range=[start_of_month, end_of_month],
-                assigned_to=support_member
-            ).count()
-
-            resolved_counts_monthly.append(resolved_count)
-            open_counts_monthly.append(open_count)
-            closed_counts_monthly.append(closed_count)
-            pending_counts_monthly.append(pending_count)
+        
+        print('open monthly', open_counts_monthly)
+        print('resolved monthly', resolved_counts_monthly)
 
     data = {
         "labels_weekly": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
