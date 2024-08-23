@@ -95,7 +95,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
 
     if response.lower() == 'help' or response.lower() == 'usage help':
         return inquirers_help_menu
-    
+
     if inquirer and inquirer.user_status == SUPPORT_RATING:
         if not '/' in response:
             data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
