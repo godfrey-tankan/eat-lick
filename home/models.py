@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
+from django.utils import timezone
 
 # Create your models here.
 
@@ -65,16 +66,20 @@ class Ticket(models.Model):
     
     def get_time_to_resolve(self):
         if self.resolved_at:
-            time_diff = self.resolved_at - self.created_at
+            resolved_at_local = timezone.localtime(self.resolved_at)
+            created_at_local = timezone.localtime(self.created_at)
+            time_diff = resolved_at_local - created_at_local
         elif self.closed_at:
-            time_diff = self.closed_at - self.created_at
+            closed_at_local = timezone.localtime(self.closed_at)
+            created_at_local = timezone.localtime(self.created_at)
+            time_diff = closed_at_local - created_at_local
         else:
             return "Not resolved yet"
 
         weeks, days = divmod(time_diff.days, 7)
         hours, remainder = divmod(time_diff.seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
-        
+
         result = []
         if weeks > 0:
             result.append(f"{weeks} weeks")
@@ -84,15 +89,19 @@ class Ticket(models.Model):
             result.append(f"{hours} hours")
         if minutes > 0:
             result.append(f"{minutes} minutes")
-        
+
         return ', '.join(result) if result else "Less than a minute"
+
     def get_time_to_resolve_duration(self):
-        end_time = self.resolved_at or self.closed_at or now()
-        return end_time - self.created_at
+        end_time = timezone.localtime(self.resolved_at or self.closed_at or now())
+        start_time = timezone.localtime(self.created_at)
+        return end_time - start_time
+
     def save(self, *args, **kwargs):
         if self.support_level:
             self.support_level = self.support_level.split('/')[0]
         super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Ticket #{self.id} - {self.title} ({self.status})"
     
