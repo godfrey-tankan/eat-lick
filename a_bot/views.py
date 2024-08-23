@@ -486,7 +486,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                     return "Please check the ticket number and try again, use #ticketNo eg *#4*"
     
     if inquirer:
-        queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,created_by=inquirer)
+        queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,created_by=inquirer,status=PENDING_MODE).order_by('queued_at')
         if queued_tickets:
             if not '#' in response:
                 tickets_info = 'Please select the ticket you want get help on:\n\n'
@@ -592,14 +592,12 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
             if message:
                 message=message
             else:
-                pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id).first()
+                pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id,ticket_mode='other').first()
                 if not pending_ticket:
                     support_member.user_mode = ACCEPT_TICKET_MODE
                     support_member.save()
                     message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
                 else:
-                    support_member.user_status = NEW_TICKET_ACCEPT_MODE
-                    support_member.save()
                     message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
                     message += '\n\n⚠️ You have a pending inquiry, if you accept this one, the pending inquiry will be paused.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.'
             try:
