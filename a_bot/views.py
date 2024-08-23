@@ -15,8 +15,6 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 import re
 
-naive_datetime = datetime.now()
-aware_datetime = timezone.make_aware(naive_datetime)
 
 def get_greeting():
     current_hour = datetime.now().hour
@@ -647,7 +645,7 @@ def accept_ticket(wa_id,name, ticket_id):
             if assigned_tickets:
                 # If there are any assigned pending tickets, set their ticket_mode
                 ticket_mode = QUEUED_MODE
-                queued_at_time = aware_datetime
+                queued_at_time = timezone.now()
             else:
                 ticket_mode = 'other'
                 queued_at_time = None
@@ -842,7 +840,7 @@ def mark_as_resolved( ticket_id,is_closed=False):
     if is_closed:
         ticket = Ticket.objects.get(id=ticket_id)
         ticket.status = CLOSED_MODE
-        ticket.closed_at = aware_datetime
+        ticket.closed_at = timezone.now()
         ticket.save()
         TicketLog.objects.create(
             ticket=ticket,
@@ -896,7 +894,7 @@ def mark_as_resolved( ticket_id,is_closed=False):
     
     ticket = Ticket.objects.get(id=ticket_id)
     ticket.status = RESOLVED_MODE
-    ticket.resolved_at = aware_datetime
+    ticket.resolved_at = timezone.now()
     ticket.save()
     TicketLog.objects.create(
         ticket=ticket,
