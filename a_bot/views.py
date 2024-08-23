@@ -558,7 +558,7 @@ def resume_assistance(support_member,response):
                     data_to_inquirer = get_text_message_input(ticket_obj.created_by.phone_number,inquirer_msg , None)
                     send_message(data_to_inquirer)
                     
-                    message= f'You are now assisting {ticket_obj.created_by.username.title()} - *{ticket_obj.created_by.branch}* \nTicket number *{ticket_obj.id}* .'
+                    message= f'You are now assisting *{ticket_obj.created_by.username.title()}* - *{ticket_obj.created_by.branch}* \nTicket number *{ticket_obj.id}*\n- Description: {ticket_obj.description} .'
                     data = get_text_message_input(support_member.phone_number,message , None)
                     return send_message(data)
                 else:
