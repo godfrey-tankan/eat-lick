@@ -629,14 +629,27 @@ def support_member_tickets(request, member_id):
 def all_tickets_list(request):
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
-    escalated_subquery = TicketLog.objects.filter(
-        ticket=OuterRef('pk'),
-        changed_by__icontains='escalated'
-    ).values('id')
-    tickets = Ticket.objects.order_by('-created_at').annotate(
-            message_count=Count('messages'),
-            is_escalated=Exists(escalated_subquery)
-    )
+    if request.user.is_superuser:
+        escalated_subquery = TicketLog.objects.filter(
+            ticket=OuterRef('pk'),
+            changed_by__icontains='escalated'
+        ).values('id')
+        tickets = Ticket.objects.order_by('-created_at').annotate(
+                message_count=Count('messages'),
+                is_escalated=Exists(escalated_subquery)
+        )
+    else:
+        support_member = SupportMember.objects.filter(user=request.user).first()
+        if not support_member:
+            return render(request, 'tickets/ticket_list.html', {'tickets': []})
+        escalated_subquery = TicketLog.objects.filter(
+            ticket=OuterRef('pk'),
+            changed_by__icontains='escalated'
+        ).values('id')
+        tickets = Ticket.objects.filter(assigned_to=support_member).order_by('-created_at').annotate(
+                message_count=Count('messages'),
+                is_escalated=Exists(escalated_subquery)
+        )
 
     if filter_time:
         try:
