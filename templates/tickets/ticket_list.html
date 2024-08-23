@@ -2,6 +2,8 @@
 {% load static %}
 
 {% block content %}
+{% if request.user.is_superuser%}
+
 <div class="container-fluid py-4">
   <div class="row">
     <div class="col-12">
@@ -254,6 +256,142 @@
   </div>
   <span class="close-btn">&times;</span>
 </div>
+{% else %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>My Inquiries</h6>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <div class="table-responsive p-0">
+            <table class="table align-items-center mb-0">
+              <thead
+              style="background-color: #f8f9fe;"
+              >
+                <tr>
+                  <th class="text-uppercase text-black text-xxs font-weight-bolder opacity-7 opened-by">
+                    Opened By
+                  </th>
+                  <th class="text-uppercase text-black text-xxs font-weight-bolder opacity-7 ps-2 description">
+                    Description
+                  </th>
+                  <th class="text-uppercase text-black text-xxs font-weight-bolder opacity-7 ps-2 branch">
+                    Branch
+                  </th>
+                  <th class="text-uppercase text-black text-xxs font-weight-bolder opacity-7 ps-2 status">
+                    Status
+                  </th>
+                  <th class="text-center text-uppercase text-black text-xxs font-weight-bolder opacity-7 created-at">
+                    <a href="?sort=created_at" class="text-black">Created At</a>
+                  </th>
+                  <th class="text-center text-uppercase text-black text-xxs font-weight-bolder opacity-7 assigned-to">
+                    Assigned to
+                  </th>
+                  <th class="text-center text-uppercase text-black text-xxs font-weight-bolder opacity-7">
+                    <a href="?sort=time_taken" class="text-black
+                    ">Time Taken</a>
+                    <form id="filter-form" method="GET" action="" style="display:inline;">
+                      <div style="display: flex; align-items: center;">
+                        <input 
+                            type="text" 
+                            name="filter_time" 
+                            placeholder="minutes" 
+                            class="text-secondary text-xs font-weight-bold" 
+                            id="filter-time-input"
+                            style="margin-right: 5px; width: 100px;"
+                            value="{{ request.GET.filter_time }}">
+                        <select name="operator" id="operator-select" style="margin-right: -200px; width: 80px;">
+                            <option value="<" {% if request.GET.operator == "<" %}selected{% endif %}><</option>
+                            <option value="=" {% if request.GET.operator == "=" %}selected{% endif %}>=</option>
+                            <option value=">" {% if request.GET.operator == ">" %}selected{% endif %}>></option>
+                            <option value="<=" {% if request.GET.operator == "<=" %}selected{% endif %}><=</option>
+                            <option value=">=" {% if request.GET.operator == ">=" %}selected{% endif %}>>=</option>
+                        </select>
+                      </div>
+                    </form>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td class='username-class opened-by'>
+                        <div class="d-flex px-2 py-1">
+                          <a href="{% url 'ticket_detail' ticket.id %}" class="text-secondary text-xs font-weight-bold">
+                            <div class="d-flex flex-column justify-content-center">
+                              <h6 class="mb-0 text-sm">{{ ticket.created_by.username|title }}
+
+                                <span class=" start-100 translate-middle p-1 bg-secondary border border-light semi-rounded">
+                                  <span class="text-xs " ><span class='ticket-messages'>{{ticket.message_count}}</span> messages</span>
+                                </span>
+                              </h6>
+                            </div>
+                          </div>
+                        </a>
+                    </td>
+                    <td class='description'>
+                      <a href="{% url 'ticket_detail' ticket.id %}" class="text-xs font-weight-bold">
+                      <p class="text-xs font-weight-bold mb-0" title="{{ ticket.description }}">{{ ticket.description|truncatechars:30 }}</p>
+                    </a>
+                  </td>
+                    <td class='branch'>
+                      <a href="{% url 'tickets_by_branch' ticket.branch_opened %}" class="text-xs font-weight-bold">
+                      <p class="text-xs font-weight-bold mb-0">{{ ticket.branch_opened }}</p>
+                    </a>
+                  </td>
+                    <td class="align-middle text-center status">
+                        <a href="{% url 'ticket_list_by_status' ticket.status %}" class="badge badge-sm position-relative" style="background-color: 
+                            {% if ticket.status == 'open' %}
+                                lightgreen
+                            {% elif ticket.status == 'resolved' %}
+                                green
+                            {% elif ticket.status == 'pending' %}
+                                orange
+                            {% elif ticket.status == 'closed' %}
+                                red
+                            {% endif %}
+                        ">
+                            {{ ticket.status|title }}
+                          </a>
+                        </td>
+                        <td class="align-middle text-center created-at">
+                          <span class="text-secondary text-xs font-weight-bold">{{ ticket.created_at|date:"d/m/Y" }}</span>
+                        </td>
+                        {% if ticket.assigned_to %}
+                        <td class="align-middle text-center assigned-user assigned-to">
+                          <a href="{% url 'tickets_by_assignee' ticket.assigned_to.id %}" class=" text-xs font-weight-bold">
+                            {{ ticket.assigned_to.username }}
+                        </a>
+                        <a href="{% url 'escalated_tickets' %}" class="escalate-ticket">
+                          <i class='bx bxs-up-arrow-square'></i>
+                        {% if ticket.is_escalated %}
+                          <span class='escaleted-ticket'>escalated</span>
+                        {% endif %}
+                        </a>
+                    </td>
+                    {% else %}
+                    <td class="align-middle text-center">
+                        <span class="text-secondary text-xs font-weight-bold">Unassigned</span>
+                    </td>
+                    {% endif %}
+                    <td class="align-middle text-center">
+                      <span class="text-secondary text-xs font-weight-bold">{{ ticket.get_time_to_resolve }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% block scripts %}
 
 
 <script>
@@ -335,4 +473,5 @@
 
 
 {% include "includes/footer.html" %}
+{% endblock scripts %}
 {% endblock content %}

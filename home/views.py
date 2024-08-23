@@ -77,67 +77,78 @@ class FAQDetailView(generics.RetrieveUpdateDestroyAPIView):
 @login_required
 def index(request):
     # Get all tickets
-    all_tickets = Ticket.objects.all()
-    total_tickets = all_tickets.count()
-
-
-    open_tickets_count = all_tickets.filter(status='open').count()
-    closed_tickets_count = all_tickets.filter(status='closed').count()
-    pending_tickets_count = all_tickets.filter(status='pending').count()
-    resolved_tickets_count = all_tickets.filter(status='resolved').count()
-
-    def calculate_percentage(count):
-        return round((count / total_tickets * 100), 2) if total_tickets > 0 else 0
-
-    # Get support members who resolved more than 5 tickets
-    active_support_members = SupportMember.objects.filter(
-        username__in=Ticket.objects.filter(
-            status='resolved'
-        ).values('assigned_to')
-    ).annotate(
-        resolved_tickets_count=Count('username')
-    ).filter(
-        resolved_tickets_count__gt=1
-    )
-#     tickets = Ticket.objects.order_by('-created_at')[:10].prefetch_related(
-#     Prefetch('messages', queryset=Message.objects.order_by('created_at'))
-# )
-
-    escalated_subquery = TicketLog.objects.filter(
-        ticket=OuterRef('pk'),
-        changed_by__icontains='escalated'
-    ).values('id')
-
-    tickets = Ticket.objects.order_by('-created_at')[:10].annotate(
-            message_count=Count('messages'),
-            is_escalated=Exists(escalated_subquery)
-    )
-
+    all_tickets=total_tickets=active_support_members=0
+    request_user_tickets_count = request_user_open_tickets_count = request_user_resolved_tickets_count = request_user_closed_tickets_count = request_user_pending_tickets_count = 0
     
-    try:
-        request_user_support_member = SupportMember.objects.get(user=request.user.id)
-        request_user_tickets = all_tickets.filter(assigned_to=request_user_support_member)
-        request_user_tickets_count = request_user_tickets.count()
-        request_user_open_tickets_count = request_user_tickets.filter(status='open').count()
-        request_user_resolved_tickets_count = request_user_tickets.filter(status='resolved').count()
-        request_user_closed_tickets_count = request_user_tickets.filter(status='closed').count()
-        request_user_pending_tickets_count = request_user_tickets.filter(status='pending').count()
-    except SupportMember.DoesNotExist:
-        request_user_tickets_count = 0
-        request_user_open_tickets_count = 0
-        request_user_resolved_tickets_count = 0
-        request_user_closed_tickets_count = 0
-        request_user_pending_tickets_count = 0
-        request_user_tickets=None
-        request_user_support_member=None
-        
-    # support_members = get_support_members_stats()
-    # print(support_members)
-    # for sp in support_members:
-    #     print(sp)
+    
+    tickets=None
+    if request.user.is_superuser:
+        all_tickets = Ticket.objects.all()
+    else:
+        support_member = SupportMember.objects.filter(user=request.user).first()
+        if support_member:
+            all_tickets = Ticket.objects.filter(assigned_to=support_member)
+    open_tickets_count = closed_tickets_count = pending_tickets_count = resolved_tickets_count = 0
+    if all_tickets:
+        total_tickets = all_tickets.count()
+        open_tickets_count = all_tickets.filter(status='open').count()
+        closed_tickets_count = all_tickets.filter(status='closed').count()
+        pending_tickets_count = all_tickets.filter(status='pending').count()
+        resolved_tickets_count = all_tickets.filter(status='resolved').count()
 
+        
+
+        # Get support members who resolved more than 5 tickets
+        active_support_members = SupportMember.objects.filter(
+            username__in=Ticket.objects.filter(
+                status='resolved'
+            ).values('assigned_to')
+        ).annotate(
+            resolved_tickets_count=Count('username')
+        ).filter(
+            resolved_tickets_count__gt=1
+        )
+    #     tickets = Ticket.objects.order_by('-created_at')[:10].prefetch_related(
+    #     Prefetch('messages', queryset=Message.objects.order_by('created_at'))
+    # )
+
+        escalated_subquery = TicketLog.objects.filter(
+            ticket=OuterRef('pk'),
+            changed_by__icontains='escalated'
+        ).values('id')
+
+        tickets = Ticket.objects.order_by('-created_at')[:10].annotate(
+                message_count=Count('messages'),
+                is_escalated=Exists(escalated_subquery)
+        )
+
+        
+        try:
+            request_user_support_member = SupportMember.objects.get(user=request.user.id)
+            request_user_tickets = all_tickets.filter(assigned_to=request_user_support_member)
+            request_user_tickets_count = request_user_tickets.count()
+            request_user_open_tickets_count = request_user_tickets.filter(status='open').count()
+            request_user_resolved_tickets_count = request_user_tickets.filter(status='resolved').count()
+            request_user_closed_tickets_count = request_user_tickets.filter(status='closed').count()
+            request_user_pending_tickets_count = request_user_tickets.filter(status='pending').count()
+        except SupportMember.DoesNotExist:
+            request_user_tickets_count = 0
+            request_user_open_tickets_count = 0
+            request_user_resolved_tickets_count = 0
+            request_user_closed_tickets_count = 0
+            request_user_pending_tickets_count = 0
+            request_user_tickets=None
+            request_user_support_member=None
+            
+        # support_members = get_support_members_stats()
+        # print(support_members)
+        # for sp in support_members:
+        #     print(sp)
+    def calculate_percentage(count):
+            return round((count / total_tickets * 100), 2) if total_tickets > 0 else 0
+    
     context = {
-        'sp': get_support_members_stats(),
+        'sp': get_support_members_stats(request),
         "tickets_count": total_tickets,
         "open_tickets_count": open_tickets_count,
         "closed_tickets_count": closed_tickets_count,
@@ -165,34 +176,63 @@ def index(request):
 
     return render(request, 'pages/index.html', context=context)
 
-def get_support_members_stats():
-    support_members = SupportMember.objects.annotate(
-        total_resolved=Count('assigned_tickets', filter=Q(assigned_tickets__status='resolved')),
-        total_closed_tickets=Count('assigned_tickets', filter=Q(assigned_tickets__status='closed')),
-        total_pending_tickets=Count('assigned_tickets', filter=Q(assigned_tickets__status='pending')),
-        total_assigned_tickets=Count('assigned_tickets'),
-        average_rating=Avg(Cast('assigned_tickets__support_level', FloatField())),
-        percentage_resolved=ExpressionWrapper(
-            Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='resolved')), 0) * 100.0 /
-            Coalesce(Count('assigned_tickets'), 1),
-            output_field=FloatField()
-        ),
-        percentage_pending=ExpressionWrapper(
-            Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='pending')), 0) * 100.0 /
-            Coalesce(Count('assigned_tickets'), 1),
-            output_field=FloatField()
-        ),
-        percentage_closed=ExpressionWrapper(
-            Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='closed')), 0) * 100.0 /
-            Coalesce(Count('assigned_tickets'), 1),
-            output_field=FloatField()
-        ),
-        percentage_expired=ExpressionWrapper(
-            Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='expired')), 0) * 100.0 /
-            Coalesce(Count('assigned_tickets'), 1),
-            output_field=FloatField()
-        )
-    ).order_by('-total_resolved')
+def get_support_members_stats(request):
+    if request.user.is_superuser:
+        support_members = SupportMember.objects.annotate(
+            total_resolved=Count('assigned_tickets', filter=Q(assigned_tickets__status='resolved')),
+            total_closed_tickets=Count('assigned_tickets', filter=Q(assigned_tickets__status='closed')),
+            total_pending_tickets=Count('assigned_tickets', filter=Q(assigned_tickets__status='pending')),
+            total_assigned_tickets=Count('assigned_tickets'),
+            average_rating=Avg(Cast('assigned_tickets__support_level', FloatField())),
+            percentage_resolved=ExpressionWrapper(
+                Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='resolved')), 0) * 100.0 /
+                Coalesce(Count('assigned_tickets'), 1),
+                output_field=FloatField()
+            ),
+            percentage_pending=ExpressionWrapper(
+                Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='pending')), 0) * 100.0 /
+                Coalesce(Count('assigned_tickets'), 1),
+                output_field=FloatField()
+            ),
+            percentage_closed=ExpressionWrapper(
+                Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='closed')), 0) * 100.0 /
+                Coalesce(Count('assigned_tickets'), 1),
+                output_field=FloatField()
+            ),
+            percentage_expired=ExpressionWrapper(
+                Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='expired')), 0) * 100.0 /
+                Coalesce(Count('assigned_tickets'), 1),
+                output_field=FloatField()
+            )
+        ).order_by('-total_resolved')
+    else:
+        support_members = SupportMember.objects.filter(user=request.user).annotate(
+            total_resolved=Count('assigned_tickets', filter=Q(assigned_tickets__status='resolved')),
+            total_closed_tickets=Count('assigned_tickets', filter=Q(assigned_tickets__status='closed')),
+            total_pending_tickets=Count('assigned_tickets', filter=Q(assigned_tickets__status='pending')),
+            total_assigned_tickets=Count('assigned_tickets'),
+            average_rating=Avg(Cast('assigned_tickets__support_level', FloatField())),
+            percentage_resolved=ExpressionWrapper(
+                Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='resolved')), 0) * 100.0 /
+                Coalesce(Count('assigned_tickets'), 1),
+                output_field=FloatField()
+            ),
+            percentage_pending=ExpressionWrapper(
+                Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='pending')), 0) * 100.0 /
+                Coalesce(Count('assigned_tickets'), 1),
+                output_field=FloatField()
+            ),
+            percentage_closed=ExpressionWrapper(
+                Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='closed')), 0) * 100.0 /
+                Coalesce(Count('assigned_tickets'), 1),
+                output_field=FloatField()
+            ),
+            percentage_expired=ExpressionWrapper(
+                Coalesce(Count('assigned_tickets', filter=Q(assigned_tickets__status='expired')), 0) * 100.0 /
+                Coalesce(Count('assigned_tickets'), 1),
+                output_field=FloatField()
+            )
+        ).order_by('-total_resolved')
     
         
 

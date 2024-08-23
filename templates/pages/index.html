@@ -100,169 +100,169 @@
         </div>
       </div>
       {% else %}
-      <div class="row">
-        <div id="report-popup" class="report-popup-form">
-          <div class="report-popup-content">
-              <span id="close-popup" class="report-popup-close">&times;</span>
-              <div class="report-form-group">
-                  <label for="report-type">Report Type:</label>
-                  <select id="report-type" class="report-select">
-                      <option value="overall">Overall</option>
-                      <option value="branch">Branch</option>
-                      <option value="support_member">Support Member</option>
-                      <option value="weekly">Weekly</option>
-                      <option value="monthly">Monthly</option>
-                  </select>
-              </div>
-      
-              <div id="branch-search" class="report-form-group" style="display: none;">
-                  <label for="branch">Search Branch:</label>
-                  <div id="branch-suggestions-container" class="suggestions-container">
-                      <select id="branch-suggestions" class="suggestions-list">
-                          {% if branches %}
-                              {% for branch in branches %}
-                                  <option value="{{ branch.name }}">{{ branch.name }}</option>
-                              {% endfor %}
-                          {% endif %}
-                      </select>
-                  </div>
-              </div>
-      
-              <div id="support-member-search" class="report-form-group" style="display: none;">
-                  <label for="support-member">Search Support Member:</label>
-                  <div id="suggestions-container" class="suggestions-container">
-                      <select id="support-member-suggestions" class="suggestions-list">
-                          {% if support_members %}
-                              {% for member in support_members %}
-                                  <option value="{{ member.id }}">{{ member.username }} {{ member.phone_number }}</option>
-                              {% endfor %}
-                          {% endif %}
-                      </select>
-                  </div>
-              </div>
-      
-              <div class="report-form-group">
-                  <label for="start-date">Start Date:</label>
-                  <input type="date" id="start-date" class="report-datetime-picker">
-              </div>
-      
-              <div class="report-form-group">
-                  <label for="end-date">End Date:</label>
-                  <input type="date" id="end-date" class="report-datetime-picker">
-              </div>
-      
-              <button id="submit-button" class="btn btn-primary">Generate</button>
-          </div>
-        </div>
-        {% comment %} <div class="col-12 mb-4">
-          <a href="{% url 'generate_weekly_report' %}" class="btn btn-primary">Generate Report</a>
-        </div> {% endcomment %}
-        <div class="col-12 mb-4">
-          
-          <button id="generate-report-button" class="btn btn-primary">
-            <i class='bx bxs-report' ></i>
-            Generate Report</button>
-      </div>
-        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4 home-cards-hover">
-          <a href="{% url 'ticket_list_by_status' 'open' %}" class="card">
-          <div class="card">
-            <div class="card-body p-3">
-              <div class="row">
-                <div class="col-8">
-                  <div class="numbers">
-                    <p class="text-sm mb-0 text-capitalize font-weight-bold">Open tickets</p>
-                    <h5 class="font-weight-bolder mb-0">
-                      {{open_tickets_count}}
-                      <span class="text-success text-sm font-weight-bolder">{{open_tickets_percentage}}%</span>
-                    </h5>
-                  </div>
+        <div class="row">
+          <div id="report-popup" class="report-popup-form">
+            <div class="report-popup-content">
+                <span id="close-popup" class="report-popup-close">&times;</span>
+                <div class="report-form-group">
+                    <label for="report-type">Report Type:</label>
+                    <select id="report-type" class="report-select">
+                        <option value="overall">Overall</option>
+                        <option value="branch">Branch</option>
+                        <option value="support_member">Support Member</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
                 </div>
-                <div class="col-4 text-end">
-                  <div class="icon icon-shape bg-gradient-secondary shadow text-center border-radius-md">
-                    <i class="ni ni-lock-circle-open text-lg opacity-10" aria-hidden="true"></i>
+        
+                <div id="branch-search" class="report-form-group" style="display: none;">
+                    <label for="branch">Search Branch:</label>
+                    <div id="branch-suggestions-container" class="suggestions-container">
+                        <select id="branch-suggestions" class="suggestions-list">
+                            {% if branches %}
+                                {% for branch in branches %}
+                                    <option value="{{ branch.name }}">{{ branch.name }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+        
+                <div id="support-member-search" class="report-form-group" style="display: none;">
+                    <label for="support-member">Search Support Member:</label>
+                    <div id="suggestions-container" class="suggestions-container">
+                        <select id="support-member-suggestions" class="suggestions-list">
+                            {% if support_members %}
+                                {% for member in support_members %}
+                                    <option value="{{ member.id }}">{{ member.username }} {{ member.phone_number }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+        
+                <div class="report-form-group">
+                    <label for="start-date">Start Date:</label>
+                    <input type="date" id="start-date" class="report-datetime-picker">
+                </div>
+        
+                <div class="report-form-group">
+                    <label for="end-date">End Date:</label>
+                    <input type="date" id="end-date" class="report-datetime-picker">
+                </div>
+        
+                <button id="submit-button" class="btn btn-primary">Generate</button>
+            </div>
+          </div>
+          {% comment %} <div class="col-12 mb-4">
+            <a href="{% url 'generate_weekly_report' %}" class="btn btn-primary">Generate Report</a>
+          </div> {% endcomment %}
+          <div class="col-12 mb-4">
+            
+            <button id="generate-report-button" class="btn btn-primary">
+              <i class='bx bxs-report' ></i>
+              Generate Report</button>
+        </div>
+          <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4 home-cards-hover">
+            <a href="{% url 'ticket_list_by_status' 'open' %}" class="card">
+            <div class="card">
+              <div class="card-body p-3">
+                <div class="row">
+                  <div class="col-8">
+                    <div class="numbers">
+                      <p class="text-sm mb-0 text-capitalize font-weight-bold">Open tickets</p>
+                      <h5 class="font-weight-bolder mb-0">
+                        {{open_tickets_count}}
+                        <span class="text-success text-sm font-weight-bolder">{{open_tickets_percentage}}%</span>
+                      </h5>
+                    </div>
+                  </div>
+                  <div class="col-4 text-end">
+                    <div class="icon icon-shape bg-gradient-secondary shadow text-center border-radius-md">
+                      <i class="ni ni-lock-circle-open text-lg opacity-10" aria-hidden="true"></i>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            </a>
           </div>
-          </a>
-        </div>
-        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4 home-cards-hover">
-          <a href="{% url 'ticket_list_by_status' 'closed' %}" class="card">
-          <div class="card">
-            <div class="card-body p-3">
-              <div class="row">
-                <div class="col-8">
-                  <div class="numbers">
-                    <p class="text-sm mb-0 text-capitalize font-weight-bold">Closed tickets</p>
-                    <h5 class="font-weight-bolder mb-0">
-                      {{closed_tickets_count}}
-                      <span class="text-danger text-sm font-weight-bolder">-{{closed_tickets_percentage}}%</span>
-                    </h5>
+          <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4 home-cards-hover">
+            <a href="{% url 'ticket_list_by_status' 'closed' %}" class="card">
+            <div class="card">
+              <div class="card-body p-3">
+                <div class="row">
+                  <div class="col-8">
+                    <div class="numbers">
+                      <p class="text-sm mb-0 text-capitalize font-weight-bold">Closed tickets</p>
+                      <h5 class="font-weight-bolder mb-0">
+                        {{closed_tickets_count}}
+                        <span class="text-danger text-sm font-weight-bolder">-{{closed_tickets_percentage}}%</span>
+                      </h5>
+                    </div>
                   </div>
-                </div>
-                <div class="col-4 text-end">
-                  <div class="icon icon-shape bg-gradient-danger shadow text-center border-radius-md">
-                    <i class="ni ni-fat-remove text-lg opacity-10" aria-hidden="true"></i>
+                  <div class="col-4 text-end">
+                    <div class="icon icon-shape bg-gradient-danger shadow text-center border-radius-md">
+                      <i class="ni ni-fat-remove text-lg opacity-10" aria-hidden="true"></i>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            </a>
           </div>
-          </a>
-        </div>
 
-        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4 home-cards-hover">
-          <a href="{% url 'ticket_list_by_status' 'resolved' %}" class="card">
-          <div class="card">
-            <div class="card-body p-3">
-              <div class="row">
-                <div class="col-8">
-                  <div class="numbers">
-                    <p class="text-sm mb-0 text-capitalize font-weight-bold">Resolved tickets</p>
-                    <h5 class="font-weight-bolder mb-0">
-                      +{{resolved_tickets_count}}
-                      <span class="text-success text-sm font-weight-bolder">{{resolved_tickets_percentage}}%</span>
-                    </h5>
+          <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4 home-cards-hover">
+            <a href="{% url 'ticket_list_by_status' 'resolved' %}" class="card">
+            <div class="card">
+              <div class="card-body p-3">
+                <div class="row">
+                  <div class="col-8">
+                    <div class="numbers">
+                      <p class="text-sm mb-0 text-capitalize font-weight-bold">Resolved tickets</p>
+                      <h5 class="font-weight-bolder mb-0">
+                        +{{resolved_tickets_count}}
+                        <span class="text-success text-sm font-weight-bolder">{{resolved_tickets_percentage}}%</span>
+                      </h5>
+                    </div>
                   </div>
-                </div>
-                <div class="col-4 text-end">
-                  <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
-                    <i class="ni ni-check-bold text-lg opacity-10" aria-hidden="true"></i>
+                  <div class="col-4 text-end">
+                    <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
+                      <i class="ni ni-check-bold text-lg opacity-10" aria-hidden="true"></i>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            </a>
           </div>
-          </a>
-        </div>
 
-        <div class="col-xl-3 col-sm-6 home-cards-hover">
-          <a href="{% url 'ticket_list_by_status' 'pending' %}" class="card">
-          
-          <div class="card">
-            <div class="card-body p-3">
-              <div class="row">
-                <div class="col-8">
-                  <div class="numbers">
-                    <p class="text-sm mb-0 text-capitalize font-weight-bold">Pending</p>
-                    <h5 class="font-weight-bolder mb-0">
-                      {{pending_tickets_count}}
-                      <span class="text-success text-sm font-weight-bolder">+{{pending_tickets_percentage}}%</span>
-                    </h5>
+          <div class="col-xl-3 col-sm-6 home-cards-hover">
+            <a href="{% url 'ticket_list_by_status' 'pending' %}" class="card">
+            
+            <div class="card">
+              <div class="card-body p-3">
+                <div class="row">
+                  <div class="col-8">
+                    <div class="numbers">
+                      <p class="text-sm mb-0 text-capitalize font-weight-bold">Pending</p>
+                      <h5 class="font-weight-bolder mb-0">
+                        {{pending_tickets_count}}
+                        <span class="text-success text-sm font-weight-bolder">+{{pending_tickets_percentage}}%</span>
+                      </h5>
+                    </div>
                   </div>
-                </div>
-                <div class="col-4 text-end">
-                  <div class="icon icon-shape bg-gradient-primary  shadow text-center border-radius-md" >
-                    <i class="ni ni-active-40 text-lg opacity-10" aria-hidden="true" ></i>
+                  <div class="col-4 text-end">
+                    <div class="icon icon-shape bg-gradient-primary  shadow text-center border-radius-md" >
+                      <i class="ni ni-active-40 text-lg opacity-10" aria-hidden="true" ></i>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            </a>
           </div>
-          </a>
         </div>
-      </div>
       {% endif %}
 
       <div class="row mt-4">
@@ -276,13 +276,16 @@
             </div>
           </div>
         </div>
-        
         <div class="col-lg-4">
           <div class="card custom-card z-index-2">
-              <div class="card-header pb-0">
-                  <h6>
-                    <i class='bx bx-trending-up text-success' ></i>
+            <div class="card-header pb-0">
+              <h6>
+                <i class='bx bx-trending-up text-success' ></i>
+                {% if request.user.is_authenticated and request.user.is_superuser %}
                     Top Resolvers
+                {% else %}
+                My stats
+                {% endif %}
                   </h6>
                   {% comment %} <p class="text-sm">
                       <span class="font-weight-bold">4% more</span> in Aug
@@ -312,9 +315,6 @@
               </div>
           </div>
       </div>
-      
-      
-      
       
         <!-- Stacked Bar Chart -->
         <div class="col-lg-8 mt-3">
