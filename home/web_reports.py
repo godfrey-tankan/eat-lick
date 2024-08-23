@@ -166,7 +166,7 @@ def support_member_report_view(request):
     average_rating = tickets.aggregate(average_rating=Avg(Cast('support_level', FloatField())))['average_rating']
         
     if tickets:
-        branch_stats = Ticket.objects.values('branch_opened').annotate(
+        branch_stats = tickets.values('branch_opened').annotate(
             total_tickets=Count('id', distinct=True),  # Ensure each ticket is counted once
             open_count=Count('id', filter=Q(status='open'), distinct=True),
             pending_count=Count('id', filter=Q(status='pending'), distinct=True),
