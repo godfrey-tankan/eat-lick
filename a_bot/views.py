@@ -491,8 +491,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
             assignee_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,assigned_to=queued_tickets.assigned_to,ticket_mode=QUEUED_MODE).order_by('queued_at')
             if assignee_pending_tickets:
                 position_in_queue = list(assignee_pending_tickets).index(queued_tickets) + 1
-                
-                message_to_send = f'Hello {inquirer.username.title()}.\nYour inquiry is currently in position *{position_in_queue}* in the queue,please wait for your turn to be assisted.'
+                message_to_send = f'Hello {inquirer.username.title()}.\nYour inquiry *({queued_tickets.description})* is currently in position # *{position_in_queue}* in the queue,please wait for your turn to be assisted.'
                 data = get_text_message_input(inquirer.phone_number, message_to_send, None)
                 return send_message(data)
         # if queued_tickets:
