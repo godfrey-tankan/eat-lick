@@ -638,10 +638,19 @@ def escalated_tickets(request):
     return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'escalated': True})
 
 def creator_tickets(request, creator):
-    creator = Ticket.objects.filter(id=creator).first().created_by
-    tickets = Ticket.objects.filter(created_by=creator).annotate(
-        message_count=Count('messages'),
-    )
+    if request.user.is_superuser:
+        creator = Ticket.objects.filter(id=creator).first().created_by
+        tickets = Ticket.objects.filter(created_by=creator).annotate(
+            message_count=Count('messages'),
+        )
+    else:
+        support_member = SupportMember.objects.filter(user=request.user).first()
+        if not support_member:
+            return render(request, 'tickets/ticket_list.html', {'tickets': []})
+        creator = Ticket.objects.filter(id=creator).first().created_by
+        tickets = Ticket.objects.filter(created_by=creator, assigned_to=support_member).annotate(
+            message_count=Count('messages'),
+        )
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
     if filter_time:
