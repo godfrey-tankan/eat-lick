@@ -15,6 +15,9 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 import re
 
+naive_datetime = datetime.now()
+aware_datetime = timezone.make_aware(naive_datetime)
+
 def get_greeting():
     current_hour = datetime.now().hour
     if 0 <= current_hour < 10:
@@ -644,7 +647,7 @@ def accept_ticket(wa_id,name, ticket_id):
             if assigned_tickets:
                 # If there are any assigned pending tickets, set their ticket_mode
                 ticket_mode = QUEUED_MODE
-                queued_at_time = timezone.now()
+                queued_at_time = aware_datetime
             else:
                 ticket_mode = 'other'
                 queued_at_time = None
@@ -836,8 +839,6 @@ def get_video_message(recipient, video_id):
     )
 
 def mark_as_resolved( ticket_id,is_closed=False):
-    naive_datetime = datetime.now()
-    aware_datetime = timezone.make_aware(naive_datetime)
     if is_closed:
         ticket = Ticket.objects.get(id=ticket_id)
         ticket.status = CLOSED_MODE
@@ -875,10 +876,11 @@ def mark_as_resolved( ticket_id,is_closed=False):
                 alert_message = f'Your inquiry is now number # *{i}* in the queue, please wait for the support member to assist you.'
                 data = get_text_message_input(pending_ticket.created_by.phone_number, alert_message, None)
                 send_message(data)
+                created_time = pending_ticket.created_at.strftime('%Y-%m-%d %H:%M')
                 
-                message += (f'{i}. Ticket Number: *#{pending_ticket.id}*\n'
-                            f'Opened by *{pending_ticket.created_by.username.title()}* from *{pending_ticket.created_by.branch.upper()}* '
-                            f'at {pending_ticket.created_at}\n- {pending_ticket.description}\n\n')
+                message += (f'{i}. Ticket Number: *#{pending_ticket.id}*'
+                            f'\n- Opened by *{pending_ticket.created_by.username.title()}* from *{pending_ticket.created_by.branch.upper()}* branch '
+                            f'at {created_time}\n- Description: {pending_ticket.description}\n\n')
 
             message += 'Reply with #ticketNo eg *#4* to resume assisting the inquirer.'
             support_member.user_status = RESUME_MODE
@@ -928,10 +930,10 @@ def mark_as_resolved( ticket_id,is_closed=False):
             alert_message = f'Your inquiry is now number # *{i}* in the queue, please wait for the support member to assist you.'
             data = get_text_message_input(pending_ticket.created_by.phone_number, alert_message, None)
             send_message(data)
-            
-            message += (f'{i}. Ticket Number: *#{pending_ticket.id}*\n'
-                        f'Opened by *{pending_ticket.created_by.username.title()}* from *{pending_ticket.created_by.branch.upper()}* '
-                        f'at {pending_ticket.created_at}\n- {pending_ticket.description}\n\n')
+            created_time = pending_ticket.created_at.strftime('%Y-%m-%d %H:%M')
+            message += (f'{i}. Ticket Number: *#{pending_ticket.id}*'
+                        f'\n- Opened by *{pending_ticket.created_by.username.title()}* from *{pending_ticket.created_by.branch.upper()}* branch'
+                        f'at {created_time}\n- Description {pending_ticket.description}\n\n')
 
         message += 'Reply with #ticketNo eg *#4* to resume assisting the inquirer.'
         support_member.user_status = RESUME_MODE
