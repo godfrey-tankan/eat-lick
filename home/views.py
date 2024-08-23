@@ -365,9 +365,6 @@ def get_chart_data(request):
             closed_counts_monthly.append(closed_count)
             pending_counts_monthly.append(pending_count)
         
-        print('open monthly', open_counts_monthly)
-        print('resolved monthly', resolved_counts_monthly)
-
     data = {
         "labels_weekly": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
         "resolved_counts_weekly": resolved_counts_weekly,
