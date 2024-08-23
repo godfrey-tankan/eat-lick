@@ -451,11 +451,11 @@ def handle_help(wa_id, response, name,message_type,message_id):
         
 def process_queued_tickets(inquirer=None, support_member=None,response=None):
     if support_member:
-        all_queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,assigned_to=support_member)
+        all_queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,assigned_to=support_member,status=PENDING_MODE).order_by('queued_at')
         if all_queued_tickets:
             if not '#' in response:
                 tickets_info = 'Please select the ticket you want to resume assisting:\n\n'
-                for i,queued_ticket in enumerate(all_queued_tickets):
+                for i,queued_ticket in enumerate(all_queued_tickets,start=1):
                     tickets_info +=f"Number in queue: {i}.\n- Ticket Number: # *{queued_ticket.id}*\nInquirer: {queued_ticket.created_by.username.title()} from {queued_ticket.branch_opened.title()}\nDescription: {queued_ticket.description}\n"
                 tickets_info += '\nReply with #ticketNo eg *#4* to resume assisting the inquirer.'
                 data = get_text_message_input(support_member.phone_number, tickets_info, None)
@@ -498,13 +498,13 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
             else:
                 match = re.search(r'#(\d+)', response)
                 if match:
-                    support_member_pending_ticket = Ticket.objects.filter(id=match.group(1),ticket_mode=QUEUED_MODE).first()
+                    support_member_pending_ticket = Ticket.objects.filter(id=match.group(1),ticket_mode=QUEUED_MODE,status=PENDING_MODE).first()
                     if support_member_pending_ticket:
-                        other_tickets_pending = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member_pending_ticket.assigned_to ).exclude(id=support_member_pending_ticket.id).first()
+                        other_tickets_pending = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member_pending_ticket.assigned_to,ticket_mode='other' ).first()
                         if other_tickets_pending:
-                            data = get_text_message_input(inquirer.phone_number, 'Please wait, the support member will be in touch shortly.', None)
+                            data = get_text_message_input(inquirer.phone_number, 'Please wait, someone is already attending to your issue!', None)
                             send_message(data)
-                            msg =f'*{inquirer.username.title()}* from *{inquirer.branch}* is requesting assistance on ticket #*{support_member_pending_ticket.id}* which is assigned to you,finish or close the current ticket you are on to respond to the inquirer.'
+                            msg =f'*{inquirer.username.title()}* from *{inquirer.branch}* is requesting assistance on ticket #*{support_member_pending_ticket.id}* which is assigned to you.'
                             data = get_text_message_input(support_member_pending_ticket.assigned_to.phone_number, msg, None)
                             send_message(data)
                     else:
@@ -514,7 +514,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
     return "You have no queued tickets"
 
 def resume_assistance(support_member,response):
-    all_queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,assigned_to=support_member).order_by('queued_at')
+    all_queued_tickets = Ticket.objects.filter(status=PENDING_MODE,ticket_mode=QUEUED_MODE,assigned_to=support_member).order_by('queued_at')
     if all_queued_tickets:
         if "#exit" in response.lower() or "#cancel" in response.lower():
             support_member.user_status = ACCEPT_TICKET_MODE
@@ -523,7 +523,7 @@ def resume_assistance(support_member,response):
             return "You have exited the resume mode,you can now take new tickets or reply with #resume to re-take inquiries in queue."
         if '#resume' in response or '#cont' in response:
             tickets_info = 'Please select the ticket you want to resume assisting:\n\n'
-            for i,queued_ticket in enumerate(all_queued_tickets):
+            for i,queued_ticket in enumerate(all_queued_tickets,start=1):
                 tickets_info +=f"Number in Queue: {i}\n- Ticket Number: # *{queued_ticket.id}*\nOpened By: {queued_ticket.created_by.username} from {queued_ticket.branch_opened} branch.\n- {queued_ticket.description}\n"
             tickets_info += '\nReply with #ticketNo eg *#1* to resume assisting the inquirer.'
             data = get_text_message_input(support_member.phone_number, tickets_info, None)
@@ -531,7 +531,7 @@ def resume_assistance(support_member,response):
         else:
             match = re.search(r'#(\d+)', response)
             if match:
-                ticket_obj = Ticket.objects.filter(id=int(match.group(1)),assigned_to=support_member,ticket_mode=QUEUED_MODE).first()
+                ticket_obj = Ticket.objects.filter(id=int(match.group(1)),assigned_to=support_member,ticket_mode=QUEUED_MODE,status=PENDING_MODE).first()
                 if ticket_obj:
                     check_other_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
                     if check_other_pending_tickets:
