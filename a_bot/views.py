@@ -603,6 +603,7 @@ def accept_ticket(wa_id,name, ticket_id):
         return "You are not authorized to accept tickets"
     support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
     is_ticket_open = False
+    support_msg= 'hello'
     try:
         check_ticket = Ticket.objects.get(id=ticket_id)
         if check_ticket:
@@ -613,18 +614,56 @@ def accept_ticket(wa_id,name, ticket_id):
         return "error ticket not available or already assigned "
     if is_ticket_open:
         try:
+            # Get the first assigned ticket that is pending
             assigned_tickets = Ticket.objects.filter(
                 assigned_to=support_member.id, status=PENDING_MODE
             ).first()
+
             if assigned_tickets:
-                assigned_tickets.ticket_mode = QUEUED_MODE
-                assigned_tickets.save()
+                # If there are any assigned pending tickets, set their ticket_mode
+                ticket_mode = QUEUED_MODE
+                queued_at_time = timezone.now()
+            else:
+                ticket_mode = 'other'
+                queued_at_time = None
+
         except Ticket.DoesNotExist:
             assigned_tickets = None
+            ticket_mode = 'other'
+            queued_at_time = None
+
         ticket = Ticket.objects.get(id=ticket_id)
         ticket.assigned_to = support_member
         ticket.status = PENDING_MODE
+        ticket.ticket_mode = ticket_mode
+        ticket.queued_at = queued_at_time
         ticket.save()
+
+        # Retrieve all other pending tickets in the queue, ordered by queued_at
+        other_tickets_pending = Ticket.objects.filter(
+            status=PENDING_MODE,
+            assigned_to=support_member,
+            ticket_mode=QUEUED_MODE
+        ).order_by('queued_at')
+
+        if other_tickets_pending:
+            position_in_queue = list(other_tickets_pending).index(ticket) + 1
+
+            message_to_send = (
+                f'Your inquiry is now in the queue, please wait for your turn to be assisted.\n\n'
+                f'Queue Number: *{position_in_queue}*\n'
+                f'Your Inquiry: {ticket.description}'
+            )
+            support_msg = f'You have accepted the ticket number #{ticket_id},it is now in the queue, please continue with your current task first or reply with #resume to take it from the queued list.'
+            
+        else:
+            message_to_send = (
+                f'Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to.'
+            )
+            support_msg = f'You have accepted the ticket number #{ticket_id}, you can now start assisting the inquirer.'
+            
+        data = get_text_message_input(ticket.created_by.phone_number, message_to_send, None)
+        send_message(data)
         TicketLog.objects.create(
             ticket=ticket,
             status=PENDING_MODE,
@@ -632,10 +671,11 @@ def accept_ticket(wa_id,name, ticket_id):
         )
         support_member.user_mode=HELPING_MODE
         support_member.user_status = HELPING_MODE
-
         support_member.save()
+        data2 = get_text_message_input(support_member.phone_number,support_msg, None)
+        send_message(data2)
         message=f"🟡ticket *#{ticket.id}* is now assigned to *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
-        return broadcast_messages(name,None,message)
+        return broadcast_messages(name,None,message,support_member.phone_number)
     else:
         return "Ticket not available or already assigned"
 
@@ -800,15 +840,29 @@ def mark_as_resolved( ticket_id,is_closed=False):
                 inquirer.save()
         except Inquirer.DoesNotExist:
             ...
-        other_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,assigned_to=ticket.assigned_to,ticket_mode=QUEUED_MODE)
-        if other_pending_tickets:
-            message=f'Hello {ticket.assigned_to.username.title()},\nYou still have pending tickets in the queue, pick one to resume assisting the inquirer now.\n\n'
-            for pending_ticket in other_pending_tickets:
-                message += f'Ticket Number: *#{pending_ticket.id}*\nOpened by *{pending_ticket.created_by.username.title()}* from *{pending_ticket.created_by.branch.upper()}*\n- {pending_ticket.description}\n\n'
+        other_pending_tickets = Ticket.objects.filter(
+            status=PENDING_MODE,
+            assigned_to=ticket.assigned_to,
+            ticket_mode=QUEUED_MODE
+        ).order_by('queued_at')
+
+        if other_pending_tickets.exists():
+            message = f'Hello {ticket.assigned_to.username.title()},\nYou still have pending tickets in the queue, pick one to resume assisting the inquirer now.\n\n'
+            
+            for i, pending_ticket in enumerate(other_pending_tickets, start=1):
+                alert_message = f'Your inquiry is now number # *{i}* in the queue, please wait for the support member to assist you.'
+                data = get_text_message_input(pending_ticket.created_by.phone_number, alert_message, None)
+                send_message(data)
+                
+                message += (f'{i}. Ticket Number: *#{pending_ticket.id}*\n'
+                            f'Opened by *{pending_ticket.created_by.username.title()}* from *{pending_ticket.created_by.branch.upper()}* '
+                            f'at {pending_ticket.created_at}\n- {pending_ticket.description}\n\n')
+
             message += 'Reply with #ticketNo eg *#4* to resume assisting the inquirer.'
             support_member.user_status = RESUME_MODE
             support_member.save()
-            data = get_text_message_input(ticket.assigned_to.phone_number, message, None)
+
+            data = get_text_message_input(support_member.phone_number, message, None)
             send_message(data)
         message=f"ticket *#{ticket.id}* has been closed ❌."
         reply = f'Your inquiry has been closed.'
@@ -839,16 +893,31 @@ def mark_as_resolved( ticket_id,is_closed=False):
             inquirer.save()
     except Inquirer.DoesNotExist:
         ...
-    other_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,assigned_to=ticket.assigned_to,ticket_mode=QUEUED_MODE)
-    if other_pending_tickets:
+    other_pending_tickets = Ticket.objects.filter(
+            status=PENDING_MODE,
+            assigned_to=ticket.assigned_to,
+            ticket_mode=QUEUED_MODE
+        ).order_by('queued_at')
+
+    if other_pending_tickets.exists():
         message=f'Hello {ticket.assigned_to.username.title()},\nThe ticket you were working on has been resolved but you still have pending tickets in the queue, pick one to resume assisting the inquirer now.\n\n'
-        for pending_ticket in other_pending_tickets:
-            message += f'Ticket Number: *#{pending_ticket.id}*\nOpened by *{pending_ticket.created_by.username.title()}* from *{pending_ticket.created_by.branch.upper()}*\n- {pending_ticket.description}\n\n'
+        
+        for i, pending_ticket in enumerate(other_pending_tickets, start=1):
+            alert_message = f'Your inquiry is now number # *{i}* in the queue, please wait for the support member to assist you.'
+            data = get_text_message_input(pending_ticket.created_by.phone_number, alert_message, None)
+            send_message(data)
+            
+            message += (f'{i}. Ticket Number: *#{pending_ticket.id}*\n'
+                        f'Opened by *{pending_ticket.created_by.username.title()}* from *{pending_ticket.created_by.branch.upper()}* '
+                        f'at {pending_ticket.created_at}\n- {pending_ticket.description}\n\n')
+
         message += 'Reply with #ticketNo eg *#4* to resume assisting the inquirer.'
         support_member.user_status = RESUME_MODE
         support_member.save()
-        data = get_text_message_input(ticket.assigned_to.phone_number, message, None)
+
+        data = get_text_message_input(support_member.phone_number, message, None)
         send_message(data)
+    
     message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."
     ticket_description = ticket.description.split('Web:')[1] if 'Web:' in ticket.description else ticket.description
     reply = f'Your inquiry (*{ticket_description}*) has been marked as resolved'

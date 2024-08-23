@@ -61,6 +61,7 @@ class Ticket(models.Model):
     resolved_at = models.DateTimeField(null=True, blank=True)
     closed_at = models.DateTimeField(null=True, blank=True)
     expired_at = models.DateTimeField(null=True, blank=True)
+    queued_at = models.DateTimeField(null=True, blank=True)
     
     def get_time_to_resolve(self):
         if self.resolved_at:
