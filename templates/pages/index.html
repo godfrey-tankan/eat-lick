@@ -397,7 +397,7 @@
                                               <div class="d-flex flex-column justify-content-center">
                                                 <a href="{% url 'tickets_by_creator' ticket.id %}" class="text-xs font-weight-bold">
                                                   
-                                                  <h6 class="mb-0 text-sm">{{ ticket.created_by.username|title }}
+                                                  <h6 class="mb-0 text-sm">{{ ticket.created_by.username|title|truncatechars:15 }}
                                                   </a>
                                                   <a href="{% url 'ticket_detail' ticket.id %}" class="text-secondary text-xs font-weight-bold">
 
@@ -409,9 +409,11 @@
                                               </div>
                                             </a>
                                         </td>
-                                        <td>
-                                            <p class="text-xs font-weight-bold mb-0">{{ ticket.description }}</p>
-                                        </td>
+                                        <td class='description'>
+                                          <a href="{% url 'ticket_detail' ticket.id %}" class="text-xs font-weight-bold">
+                                          <p class="text-xs font-weight-bold mb-0" title="{{ ticket.description }}">{{ ticket.description|truncatechars:35 }}</p>
+                                        </a>
+                                      </td>
 
                                         <td>
                                           <a href="{% url 'tickets_by_branch' ticket.branch_opened %}" class="text-xs font-weight-bold">
@@ -439,7 +441,7 @@
                                             {% if ticket.assigned_to %}
                                             <td class="align-middle text-center assigned-user">
                                               <a href="{% url 'tickets_by_assignee' ticket.assigned_to.id %}" class="text-xs font-weight-bold">
-                                                {{ ticket.assigned_to.username }}
+                                                {{ ticket.assigned_to.username|truncatechars:10 }}
                                             </a>
                                             <a href="{% url 'escalated_tickets' %}" class="escalate-ticket">
                                               <i class='bx bxs-up-arrow-square'></i>

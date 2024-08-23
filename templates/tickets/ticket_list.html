@@ -153,8 +153,10 @@
                         </a>
                     </td>
                     <td class='description'>
-                        <p class="text-xs font-weight-bold mb-0">{{ ticket.description }}</p>
-                    </td>
+                      <a href="{% url 'ticket_detail' ticket.id %}" class="text-xs font-weight-bold">
+                      <p class="text-xs font-weight-bold mb-0" title="{{ ticket.description }}">{{ ticket.description|truncatechars:30 }}</p>
+                    </a>
+                  </td>
                     <td class='branch'>
                       <a href="{% url 'tickets_by_branch' ticket.branch_opened %}" class="text-xs font-weight-bold">
                       <p class="text-xs font-weight-bold mb-0">{{ ticket.branch_opened }}</p>
