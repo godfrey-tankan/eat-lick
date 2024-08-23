@@ -419,9 +419,17 @@ def support_users_list(request):
     return render(request, 'pages/tables.html', {'support_members': support_members})
 
 def branch_tickets(request, branch_name):
-    tickets = Ticket.objects.filter(branch_opened__icontains=branch_name).annotate(
-        message_count=Count('messages'),
-    )
+    if request.user.is_superuser:
+        tickets = Ticket.objects.filter(branch_opened__icontains=branch_name).annotate(
+            message_count=Count('messages'),
+        )
+    else:
+        support_member = SupportMember.objects.filter(user=request.user).first()
+        if not support_member:
+            return render(request, 'tickets/ticket_list.html', {'tickets': []})
+        tickets = Ticket.objects.filter(branch_opened__icontains=branch_name, assigned_to=support_member).annotate(
+            message_count=Count('messages'),
+        )
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
     if filter_time:
