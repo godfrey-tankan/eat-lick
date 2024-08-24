@@ -17,11 +17,11 @@ def escalate_ticket(request, ticket_id):
             ticket.save()
             TicketLog.objects.create(
                 ticket=ticket,
-                changed_by=f'Ticket escalated to {assign_to.username}',
+                changed_by=f'{ticket.assigned_to}, Ticket escalated to {assign_to.username}',
                 status=ticket.status
             )
             
-            web_messaging(ticket.id,None,True)
+            web_messaging(ticket.id,None,True,assign_to_id)
                     
         return redirect('ticket_detail', ticket_id=ticket.id)
     return redirect('ticket_list')

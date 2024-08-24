@@ -990,14 +990,37 @@ def mark_as_resolved( ticket_id,is_closed=False):
     send_message(data)
     return broadcast_messages(None,ticket,message)
 
-def web_messaging(ticket_id,message=None,is_broadcasting=False):
+def web_messaging(ticket_id,message=None,is_broadcasting=False,prev_assignee=None):
     if message in resolve_ticket_responses:
         return mark_as_resolved(ticket_id)
     if message in close_ticket_responses:
         return mark_as_resolved(ticket_id,True)
     if is_broadcasting:
         ticket = Ticket.objects.filter(id=ticket_id).first()
-        message =f'Hello {ticket.assigned_to.username}\nInquiry *#{ticket.id}*:\n- {ticket.description}\n\nhas been escalated to you,you can start helping the inquirer now.'
+        check_other_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,assigned_to=ticket.assigned_to,ticket_mode='other').first()
+        if check_other_pending_tickets:
+            check_other_pending_tickets.ticket_mode = QUEUED_MODE
+            check_other_pending_tickets.queued_at = timezone.now()
+            check_other_pending_tickets.save()
+            notifier = f'Hello {check_other_pending_tickets.created_by.username.title()}, your inquiry is now on hold, please wait for your turn to be assisted.'
+            data_to_paused_inquirer = get_text_message_input(check_other_pending_tickets.created_by.phone_number, notifier, None)
+            send_message(data_to_paused_inquirer)
+            message =f'Hello {ticket.assigned_to.username}\nInquiry *#{ticket.id}*:\nOpened by: *{ticket.created_by.username.title()} - {ticket.branch_opened.title()}* branch at {ticket.created_at.strftime('%Y-%m-%d %H:%M')}\n- {ticket.description}\n\nhas been escalated to you and your current inquiry with *{check_other_pending_tickets.created_by.username.title()}* has been placed on hold,start helping the new inquirer now!'
+        else:
+            message =f'Hello {ticket.assigned_to.username}\nInquiry *#{ticket.id}*:\nOpened by: *{ticket.created_by.username.title()} - {ticket.branch_opened.title()}* branch at {ticket.created_at.strftime('%Y-%m-%d %H:%M')}\n- {ticket.description}\n\nhas been escalated to you, start helping the inquirer now!'
+        if prev_assignee:
+            previous_supporter = SupportMember.objects.filter(id=prev_assignee).first()
+            if previous_supporter:
+                current_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=previous_supporter,ticket_mode='other').first()
+                if current_ticket:
+                    message_ob = f'Hello {previous_supporter.username},\nInquiry *#{current_ticket.id}*:\nOpened by: *{current_ticket.created_by.username.title()} - {current_ticket.branch_opened.title()}* branch at {current_ticket.created_at.strftime('%Y-%m-%d %H:%M')}\n- {current_ticket.description}\n\nhas been taken from you and escalated to *{ticket.assigned_to.username}* ,please continue assisting {current_ticket.created_by.username.title()} inquiry No *#{current_ticket.id}*'
+                    data_ob = get_text_message_input(previous_supporter.phone_number, message_ob, None)
+                    send_message(data_ob)
+                else:
+                    message_ob = f'Hello {previous_supporter.username},\nInquiry *#{ticket.id}*:\nOpened by: *{ticket.created_by.username.title()} - {ticket.branch_opened.title()}* branch at {ticket.created_at.strftime('%Y-%m-%d %H:%M')}\n- {ticket.description}\n\nhas been taken from you and escalated to *{ticket.assigned_to.username}* ,please reply with #resume to check your other queued tickets!.'
+                    data_ob = get_text_message_input(previous_supporter.phone_number, message_ob, None)
+                    send_message(data_ob)
+                
         support_member = SupportMember.objects.filter(id=ticket.assigned_to.id).first()
         support_member.user_mode = HELPING_MODE
         support_member.user_status = HELPING_MODE
