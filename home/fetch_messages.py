@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from a_bot.views import web_messaging
 from django.http import JsonResponse
 from django.utils import timezone
+
+
 @login_required
 def fetch_messages(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
@@ -11,7 +13,7 @@ def fetch_messages(request, ticket_id):
     message_list = [
         {
             'content': message.content,
-            'created_at': message.created_at.strftime('%d/%m/%Y %H:%M'),
+            'created_at': timezone.localtime(message.created_at).strftime('%d/%m/%Y %H:%M'),
             'username': message.inquirer.username if message.inquirer else message.support_member.username,
             'inquirer': bool(message.inquirer),
         }
