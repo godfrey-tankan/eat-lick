@@ -43,7 +43,7 @@ support_member_help_menu = '''*👨‍💻 SUPPORT MEMBER GUIDE*\n\n
    \n- Once you see a message confirming the assignment, you can immediately start assisting the inquirer by sending a message.\n\n
 2. *HANDLING MULTIPLE TICKETS*
    \n- If you have pending tickets, you’ll still be prompted to assign any newly opened ticket to yourself.
-   \n- *Top Priority:* If you choose to take the new ticket, it will be given top priority. The conversation will then switch to the new inquirer, and your previous pending ticket will be placed in the queue.
+   \n- *Top Priority:* If you choose to take the new ticket, it will be set in queue and the current assigned ticket will be given top priority. The conversation will remain between you and the previous inquirer.
    \n- *Skipping Tickets:* If you decide to skip the new ticket, you can continue working on your current tasks.\n\n
 3. *RESUMING TICKETS*
    \n- If you have multiple tickets assigned and some are in the queue, send *#resume* to choose a ticket and resume providing assistance.\n\n
@@ -55,5 +55,11 @@ support_member_help_menu = '''*👨‍💻 SUPPORT MEMBER GUIDE*\n\n
    \n- All support members will be notified of your request, and those who choose to assist will follow the prompts.\n\n
 6. *Exiting Assistance Mode*
    \n- If you decide to exit the support member assistance mode, send *#exit* or *#cancel*. This will allow you to continue interacting with inquirers directly.\n\n
+7. *Open Tickets*
+   \n- To view all open tickets, send *#open*.
+   \n- You can view all the tickets that are currently open and not assigned to anyone.\n\n
+8. *Attended Tickets*
+   \n- To view all attended tickets, send *#taken*.
+   \n- You can view all the tickets that have been assigned and are currently being assisted.\n\n
 *Remember:* Your role is crucial in providing timely and effective support. Keep track of your tickets, prioritize as needed, and don’t hesitate to ask for help when necessary. You can always refer to this by sending word *help*.
 '''
