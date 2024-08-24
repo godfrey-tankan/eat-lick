@@ -23,7 +23,7 @@ def escalate_ticket(request, ticket_id):
                 status=ticket.status
             )
             
-            web_messaging(ticket.id,None,True,assign_to_id)
+            web_messaging(ticket.id,None,True,ticket.assigned_to.id)
                     
         return redirect('ticket_detail', ticket_id=ticket.id)
     return redirect('ticket_list')
