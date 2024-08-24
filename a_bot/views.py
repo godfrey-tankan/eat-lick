@@ -98,6 +98,11 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 mark_as_resolved(check_ticket.id,True)
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 return send_message(data)
+            elif response=='3':
+                last_msg = Message.objects.filter(ticket_id=check_ticket,inquirer=inquirer).last()
+                data= get_text_message_input(check_ticket.assigned_to.phone_number, last_msg.content, None)
+                send_message(data)
+                return 'Your response has been sent to the support member.'
         return handle_help(wa_id, response, name,message_type,message_id)
 
     if response.lower() == 'help' or response.lower() == 'usage help':
