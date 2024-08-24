@@ -511,6 +511,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                         data = get_text_message_input(current_ticket.created_by.phone_number, notifier, None)
                         send_message(data)
                         current_ticket.ticket_mode = QUEUED_MODE
+                        current_ticket.queued_at = timezone.now()
                         current_ticket.save()
                     ticket_obj = Ticket.objects.filter(id=match.group(1)).first()
                     if ticket_obj:
@@ -585,6 +586,7 @@ def resume_assistance(support_member,response):
                     check_other_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
                     if check_other_pending_tickets:
                         check_other_pending_tickets.ticket_mode = QUEUED_MODE
+                        check_other_pending_tickets.queued_at = timezone.now()
                         check_other_pending_tickets.save()
                         notifier = f'Hello {check_other_pending_tickets.created_by.username.title()}.Your inquiry is now on hold, please wait for your turn to be assisted.'
                         data_to_paused_inquirer = get_text_message_input(check_other_pending_tickets.created_by.phone_number, notifier, None)
