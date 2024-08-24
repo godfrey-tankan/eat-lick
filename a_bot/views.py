@@ -289,6 +289,8 @@ def get_audio_message_input(phone_number_id, audio_id):
 def get_all_open_tickets(support_member,response,wa_id,name):
     if '#open' in response.lower():
         open_tickets= Ticket.objects.filter(status=OPEN_MODE).order_by('created_at')
+        support_member.user_status = OPEN_TICKETS_MODE
+        support_member.save()
         if not open_tickets:
             return 'There are no open tickets at the moment.'
         message = 'Open Tickets:\n\n'
@@ -296,8 +298,6 @@ def get_all_open_tickets(support_member,response,wa_id,name):
             created =ticket.created_at.strftime('%Y-%m-%d %H:%M')
             message += f"*{i}*. Ticket Number: *{ticket.id}\nOpened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {ticket.description}\n"
         message += '\nReply with *ticketNo* eg *4* to assign the ticket to yourself or *#exit* to exit'
-        support_member.user_status = OPEN_TICKETS_MODE
-        support_member.save()
         return message
     if '#exit' in response.lower() or '#cancel' in response.lower():
         support_member.user_status = HELPING_MODE
