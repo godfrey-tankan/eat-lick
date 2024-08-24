@@ -11,7 +11,7 @@ from django.views.generic import UpdateView
 from django.contrib.auth.decorators import login_required
 from django.views.generic import DeleteView
 from django.urls import reverse_lazy
-from django.db.models import Count, Q, Exists, OuterRef
+from django.db.models import Count, Q, Exists, OuterRef,Subquery
 from django.views.decorators.http import require_GET
 from datetime import datetime, timedelta
 from django.utils.timezone import now
@@ -470,10 +470,16 @@ def support_users_list(request):
 
 def branch_tickets(request, branch_name):
     tickets = Ticket.objects.filter(branch_opened__icontains=branch_name).annotate(
-            message_count=Count('messages'),
-            created_at=Coalesce('created_at', Value(''))
-        ).order_by('-created_at')
-    attended_at =TicketLog.objects.filter(ticket=tickets.first(), status__icontains='pending').values('timestamp')
+        message_count=Count('messages'),
+        created_at=Coalesce('created_at', Value('')),
+        attended_at=Subquery(
+            TicketLog.objects.filter(
+                ticket=OuterRef('pk'),
+                status__icontains='pending'
+            ).values('timestamp')[:1]
+        )
+    ).order_by('-created_at')
+    
     # if request.user.is_superuser:
     #     tickets = Ticket.objects.filter(branch_opened__icontains=branch_name).annotate(
     #         message_count=Count('messages'),
@@ -534,6 +540,12 @@ def escalated_tickets(request):
     tickets = Ticket.objects.annotate(
         is_escalated=Exists(escalated_subquery),
         message_count=Count('messages'),
+        attended_at=Subquery(
+            TicketLog.objects.filter(
+                ticket=OuterRef('pk'),
+                status__icontains='pending'
+            ).values('timestamp')[:1]
+        )
     ).filter(is_escalated=True).order_by('-created_at')
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
@@ -577,19 +589,25 @@ def escalated_tickets(request):
     return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'escalated': True})
 
 def creator_tickets(request, creator):
-    if request.user.is_superuser:
-        creator = Ticket.objects.filter(id=creator).first().created_by
-        tickets = Ticket.objects.filter(created_by=creator).annotate(
-            message_count=Count('messages'),
-        ).order_by('-created_at')
-    else:
-        support_member = SupportMember.objects.filter(user=request.user).first()
-        if not support_member:
-            return render(request, 'tickets/ticket_list.html', {'tickets': []})
-        creator = Ticket.objects.filter(id=creator).first().created_by
-        tickets = Ticket.objects.filter(created_by=creator, assigned_to=support_member).annotate(
-            message_count=Count('messages'),
-        ).order_by('-created_at')
+    creator = Ticket.objects.filter(id=creator).first().created_by
+    tickets = Ticket.objects.filter(created_by=creator).annotate(
+        message_count=Count('messages'),
+        attended_at=Subquery(
+            TicketLog.objects.filter(
+                ticket=OuterRef('pk'),
+                status__icontains='pending'
+            ).values('timestamp')[:1]
+        )
+    ).order_by('-created_at')
+    # if request.user.is_superuser:
+    # else:
+    #     support_member = SupportMember.objects.filter(user=request.user).first()
+    #     if not support_member:
+    #         return render(request, 'tickets/ticket_list.html', {'tickets': []})
+    #     creator = Ticket.objects.filter(id=creator).first().created_by
+    #     tickets = Ticket.objects.filter(created_by=creator, assigned_to=support_member).annotate(
+    #         message_count=Count('messages'),
+    #     ).order_by('-created_at')
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
     if filter_time:
@@ -632,13 +650,13 @@ def creator_tickets(request, creator):
     return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'creator': creator})
 
 def support_member_tickets(request, member_id):
-    member=None
-    if request.user.is_superuser:
-        member = SupportMember.objects.filter(id=member_id).first()
-    else:
-        member = SupportMember.objects.filter(user=request.user).first()
-    if not member:
-        return render(request, 'tickets/ticket_list.html', {'tickets': []})
+
+    member = SupportMember.objects.filter(id=member_id).first()
+    # if request.user.is_superuser:
+    # else:
+    #     member = SupportMember.objects.filter(user=request.user).first()
+    # if not member:
+    #     return render(request, 'tickets/ticket_list.html', {'tickets': []})
     escalated_subquery = TicketLog.objects.filter(
         ticket=OuterRef('pk'),
         changed_by__icontains='escalated'
@@ -647,6 +665,12 @@ def support_member_tickets(request, member_id):
     tickets = Ticket.objects.filter(assigned_to=member.id).annotate(
         is_escalated=Exists(escalated_subquery),
         message_count=Count('messages'),
+        attended_at=Subquery(
+            TicketLog.objects.filter(
+                ticket=OuterRef('pk'),
+                status__icontains='pending'
+            ).values('timestamp')[:1]
+        )
     ).order_by('-created_at')
     
     for ticket in tickets:
@@ -703,27 +727,34 @@ def support_member_tickets(request, member_id):
 def all_tickets_list(request):
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
-    if request.user.is_superuser:
-        escalated_subquery = TicketLog.objects.filter(
-            ticket=OuterRef('pk'),
-            changed_by__icontains='escalated'
-        ).values('id')
-        tickets = Ticket.objects.order_by('-created_at').annotate(
-                message_count=Count('messages'),
-                is_escalated=Exists(escalated_subquery)
-        ).order_by('-created_at')
-    else:
-        support_member = SupportMember.objects.filter(user=request.user).first()
-        if not support_member:
-            return render(request, 'tickets/ticket_list.html', {'tickets': []})
-        escalated_subquery = TicketLog.objects.filter(
-            ticket=OuterRef('pk'),
-            changed_by__icontains='escalated'
-        ).values('id')
-        tickets = Ticket.objects.filter(assigned_to=support_member).order_by('-created_at').annotate(
-                message_count=Count('messages'),
-                is_escalated=Exists(escalated_subquery)
-        ).order_by('-created_at')
+    escalated_subquery = TicketLog.objects.filter(
+        ticket=OuterRef('pk'),
+        changed_by__icontains='escalated'
+    ).values('id')
+    tickets = Ticket.objects.order_by('-created_at').annotate(
+            message_count=Count('messages'),
+            is_escalated=Exists(escalated_subquery),
+            created_at=Coalesce('created_at', Value('')),
+            attended_at=Subquery(
+            TicketLog.objects.filter(
+                ticket=OuterRef('pk'),
+                status__icontains='pending'
+            ).values('timestamp')[:1]
+        )
+    ).order_by('-created_at')
+    # if request.user.is_superuser:
+    # else:
+    #     support_member = SupportMember.objects.filter(user=request.user).first()
+    #     if not support_member:
+    #         return render(request, 'tickets/ticket_list.html', {'tickets': []})
+    #     escalated_subquery = TicketLog.objects.filter(
+    #         ticket=OuterRef('pk'),
+    #         changed_by__icontains='escalated'
+    #     ).values('id')
+    #     tickets = Ticket.objects.filter(assigned_to=support_member).order_by('-created_at').annotate(
+    #             message_count=Count('messages'),
+    #             is_escalated=Exists(escalated_subquery)
+    #     ).order_by('-created_at')
 
     if filter_time:
         try:
