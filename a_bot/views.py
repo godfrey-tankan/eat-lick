@@ -533,6 +533,8 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                         return "Ticket not found"
                 else:
                     return "Please check the ticket number and try again, use #ticketNo eg *#4*"
+        support_member.user_status = HELPING_MODE
+        support_member.save()
     
     if inquirer:
         queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,created_by=inquirer,status=PENDING_MODE).first()
@@ -543,30 +545,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                 message_to_send = f'Hello {inquirer.username.title()}.\nYour inquiry *({queued_tickets.description})* is currently in position # *{position_in_queue}* in the queue,please wait for your turn to be assisted.'
                 data = get_text_message_input(inquirer.phone_number, message_to_send, None)
                 return send_message(data)
-        # if queued_tickets:
-        #     if not '#' in response:
-        #         tickets_info = 'Please select the ticket you want get help on:\n\n'
-        #         for queued_ticket in queued_tickets:
-        #             tickets_info +=f"- Ticket Number: # *{queued_ticket.id}*\nDescription: {queued_ticket.description}\n"
-        #         tickets_info += '\nReply with #ticketNo eg *#4* to start asking for help on the ticket.'
-        #         data = get_text_message_input(inquirer.phone_number, tickets_info, None)
-        #         return send_message(data)
-        #     else:
-        #         match = re.search(r'#(\d+)', response)
-        #         if match:
-        #             support_member_pending_ticket = Ticket.objects.filter(id=match.group(1),ticket_mode=QUEUED_MODE,status=PENDING_MODE).first()
-        #             if support_member_pending_ticket:
-        #                 other_tickets_pending = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member_pending_ticket.assigned_to,ticket_mode='other' ).first()
-        #                 if other_tickets_pending:
-        #                     data = get_text_message_input(inquirer.phone_number, 'Please wait, someone is already attending to your issue!', None)
-        #                     send_message(data)
-        #                     msg =f'*{inquirer.username.title()}* from *{inquirer.branch}* is requesting assistance on ticket #*{support_member_pending_ticket.id}* which is assigned to you.'
-        #                     data = get_text_message_input(support_member_pending_ticket.assigned_to.phone_number, msg, None)
-        #                     send_message(data)
-        #             else:
-        #                 return "Ticket not found"
-        #         else:
-        #             return "Please check the ticket number and try again, use #ticketNo eg *#4*"
+        
     return "You have no queued inquiries"
 
 def resume_assistance(support_member,response):
