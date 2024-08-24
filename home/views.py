@@ -80,14 +80,13 @@ def index(request):
     all_tickets=total_tickets=active_support_members=0
     request_user_tickets_count = request_user_open_tickets_count = request_user_resolved_tickets_count = request_user_closed_tickets_count = request_user_pending_tickets_count = 0
     
-    
-    tickets=None
-    if request.user.is_superuser:
-        all_tickets = Ticket.objects.all()
-    else:
-        support_member = SupportMember.objects.filter(user=request.user).first()
-        if support_member:
-            all_tickets = Ticket.objects.filter(assigned_to=support_member)
+
+    all_tickets = Ticket.objects.all()
+    # if request.user.is_superuser:
+    # else:
+    #     support_member = SupportMember.objects.filter(user=request.user).first()
+    #     if support_member:
+    #         all_tickets = Ticket.objects.filter(assigned_to=support_member)
     open_tickets_count = closed_tickets_count = pending_tickets_count = resolved_tickets_count = 0
     if all_tickets:
         total_tickets = all_tickets.count()
@@ -119,7 +118,13 @@ def index(request):
 
         tickets = all_tickets.order_by('-created_at')[:10].annotate(
                 message_count=Count('messages'),
-                is_escalated=Exists(escalated_subquery)
+                is_escalated=Exists(escalated_subquery),
+                attended_at=Subquery(
+                    TicketLog.objects.filter(
+                        ticket=OuterRef('pk'),
+                        status__icontains='pending'
+                    ).values('timestamp')[:1]
+                )
         )
 
         
@@ -369,7 +374,15 @@ def get_chart_data(request):
     return JsonResponse(data)
 
 def ticket_list_by_status(request, status):
-    tickets=Ticket.objects.filter(status=status)
+    tickets=Ticket.objects.filter(status=status).annotate(
+        message_count=Count('messages'),
+        attended_at=Subquery(
+            TicketLog.objects.filter(
+                ticket=OuterRef('pk'),
+                status__icontains='pending'
+            ).values('timestamp')[:1]
+        )
+    ).order_by('-created_at')
     # if request.user.is_superuser:
     #     tickets = Ticket.objects.filter(status=status)
     # else:
@@ -471,7 +484,6 @@ def support_users_list(request):
 def branch_tickets(request, branch_name):
     tickets = Ticket.objects.filter(branch_opened__icontains=branch_name).annotate(
         message_count=Count('messages'),
-        created_at=Coalesce('created_at', Value('')),
         attended_at=Subquery(
             TicketLog.objects.filter(
                 ticket=OuterRef('pk'),
@@ -734,7 +746,6 @@ def all_tickets_list(request):
     tickets = Ticket.objects.order_by('-created_at').annotate(
             message_count=Count('messages'),
             is_escalated=Exists(escalated_subquery),
-            created_at=Coalesce('created_at', Value('')),
             attended_at=Subquery(
             TicketLog.objects.filter(
                 ticket=OuterRef('pk'),

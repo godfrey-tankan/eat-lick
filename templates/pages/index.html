@@ -7,99 +7,7 @@
 
 
     <div class="container-fluid py-4" id='home-container-main'>
-      {% if request.user.is_authenticated and not request.user.is_superuser %}
-      <div class="row">
-        
-        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-          <div class="card">
-            <div class="card-body p-3">
-              <div class="row">
-                <div class="col-8">
-                  <div class="numbers">
-                    <p class="text-sm mb-0 text-capitalize font-weight-bold">Open tickets</p>
-                    <h5 class="font-weight-bolder mb-0">
-                      {{request_user_open_tickets_count}}
-                      <span class="text-success text-sm font-weight-bolder">{{request_user_open_tictes_percentage}}%</span>
-                    </h5>
-                  </div>
-                </div>
-                <div class="col-4 text-end">
-                  <div class="icon icon-shape bg-gradient-secondary shadow text-center border-radius-md">
-                    <i class="ni ni-lock-circle-open text-lg opacity-10" aria-hidden="true"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-          <div class="card">
-            <div class="card-body p-3">
-              <div class="row">
-                <div class="col-8">
-                  <div class="numbers">
-                    <p class="text-sm mb-0 text-capitalize font-weight-bold">Closed tickets</p>
-                    <h5 class="font-weight-bolder mb-0">
-                      {{request_user_closed_tickets_count}}
-                      <span class="text-danger text-sm font-weight-bolder">-{{request_user_closed_tictes_percentage}}%</span>
-                    </h5>
-                  </div>
-                </div>
-                <div class="col-4 text-end">
-                  <div class="icon icon-shape bg-gradient-danger shadow text-center border-radius-md">
-                    <i class="ni ni-fat-remove text-lg opacity-10" aria-hidden="true"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-          <div class="card">
-            <div class="card-body p-3">
-              <div class="row">
-                <div class="col-8">
-                  <div class="numbers">
-                    <p class="text-sm mb-0 text-capitalize font-weight-bold">Resolved tickets</p>
-                    <h5 class="font-weight-bolder mb-0">
-                      +{{request_user_resolved_tickets_count}}
-                      <span class="text-success text-sm font-weight-bolder">{{request_user_resolved_tictes_percentage}}%</span>
-                    </h5>
-                  </div>
-                </div>
-                <div class="col-4 text-end">
-                  <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
-                    <i class="ni ni-check-bold text-lg opacity-10" aria-hidden="true"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-3 col-sm-6">
-          <div class="card">
-            <div class="card-body p-3">
-              <div class="row">
-                <div class="col-8">
-                  <div class="numbers">
-                    <p class="text-sm mb-0 text-capitalize font-weight-bold">Pending</p>
-                    <h5 class="font-weight-bolder mb-0">
-                      {{request_user_pending_tickets_count}}
-                      <span class="text-success text-sm font-weight-bolder">+{{request_user_pending_tictes_percentage}}%</span>
-                    </h5>
-                  </div>
-                </div>
-                <div class="col-4 text-end">
-                  <div class="icon icon-shape bg-gradient-primary  shadow text-center border-radius-md" >
-                    <i class="ni ni-active-40 text-lg opacity-10" aria-hidden="true" ></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% else %}
+      {% if request.user.is_authenticated and request.user.is_superuser %}
         <div class="row">
           <div id="report-popup" class="report-popup-form">
             <div class="report-popup-content">
@@ -163,6 +71,8 @@
               <i class='bx bxs-report' ></i>
               Generate Report</button>
         </div>
+        {% endif %}
+
           <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4 home-cards-hover">
             <a href="{% url 'ticket_list_by_status' 'open' %}" class="card">
             <div class="card">
@@ -263,7 +173,6 @@
             </a>
           </div>
         </div>
-      {% endif %}
 
       <div class="row mt-4">
         <div class="col-lg-8 mb-lg-0 mb-4">
@@ -386,6 +295,7 @@
                                         <th class="text-black text-uppercase  text-xxs font-weight-bolder ps-2">Branch</th>
                                         <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder">Status</th>
                                         <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder">Created At</th>
+                                        <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder">Attended At</th>
                                         <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder opacity-7">Assigned to</th>
                                     </tr>
                                 </thead>
@@ -436,7 +346,10 @@
                                               </a>
                                             </td>
                                             <td class="align-middle text-center">
-                                              <span class="text-secondary text-xs font-weight-bold">{{ ticket.created_at|date:"d/m/Y" }}</span>
+                                              <span class="text-secondary text-xs font-weight-bold">{{ ticket.created_at}}</span>
+                                            </td>
+                                            <td class="align-middle text-center">
+                                              <span class="text-secondary text-xs font-weight-bold">{{ ticket.attended_at}}</span>
                                             </td>
                                             {% if ticket.assigned_to %}
                                             <td class="align-middle text-center assigned-user">
