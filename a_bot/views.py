@@ -1016,7 +1016,7 @@ def web_messaging(ticket_id,message=None,is_broadcasting=False,prev_assignee=Non
             notifier = f'Hello {check_other_pending_tickets.created_by.username.title()}, your inquiry is now on hold, please wait for your turn to be assisted.'
             data_to_paused_inquirer = get_text_message_input(check_other_pending_tickets.created_by.phone_number, notifier, None)
             send_message(data_to_paused_inquirer)
-            message =f'Hello {ticket.assigned_to.username}\nInquiry *#{ticket.id}*:\nOpened by: *{ticket.created_by.username.title()} - {ticket.branch_opened.title()}* branch at {ticket.created_at.strftime('%Y-%m-%d %H:%M')}\n- {ticket.description}\n\nhas been escalated to you and your current inquiry with *{check_other_pending_tickets.created_by.username.title()}* has been placed on hold,start helping the new inquirer now!'
+            message =f'Hello {ticket.assigned_to.username}\nInquiry *#{ticket.id}*:\nOpened by: *{ticket.created_by.username.title()} - {ticket.branch_opened.title()}* branch at {ticket.created_at.strftime('%Y-%m-%d %H:%M')}\n- {ticket.description}\n\nhas been escalated to you and your current inquiry with *{check_other_pending_tickets.created_by.username}* has been placed on hold,start helping the new inquirer now!'
         else:
             message =f'Hello {ticket.assigned_to.username}\nInquiry *#{ticket.id}*:\nOpened by: *{ticket.created_by.username.title()} - {ticket.branch_opened.title()}* branch at {ticket.created_at.strftime('%Y-%m-%d %H:%M')}\n- {ticket.description}\n\nhas been escalated to you, start helping the inquirer now!'
         if prev_assignee:
