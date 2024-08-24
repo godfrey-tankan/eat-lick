@@ -14,6 +14,8 @@ def escalate_ticket(request, ticket_id):
         if assign_to_id:
             assign_to = SupportMember.objects.get(id=assign_to_id)
             ticket.assigned_to = assign_to
+            ticket.status = 'pending'
+            ticket.ticket_mode = 'other'
             ticket.save()
             TicketLog.objects.create(
                 ticket=ticket,
