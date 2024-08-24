@@ -102,7 +102,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 last_msg = Message.objects.filter(ticket_id=check_ticket,inquirer=inquirer).last()
                 data= get_text_message_input(check_ticket.assigned_to.phone_number, last_msg.content, None)
                 send_message(data)
-                return 'Your response has been sent to the support member.'
+                return 'Your message has been sent.'
         return handle_help(wa_id, response, name,message_type,message_id)
 
     if response.lower() == 'help' or response.lower() == 'usage help':
