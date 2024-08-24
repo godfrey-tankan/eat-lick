@@ -697,6 +697,17 @@ def accept_ticket(wa_id,name, ticket_id):
             assigned_tickets = None
             ticket_mode = 'other'
             queued_at_time = None
+        creator_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,created_by=check_ticket.created_by,ticket_mode='other').first()
+        if creator_pending_tickets:
+            if queued_at_time:
+                ...
+            else:
+                queued_at_time = timezone.now()
+                ticket_mode = QUEUED_MODE
+            message = f'Inquirer : {check_ticket.created_by.username.title()} is being attended to by *{creator_pending_tickets.assigned_to.username.title()}* on inquiry *#{creator_pending_tickets.id}*\n ({creator_pending_tickets.description}).Your inquiry with them is now in the queue.'
+            data = get_text_message_input(check_ticket.created_by.phone_number, message, None)
+            send_message(data)
+            return 'You have an open inquiry, please wait for a response.'
 
         ticket = Ticket.objects.get(id=ticket_id)
         ticket.assigned_to = support_member
