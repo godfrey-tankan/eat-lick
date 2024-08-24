@@ -61,11 +61,17 @@ def generate_response(response, wa_id, name,message_type,message_id):
         
         if support_member.user_status == RESUME_MODE:
             return resume_assistance(support_member,response)
+    
+        if '#open' in response.lower() or support_member.user_status == OPEN_TICKETS_MODE:
+            return get_all_open_tickets(support_member,response)
+        if '#taken' in response.lower() or support_member.user_status == ATTENDED_TICKETS_MODE:
+            return get_attended_tickets(support_member,response)
 
         if '#resume' in response.lower() or '#conti' in response.lower():
             support_member.user_status = RESUME_MODE
             support_member.save()
             return resume_assistance(support_member,response)
+        
         if response.lower() in support_member_help_requests:
             return request_assistance_support_member(support_member.id)
         if support_member.user_status in [
@@ -279,6 +285,41 @@ def get_audio_message_input(phone_number_id, audio_id):
             },
         }
     )
+
+def get_all_open_tickets(support_member,response,wa_id,name):
+    if '#open' in response.lower():
+        open_tickets= Ticket.objects.filter(status=OPEN_MODE).order_by('created_at')
+        message = 'Open Tickets:\n\n'
+        for i,ticket in enumerate(open_tickets):
+            message += f"*{i}*. Ticket Number: *{ticket.id}\nOpened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {ticket.created_at.strftime('%Y-%m-%d %H:%M')}\n- Description: {ticket.description}\n"
+        message += '\nReply with *ticketNo* eg *4* to assign the ticket to yourself or *#exit* to exit'
+        support_member.user_status = OPEN_TICKETS_MODE
+        support_member.save()
+        return message
+    if '#exit' in response.lower() or '#cancel' in response.lower():
+        support_member.user_status = HELPING_MODE
+        support_member.save()
+        return 'You are now back to your previous mode, you can continue with what you were doing.'
+    try:
+        ticket_id = int(response)
+    except ValueError:
+        return 'Please provide a valid ticket number'
+    return accept_ticket(wa_id,name, ticket_id)
+        
+def get_attended_tickets(support_member,response):
+    if '#taken' in response.lower():
+        attended_tickets= Ticket.objects.filter(status='pending').order_by('updated_at')
+        message = 'Tickets being attended:\n\n'
+        for i,ticket in enumerate(attended_tickets):
+            message += f"*{i}*. Ticket Number: *{ticket.id}\nOpened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {ticket.created_at.strftime('%Y-%m-%d %H:%M')}\n- Description: {ticket.description}\n"
+        message += '\nReply with *#exit* to exit'
+        support_member.user_status = ATTENDED_TICKETS_MODE
+        support_member.save()
+        return message
+    if '#exit' in response.lower() or '#cancel' in response.lower():
+        support_member.user_status = HELPING_MODE
+        support_member.save()
+        return 'You are now back to your previous mode, you can continue with what you were doing.'
 
 def send_message_template(recepient):
     return json.dumps(
@@ -607,7 +648,7 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                     message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
                 else:
                     message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
-                    message += '\n\n⚠️ You have a pending inquiry, if you accept this one, the pending inquiry will be paused.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.'
+                    message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* it will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.'
             try:
                 data = get_text_message_input(user_mobile, message, None)
                 response = send_message(data)

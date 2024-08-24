@@ -369,14 +369,14 @@ def get_chart_data(request):
     return JsonResponse(data)
 
 def ticket_list_by_status(request, status):
-    tickets=None
-    if request.user.is_superuser:
-        tickets = Ticket.objects.filter(status=status)
-    else:
-        support_member = SupportMember.objects.filter(user=request.user).first()
-        if not support_member:
-            return render(request, 'tickets/ticket_list.html', {'tickets': []})
-        tickets = Ticket.objects.filter(status=status, assigned_to=support_member)
+    tickets=Ticket.objects.filter(status=status)
+    # if request.user.is_superuser:
+    #     tickets = Ticket.objects.filter(status=status)
+    # else:
+    #     support_member = SupportMember.objects.filter(user=request.user).first()
+    #     if not support_member:
+    #         return render(request, 'tickets/ticket_list.html', {'tickets': []})
+    #     tickets = Ticket.objects.filter(status=status, assigned_to=support_member)
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time')
 
@@ -469,17 +469,22 @@ def support_users_list(request):
     return render(request, 'pages/tables.html', {'support_members': support_members})
 
 def branch_tickets(request, branch_name):
-    if request.user.is_superuser:
-        tickets = Ticket.objects.filter(branch_opened__icontains=branch_name).annotate(
+    tickets = Ticket.objects.filter(branch_opened__icontains=branch_name).annotate(
             message_count=Count('messages'),
+            created_at=Coalesce('created_at', Value(''))
         ).order_by('-created_at')
-    else:
-        support_member = SupportMember.objects.filter(user=request.user).first()
-        if not support_member:
-            return render(request, 'tickets/ticket_list.html', {'tickets': []})
-        tickets = Ticket.objects.filter(branch_opened__icontains=branch_name, assigned_to=support_member).annotate(
-            message_count=Count('messages'),
-        ).order_by('-created_at')
+    attended_at =TicketLog.objects.filter(ticket=tickets.first(), status__icontains='pending').values('timestamp')
+    # if request.user.is_superuser:
+    #     tickets = Ticket.objects.filter(branch_opened__icontains=branch_name).annotate(
+    #         message_count=Count('messages'),
+    #     ).order_by('-created_at')
+    # else:
+    #     support_member = SupportMember.objects.filter(user=request.user).first()
+    #     if not support_member:
+    #         return render(request, 'tickets/ticket_list.html', {'tickets': []})
+    #     tickets = Ticket.objects.filter(branch_opened__icontains=branch_name, assigned_to=support_member).annotate(
+    #         message_count=Count('messages'),
+    #     ).order_by('-created_at')
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
     if filter_time:
