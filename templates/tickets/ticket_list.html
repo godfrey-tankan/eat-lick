@@ -1,5 +1,6 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
+{% load tz %}
 
 {% block content %}
 {% comment %} {% if request.user.is_superuser%} {% endcomment %}
@@ -183,10 +184,12 @@
                           </a>
                         </td>
                         <td class="align-middle text-center created-at">
-                          <span class="text-secondary text-xs font-weight-bold">{{ ticket.created_at }}</span>
-                        </td>
+                          <span class="text-secondary text-xs font-weight-bold">
+                            {{ ticket.created_at|localtime }}
+                          </span>
+                      </td>
                         <td class="align-middle text-center created-at">
-                          <span class="text-secondary text-xs font-weight-bold">{{ ticket.attended_at }}</span>
+                          <span class="text-secondary text-xs font-weight-bold">{{ ticket.attended_at|localtime }}</span>
                         </td>
                         {% if ticket.assigned_to %}
                         <td class="align-middle text-center assigned-user assigned-to">

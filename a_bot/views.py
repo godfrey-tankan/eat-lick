@@ -1010,7 +1010,7 @@ def web_messaging(ticket_id,message=None,is_broadcasting=False,prev_assignee=Non
         return mark_as_resolved(ticket_id,True)
     if is_broadcasting:
         ticket = Ticket.objects.filter(id=ticket_id).first()
-        check_other_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,assigned_to=ticket.assigned_to,ticket_mode='other').first()
+        check_other_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,assigned_to=ticket.assigned_to,ticket_mode='other').exclude(id=ticket.id).first()
         if check_other_pending_tickets:
             check_other_pending_tickets.ticket_mode = QUEUED_MODE
             check_other_pending_tickets.queued_at = timezone.now()
@@ -1026,7 +1026,7 @@ def web_messaging(ticket_id,message=None,is_broadcasting=False,prev_assignee=Non
         if prev_assignee:
             previous_supporter = SupportMember.objects.filter(id=prev_assignee).first()
             if previous_supporter:
-                current_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=previous_supporter,ticket_mode='other').first()
+                current_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=previous_supporter,ticket_mode='other').exclude(id=ticket.id).first()
                 if current_ticket:
                     created =current_ticket.created_at.strftime('%Y-%m-%d %H:%M')
                     message_ob = f'Hello {previous_supporter.username},\nInquiry *#{current_ticket.id}*:\nOpened by: *{current_ticket.created_by.username.title()} - {current_ticket.branch_opened.title()}* branch at {created}\n- {current_ticket.description}\n\nhas been taken from you and escalated to *{ticket.assigned_to.username}* ,please continue assisting {current_ticket.created_by.username.title()} inquiry No *#{current_ticket.id}*'
