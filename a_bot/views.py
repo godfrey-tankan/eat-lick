@@ -289,6 +289,8 @@ def get_audio_message_input(phone_number_id, audio_id):
 def get_all_open_tickets(support_member,response,wa_id,name):
     if '#open' in response.lower():
         open_tickets= Ticket.objects.filter(status=OPEN_MODE).order_by('created_at')
+        if not open_tickets:
+            return 'There are no open tickets at the moment.'
         message = 'Open Tickets:\n\n'
         for i,ticket in enumerate(open_tickets):
             created =ticket.created_at.strftime('%Y-%m-%d %H:%M')
@@ -310,6 +312,8 @@ def get_all_open_tickets(support_member,response,wa_id,name):
 def get_attended_tickets(support_member,response):
     if '#taken' in response.lower():
         attended_tickets= Ticket.objects.filter(status='pending').order_by('updated_at')
+        if not attended_tickets:
+            return 'There are no tickets being attended to at the moment.'
         message = 'Tickets being attended:\n\n'
         for i,ticket in enumerate(attended_tickets):
             created =ticket.created_at.strftime('%Y-%m-%d %H:%M')
