@@ -822,15 +822,16 @@ def ticket_detail(request, pk):
     return render(request, 'tickets/ticket_detail.html', {'ticket': ticket, 'form': form})
 
 def ticket_detail_view(request, ticket_id):
-    if request.user.is_superuser:
-        ticket = get_object_or_404(Ticket, id=ticket_id)
-    else:
-        support_member = SupportMember.objects.filter(user=request.user).first()
-        if not support_member:
-            return HttpResponse("You are not authorized to view Inquiry!")
-        ticket = get_object_or_404(Ticket, id=ticket_id, assigned_to=support_member)
-        if not ticket:
-            return HttpResponse("You are not authorized to view Inquiry!")
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    # if request.user.is_superuser:
+    #     ticket = get_object_or_404(Ticket, id=ticket_id)
+    # else:
+    #     support_member = SupportMember.objects.filter(user=request.user).first()
+    #     if not support_member:
+    #         return HttpResponse("You are not authorized to view Inquiry!")
+    #     ticket = get_object_or_404(Ticket, id=ticket_id, assigned_to=support_member)
+    #     if not ticket:
+    #         return HttpResponse("You are not authorized to view Inquiry!")
     messages = Message.objects.filter(ticket_id=ticket_id).order_by('created_at')
     logs = TicketLog.objects.filter(ticket=ticket).order_by('timestamp')
     escalation_log_exists = logs.filter(changed_by__icontains='escalated').exists()
