@@ -299,9 +299,9 @@ def get_all_open_tickets(support_member,response,wa_id,name):
         if not open_tickets:
             return 'There are no open tickets at the moment.'
         message = 'Open Tickets:\n\n'
-        for i,ticket in enumerate(open_tickets):
-            created =ticket.created_at.strftime('%Y-%m-%d %H:%M')
-            message += f"*{i}*. Ticket Number: *{ticket.id}\nOpened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {ticket.description}\n"
+        for i,ticket in enumerate(open_tickets,start=1):
+            created = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
+            message += f"*{i}*. Ticket Number: *{ticket.id}\nOpened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {ticket.description}\n\n"
         message += '\nReply with *ticketNo* eg *4* to assign the ticket to yourself or *#exit* to exit'
         return message
     if '#exit' in response.lower() or '#cancel' in response.lower():
@@ -320,9 +320,9 @@ def get_attended_tickets(support_member,response):
         if not attended_tickets:
             return 'There are no tickets being attended to at the moment.'
         message = 'Tickets being attended:\n\n'
-        for i,ticket in enumerate(attended_tickets):
-            created =ticket.created_at.strftime('%Y-%m-%d %H:%M')
-            message += f"*{i}*. Ticket Number: *{ticket.id}\nOpened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {ticket.description}\n"
+        for i,ticket in enumerate(attended_tickets,start=1):
+            created =timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
+            message += f"*{i}*. Ticket Number: *{ticket.id}\nOpened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {ticket.description}\n\n"
         message += '\nReply with *#exit* to exit'
         support_member.user_status = ATTENDED_TICKETS_MODE
         support_member.save()
@@ -695,9 +695,8 @@ def accept_ticket(wa_id,name, ticket_id):
                 queued_at_time = timezone.now()
                 ticket_mode = QUEUED_MODE
             message = f'Inquirer : {check_ticket.created_by.username.title()} is being attended to by *{creator_pending_tickets.assigned_to.username.title()}* on inquiry *#{creator_pending_tickets.id}*\n ({creator_pending_tickets.description}).Your inquiry with them is now in the queue.'
-            data = get_text_message_input(check_ticket.created_by.phone_number, message, None)
+            data = get_text_message_input(wa_id[0], message, None)
             send_message(data)
-            return 'You have an open inquiry, please wait for a response.'
 
         ticket = Ticket.objects.get(id=ticket_id)
         ticket.assigned_to = support_member
@@ -918,7 +917,7 @@ def mark_as_resolved( ticket_id,is_closed=False):
                 alert_message = f'Your inquiry is now number # *{i}* in the queue, please wait for the support member to assist you.'
                 data = get_text_message_input(pending_ticket.created_by.phone_number, alert_message, None)
                 send_message(data)
-                created_time = pending_ticket.created_at.strftime('%Y-%m-%d %H:%M')
+                created_time = timezone.localtime(pending_ticket.created_at).strftime('%Y-%m-%d %H:%M')
                 
                 message += (f'{i}. Ticket Number: *#{pending_ticket.id}*'
                             f'\n- Opened by *{pending_ticket.created_by.username.title()}* from *{pending_ticket.created_by.branch.upper()}* branch '
@@ -972,7 +971,7 @@ def mark_as_resolved( ticket_id,is_closed=False):
             alert_message = f'Your inquiry is now number # *{i}* in the queue, please wait for the support member to assist you.'
             data = get_text_message_input(pending_ticket.created_by.phone_number, alert_message, None)
             send_message(data)
-            created_time = pending_ticket.created_at.strftime('%Y-%m-%d %H:%M')
+            created_time = timezone.localtime(pending_ticket.created_at).strftime('%Y-%m-%d %H:%M')
             message += (f'{i}. Ticket Number: *#{pending_ticket.id}*'
                         f'\n- Opened by *{pending_ticket.created_by.username.title()}* from *{pending_ticket.created_by.branch.upper()}* branch'
                         f'at {created_time}\n- Description {pending_ticket.description}\n\n')
@@ -1006,22 +1005,22 @@ def web_messaging(ticket_id,message=None,is_broadcasting=False,prev_assignee=Non
             notifier = f'Hello {check_other_pending_tickets.created_by.username.title()}, your inquiry is now on hold, please wait for your turn to be assisted.'
             data_to_paused_inquirer = get_text_message_input(check_other_pending_tickets.created_by.phone_number, notifier, None)
             send_message(data_to_paused_inquirer)
-            created =ticket.created_at.strftime('%Y-%m-%d %H:%M')
+            created =timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
             message =f'Hello {ticket.assigned_to.username}\nInquiry *#{ticket.id}*:\nOpened by: *{ticket.created_by.username.title()} - {ticket.branch_opened.title()}* branch at {created}\n- {ticket.description}\n\nhas been escalated to you and your current inquiry with *{check_other_pending_tickets.created_by.username.title()}* has been placed on hold,start helping the new inquirer now!'
         else:
-            created =ticket.created_at.strftime('%Y-%m-%d %H:%M')
+            created =timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
             message =f'Hello {ticket.assigned_to.username}\nInquiry *#{ticket.id}*:\nOpened by: *{ticket.created_by.username.title()} - {ticket.branch_opened.title()}* branch at {created}\n- {ticket.description}\n\nhas been escalated to you, start helping the inquirer now!'
         if prev_assignee:
             previous_supporter = SupportMember.objects.filter(id=prev_assignee).first()
             if previous_supporter:
                 current_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=previous_supporter,ticket_mode='other').exclude(id=ticket.id).first()
                 if current_ticket:
-                    created =current_ticket.created_at.strftime('%Y-%m-%d %H:%M')
+                    created =timezone.localtime(current_ticket.created_at).strftime('%Y-%m-%d %H:%M')
                     message_ob = f'Hello {previous_supporter.username},\nInquiry *#{current_ticket.id}*:\nOpened by: *{current_ticket.created_by.username.title()} - {current_ticket.branch_opened.title()}* branch at {created}\n- {current_ticket.description}\n\nhas been taken from you and escalated to *{ticket.assigned_to.username}* ,please continue assisting {current_ticket.created_by.username.title()} inquiry No *#{current_ticket.id}*'
                     data_ob = get_text_message_input(previous_supporter.phone_number, message_ob, None)
                     send_message(data_ob)
                 else:
-                    created =ticket.created_at.strftime('%Y-%m-%d %H:%M')
+                    created =timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
                     message_ob = f'Hello {previous_supporter.username},\nInquiry *#{ticket.id}*:\nOpened by: *{ticket.created_by.username.title()} - {ticket.branch_opened.title()}* branch at {created}\n- {ticket.description}\n\nhas been taken from you and escalated to *{ticket.assigned_to.username}* ,please reply with #resume to check your other queued tickets!.'
                     data_ob = get_text_message_input(previous_supporter.phone_number, message_ob, None)
                     send_message(data_ob)
