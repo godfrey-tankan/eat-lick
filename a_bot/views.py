@@ -58,6 +58,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 support_member.user_status = HELPING_MODE
                 support_member.save()
                 return 'You have skipped the ticket, you can now continue with your current task.'
+            return accept_ticket(wa_id,name, response)
         
         if support_member.user_status == RESUME_MODE:
             return resume_assistance(support_member,response)
@@ -635,12 +636,14 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
             else:
                 pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id,ticket_mode='other').first()
                 if not pending_ticket:
+                    message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
                     support_member.user_mode = ACCEPT_TICKET_MODE
                     support_member.save()
-                    message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
                 else:
+                    support_member.status = NEW_TICKET_ACCEPT_MODE
+                    support_member.save()
                     message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
-                    message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* it will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.'
+                    message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.'
             try:
                 data = get_text_message_input(user_mobile, message, None)
                 response = send_message(data)
