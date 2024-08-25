@@ -321,6 +321,8 @@ def get_attended_tickets(support_member,response):
     if '#taken' in response.lower():
         attended_tickets= Ticket.objects.filter(status='pending').order_by('updated_at')
         if not attended_tickets:
+            support_member.user_status = ACCEPT_TICKET_MODE
+            support_member.save()
             return 'There are no tickets being attended to at the moment.'
         message = 'Tickets being attended:\n\n'
         for i,ticket in enumerate(attended_tickets,start=1):
