@@ -8,8 +8,8 @@
 
 
     <div class="container-fluid py-4" id='home-container-main'>
-      {% if request.user.is_authenticated and request.user.is_superuser %}
-        <div class="row">
+      <div class="row">
+          {% if request.user.is_authenticated and request.user.is_superuser %}
           <div id="report-popup" class="report-popup-form">
             <div class="report-popup-content">
                 <span id="close-popup" class="report-popup-close">&times;</span>
