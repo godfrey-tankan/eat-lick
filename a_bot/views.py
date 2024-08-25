@@ -296,7 +296,8 @@ def get_all_open_tickets(support_member,response,wa_id,name):
     if '#open' in response.lower():
         open_tickets= Ticket.objects.filter(status=OPEN_MODE).order_by('created_at')
         if not open_tickets:
-            support_member.user_status = ACCEPT_TICKET_MODE
+            support_member.user_status = HELPING_MODE
+            support_member.user_mode = HELPING_MODE
             support_member.save()
             return 'There are no open tickets at the moment.'
         support_member.user_status = OPEN_TICKETS_MODE
@@ -321,7 +322,8 @@ def get_attended_tickets(support_member,response):
     if '#taken' in response.lower():
         attended_tickets= Ticket.objects.filter(status='pending').order_by('updated_at')
         if not attended_tickets:
-            support_member.user_status = ACCEPT_TICKET_MODE
+            support_member.user_status = HELPING_MODE
+            support_member.user_mode = HELPING_MODE
             support_member.save()
             return 'There are no tickets being attended to at the moment.'
         message = 'Tickets being attended:\n\n'
