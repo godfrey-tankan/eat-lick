@@ -295,10 +295,12 @@ def get_audio_message_input(phone_number_id, audio_id):
 def get_all_open_tickets(support_member,response,wa_id,name):
     if '#open' in response.lower():
         open_tickets= Ticket.objects.filter(status=OPEN_MODE).order_by('created_at')
+        if not open_tickets:
+            support_member.user_status = ACCEPT_TICKET_MODE
+            support_member.save()
+            return 'There are no open tickets at the moment.'
         support_member.user_status = OPEN_TICKETS_MODE
         support_member.save()
-        if not open_tickets:
-            return 'There are no open tickets at the moment.'
         message = 'Open Tickets:\n\n'
         for i,ticket in enumerate(open_tickets,start=1):
             created = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
