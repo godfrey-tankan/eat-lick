@@ -305,7 +305,7 @@ def get_all_open_tickets(support_member,response,wa_id,name):
         message = 'Open Tickets:\n\n'
         for i,ticket in enumerate(open_tickets,start=1):
             created = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
-            message += f"*{i}*. Ticket Number: *{ticket.id}\n- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {ticket.description}\n\n"
+            message += f"*{i}*. Ticket Number: *{ticket.id}*\n- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {ticket.description}\n\n"
         message += '\nReply with *ticketNo* eg *4* to assign the ticket to yourself or *#exit* to exit'
         return message
     if '#exit' in response.lower() or '#cancel' in response.lower():
@@ -329,7 +329,7 @@ def get_attended_tickets(support_member,response):
         message = 'Tickets being attended:\n\n'
         for i,ticket in enumerate(attended_tickets,start=1):
             created =timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
-            message += f"*{i}*. Ticket Number: *{ticket.id}- *Attended by *{ticket.assigned_to.username}*\n- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {ticket.description}\n\n"
+            message += f"*{i}*. Ticket Number: *{ticket.id}*\n- *Attended by *{ticket.assigned_to.username}*\n- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {ticket.description}\n\n"
         message += '\nReply with *#exit* to exit'
         support_member.user_status = ATTENDED_TICKETS_MODE
         support_member.save()
