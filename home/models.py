@@ -21,7 +21,6 @@ class Inquirer(models.Model):
     def __str__(self):
         return f"Inquirer: {self.username}"
 
-
 # The above classes define models for Support Members and Tickets in a system with various fields and
 # relationships.
 class SupportMember(models.Model):

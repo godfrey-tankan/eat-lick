@@ -124,7 +124,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         if inquirer and inquirer.user_mode == INQUIRY_STATUS_MODE:
             return inquiry_status(inquirer, response)
         if inquirer and inquirer.user_mode == MAIN_MENU_MODE or response.lower() in ['menu','#menu']:
-            return main_menu(inquirer,response,wa_id,name)
+            return main_menu(response,wa_id)
        
         for thank_you_message in thank_you_messages:
             if thank_you_message in response.lower():
@@ -159,13 +159,13 @@ def get_text_message_input(recipient, text,name=None,template=False):
         }
     )
     
-def main_menu(inquirer,response,wa_id,name):
+def main_menu(response,wa_id):
     inquirer_ob = Inquirer.objects.filter(phone_number=wa_id[0]).first()
-    if inquirer:
+    if inquirer_ob:
         if response == '#exit':
             inquirer_ob.user_mode = INQUIRY_MODE
             inquirer_ob.save()
-            return f'Hello {name.title()}, how can i help you today?'
+            return f'Hello {inquirer_ob.username.title()}, how can i help you today?'
         elif response =='1' or response == '1.':
             inquirer_ob.user_mode == BRANCH_MODE
             inquirer_ob.save()
@@ -189,13 +189,15 @@ def main_menu(inquirer,response,wa_id,name):
                 return tickets_status
             return 'You have no inquiries at the moment.'
         else:
-            menu_option =f'''Golden morning *{inquirer_ob.username.title()}* {inquirer_ob.branch.title()}.\nPlease Choose an option: 
-            \n1. Update branch from *{inquirer_ob.branch}*
-            \n2. ⁠New inquiry 
-            \n3. ⁠Your inquiry status'''
-            inquirer_ob.user_mode = MAIN_MENU_MODE
-            inquirer_ob.save()
-            return menu_option
+            if response.lower() in ['#menu','menu']:
+                menu_option =f'''Golden morning *{inquirer_ob.username.title()}* {inquirer_ob.branch.title()}.\nPlease Choose an option: 
+                \n1. Update branch from *{inquirer_ob.branch}*
+                \n2. ⁠New inquiry 
+                \n3. ⁠Your inquiry status'''
+                inquirer_ob.user_mode = MAIN_MENU_MODE
+                inquirer_ob.save()
+                return menu_option
+            return 'Please provide a valid option.'
     else:
         return 'Hello, please create a profile first.'
 
