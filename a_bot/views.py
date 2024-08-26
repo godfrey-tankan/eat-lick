@@ -289,7 +289,10 @@ def process_whatsapp_message(body):
 def hold_ticket(support_member,response):
     ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
     if ticket:
-        reason = response.split('hold')[1]
+        if 'hold' in response.lower():
+            reason = response.split('hold')[1]
+        else:
+            reason = 'no reason provided'
         time_opened = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
         notifier = f'Hello {ticket.created_by.username.title()},\nYour inquiry *({ticket.description})* is now on hold, because *{reason}*.'
         data = get_text_message_input(ticket.created_by.phone_number, notifier, None)
