@@ -18364,6 +18364,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
+
+      const printBtn = document.getElementById("generate-report-button");
+      if (printBtn){
+      printBtn.addEventListener("click", function () {
+          if (currentTheme === 'dark') {
+              localStorage.removeItem("theme");
+              window.location.reload();
+              alert("To get the best experience, we are switching to light mode for the report generation.")
+          }
+      });
+      }
       function printReport() {
             window.print();
         }
