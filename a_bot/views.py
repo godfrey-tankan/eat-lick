@@ -70,6 +70,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return get_attended_tickets(support_member,response)
         if '#relea' in response.lower():
             return release_ticket(support_member)
+        if '#hold' in response.lower():
+            return hold_ticket(support_member,response)
 
         if '#resume' in response.lower() or '#conti' in response.lower():
             support_member.user_status = RESUME_MODE
@@ -123,6 +125,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return inquiry_status(inquirer, response)
         if inquirer.user_mode == MAIN_MENU_MODE or response.lower() in ['menu','#menu']:
             return main_menu(inquirer,response,wa_id,name)
+       
         for thank_you_message in thank_you_messages:
             if thank_you_message in response.lower():
                 return "You are welcome."
@@ -282,6 +285,20 @@ def process_whatsapp_message(body):
     except Exception as e:
         print(f"Error processing message: {e}")
         ...
+
+def hold_ticket(support_member,response):
+    ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
+    if ticket:
+        reason = response.split('hold')[1]
+        time_opened = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
+        notifier = f'Hello {ticket.created_by.username.title()},\nYour inquiry *({ticket.description})* is now on hold, because *{reason}*.'
+        data = get_text_message_input(ticket.created_by.phone_number, notifier, None)
+        send_message(data)
+        message = f'*{support_member.username.title()}* has put the ticket #{ticket.id} on hold.'
+        ticket.status = QUEUED_MODE
+        ticket.queued_at = timezone.now()
+        ticket.save()
+        return broadcast_messages('',None,message)
 
 def process_message_file_type(body, phone_number_id, profile_name):
     message = body["entry"][0]["changes"][0]["value"]["messages"][0]
