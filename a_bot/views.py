@@ -398,14 +398,7 @@ def handle_inquiry(wa_id, response, name):
                 except Exception as e:
                     branch_code = None
                 if not branch_code:
-                    branches_list = 'Please select your branch:\n\n'
-                    all_branches = Branch.objects.all()
-                    if all_branches:
-                        for branch in all_branches:
-                            branches_list += f'Branch number: *{branch.id}*\n- Name : *{branch.name}*\n\n'
-                        branches_list += '\n Please reply with your branch number eg *2* .'
-                        return branches_list
-                    return 'No branches found!'
+                    return ' please provide a valid branch number!'
                 selected_branch = Branch.objects.filter(id=branch_code).first()
                 if selected_branch:
                     inquirer_obj.branch = selected_branch.name
@@ -415,10 +408,10 @@ def handle_inquiry(wa_id, response, name):
                     data = get_text_message_input(inquirer_obj.phone_number,message,None)
                     send_message(data)
                     return f'Hello {inquirer_obj.username.split()[0].title()}, What is your inquiry?'
-                
+                return 'Invalid branch number, please try again!'
             names = response.split()
             if len(names) < 2:
-                return 'Please provide your first name and last name'
+                return 'Please provide both your first name and last name'
             inquirer_obj.username = response
             inquirer_obj.save()
             if inquirer_obj.branch:
@@ -427,7 +420,14 @@ def handle_inquiry(wa_id, response, name):
                 return f'Hello {inquirer_obj.username.split()[0].title()}, What is your inquiry?'
             inquirer_obj.user_mode=BRANCH_MODE
             inquirer_obj.save()
-            return 'Please provide your branch'
+            branches_list = 'Please select your branch:\n\n'
+            all_branches = Branch.objects.all()
+            if all_branches:
+                for branch in all_branches:
+                    branches_list += f'Branch number: *{branch.id}*\n- Name : *{branch.name}*\n\n'
+                branches_list += '\n Please reply with your branch number eg *2* .'
+                return branches_list
+            return 'No branches to choose from found!'
     try:
         open_inquiries = Ticket.objects.filter(status=OPEN_MODE,created_by=inquirer_obj.id).first()
     except Ticket.DoesNotExist:
