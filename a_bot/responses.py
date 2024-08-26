@@ -19,6 +19,7 @@ RESOLVED_MODE = "resolved"
 PENDING_MODE = "pending"
 CLOSED_MODE = "closed"
 NEW_TICKET_MODE = "new_ticket"
+MAIN_MENU_MODE='main_menu'
 OPEN_MODE = "open"
 QUEUED_MODE = "queued"
 SUPPORT_RATING='support_rating'

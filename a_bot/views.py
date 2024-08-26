@@ -152,6 +152,32 @@ def get_text_message_input(recipient, text,name=None,template=False):
         }
     )
     
+def main_menu(inquirer,response,wa_id,name):
+    if response =='1' or response == '1.':
+        inquirer.user_mode == BRANCH_MODE
+        inquirer.save()
+        return handle_inquiry(wa_id, response, name)
+    if response =='2' or response =='2.':
+        inquirer.user_mode == INQUIRY_MODE
+        inquirer.save()
+        return 'What is your inquiry today?'
+    if response =='3' or response =='3.':
+        inquirer_tickets = Ticket.objects.filter(created_by=inquirer,status=PENDING_MODE).order_by('-created_at')
+        if inquirer_tickets:
+            tickets_status= 'Here is your inquiry(s) status:\n\n'
+            for i,inquirer_ticket in enumerate(inquirer_tickets,start=1):
+                tickets_status +=
+                
+        
+    menu_option =f'''Golden morning *{inquirer.username.title()}* {inquirer.branch.title()}.\nPlease Choose an option: 
+    \n1. Update branch from *{inquirer.branch}*
+    \n2. ⁠New inquiry 
+    \n3. ⁠Your inquiry status'''
+    inquirer.user_mode = MAIN_MENU_MODE
+    inquirer.save()
+    return menu_option
+    
+    
 def send_message(data,template=False):
     headers = {
         "Content-type": "application/json",
@@ -398,7 +424,14 @@ def handle_inquiry(wa_id, response, name):
                 except Exception as e:
                     branch_code = None
                 if not branch_code:
-                    return ' please provide a valid branch number!'
+                    branches_list = 'Please select a branch:\n\n'
+                    all_branches = Branch.objects.all()
+                    if all_branches:
+                        for branch in all_branches:
+                            branches_list += f'Branch number: *{branch.id}*\n- Name : *{branch.name}*\n\n'
+                        branches_list += '\n Please reply with your branch number eg *2* .'
+                        return branches_list
+                    return 'No branches to choose from found!'
                 selected_branch = Branch.objects.filter(id=branch_code).first()
                 if selected_branch:
                     inquirer_obj.branch = selected_branch.name
