@@ -105,23 +105,23 @@ DB_PORT     = os.getenv('DB_PORT'     , None)
 DB_NAME     = os.getenv('DB_NAME'     , None)
 
 # if DB_ENGINE and DB_NAME and DB_USERNAME:
-DATABASES = { 
-    'default': {
-    'ENGINE'  : 'django.db.backends.mysql', 
-    'NAME'    : 'customer_support',
-    'USER'    : 'simon',
-    'PASSWORD': 'simonmusabayana',
-    'HOST'    : '198.12.221.104',
-    'PORT'    : '3306',
-    }, 
-}
-# else:
-# DATABASES = {
+# DATABASES = { 
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': 'db.sqlite3',
-#     }
+#     'ENGINE'  : 'django.db.backends.mysql', 
+#     'NAME'    : 'customer_support',
+#     'USER'    : 'simon',
+#     'PASSWORD': 'simonmusabayana',
+#     'HOST'    : '198.12.221.104',
+#     'PORT'    : '3306',
+#     }, 
 # }
+# else:
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'db.sqlite3',
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -175,10 +175,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
-)
+) 
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 #if not DEBUG:
-#    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
