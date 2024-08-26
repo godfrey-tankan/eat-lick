@@ -132,7 +132,6 @@ def generate_response(response, wa_id, name,message_type,message_id):
         # for help_message in help_messages:
         #     if help_message in response.lower() or len(response) > :
         return handle_inquiry(wa_id, response, name)
-    
     return f"Hello,golden greetings. How can i help you today?"    
 
 def get_text_message_input(recipient, text,name=None,template=False):
@@ -167,15 +166,15 @@ def main_menu(inquirer,response,wa_id,name):
             inquirer.user_mode = INQUIRY_MODE
             inquirer.save()
             return f'Hello {name.title()}, how can i help you today?'
-        if response =='1' or response == '1.':
+        elif response =='1' or response == '1.':
             inquirer.user_mode == BRANCH_MODE
             inquirer.save()
             return 'Do you want to change your branch?'
-        if response =='2' or response =='2.':
+        elif response =='2' or response =='2.':
             inquirer.user_mode == INQUIRY_MODE
             inquirer.save()
             return 'What is your inquiry today?'
-        if response =='3' or response =='3.':
+        elif response =='3' or response =='3.':
             inquirer.user_mode == INQUIRY_STATUS_MODE
             inquirer.save()
             inquirer_tickets = Ticket.objects.filter(created_by=inquirer,status=PENDING_MODE).order_by('-created_at')
