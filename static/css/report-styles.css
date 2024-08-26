@@ -5,9 +5,12 @@
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #333;
+    color: #000000;
     max-width: 1200px;
     margin: auto;
+}
+h1,h2,h3,h4,h5,h6 {
+    color: #000000;
 }
 .report-header {
     border-bottom: 2px solid #007bff;
@@ -21,7 +24,7 @@
 }
 .report-date {
     font-size: 1rem;
-    color: #555;
+    color: #1f1f1f;
 }
 .report-section {
     margin-bottom: 30px;
@@ -37,7 +40,7 @@
     flex: 1;
     text-align: center;
     margin: 0 10px;
-    border-right:2px solid #ddd;
+    border-right:2px solid #2e2e2e;
 }
 .report-stat .stat-number {
     font-size: 1.8rem;
@@ -47,7 +50,7 @@
 }
 .report-stat .stat-label {
     font-size: 1rem;
-    color: #555;
+    color: #272727;
 }
 .report-table {
     width: 100%;
