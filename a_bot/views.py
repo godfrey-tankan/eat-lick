@@ -519,7 +519,7 @@ def handle_inquiry(wa_id, response, name):
                     inquirer_obj.branch = selected_branch.name
                     inquirer_obj.user_mode = INQUIRY_MODE
                     inquirer_obj.save()
-                    message = f'You are now inquiring under *{selected_branch.name.title()}* , to change your branch, send *#menu*'
+                    message = f'You are now inquiring under *{selected_branch.name.title()}* ,to change your branch, send *#menu*'
                     data = get_text_message_input(inquirer_obj.phone_number,message,None)
                     send_message(data)
                     return f'Hello {inquirer_obj.username.split()[0].title()}, What is your inquiry?'
