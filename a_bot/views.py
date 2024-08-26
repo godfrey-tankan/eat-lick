@@ -121,9 +121,9 @@ def generate_response(response, wa_id, name,message_type,message_id):
         return inquirer_assistance_response(response, check_ticket, inquirer)
     
     if not support_member :
-        if inquirer.user_mode == INQUIRY_STATUS_MODE:
+        if inquirer and inquirer.user_mode == INQUIRY_STATUS_MODE:
             return inquiry_status(inquirer, response)
-        if inquirer.user_mode == MAIN_MENU_MODE or response.lower() in ['menu','#menu']:
+        if inquirer and inquirer.user_mode == MAIN_MENU_MODE or response.lower() in ['menu','#menu']:
             return main_menu(inquirer,response,wa_id,name)
        
         for thank_you_message in thank_you_messages:
