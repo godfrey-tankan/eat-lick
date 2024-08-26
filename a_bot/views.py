@@ -162,40 +162,43 @@ def get_text_message_input(recipient, text,name=None,template=False):
     
 def main_menu(inquirer,response,wa_id,name):
     inquirer = Inquirer.objects.filter(phone_number=wa_id[0]).first()
-    if response == '#exit':
-        inquirer.user_mode = INQUIRY_MODE
-        inquirer.save()
-        return f'Hello {name.title()}, how can i help you today?'
-    if response =='1' or response == '1.':
-        inquirer.user_mode == BRANCH_MODE
-        inquirer.save()
-        return 'Do you want to change your branch?'
-    if response =='2' or response =='2.':
-        inquirer.user_mode == INQUIRY_MODE
-        inquirer.save()
-        return 'What is your inquiry today?'
-    if response =='3' or response =='3.':
-        inquirer.user_mode == INQUIRY_STATUS_MODE
-        inquirer.save()
-        inquirer_tickets = Ticket.objects.filter(created_by=inquirer,status=PENDING_MODE).order_by('-created_at')
-        if inquirer_tickets:
-            tickets_status= 'Here is your inquiry(s) status:\n\n'
-            for i,inquirer_ticket in enumerate(inquirer_tickets,start=1):
-                if inquirer_ticket.ticket_mode == QUEUED_MODE:
-                    tickets_status += f'*{i}*. Ticket Number: *{inquirer_ticket.id}*\n- Description: {inquirer_ticket.description}\n- Status: *{inquirer_ticket.status}* - *On Hold*\n\n'
-                else:
-                    tickets_status += f'*{i}*. Ticket Number: *{inquirer_ticket.id}*\n- Description: {inquirer_ticket.description}\n- Status: *{inquirer_ticket.status}*\n\n'
-                tickets_status += '\nReply with *ticketNo* eg *4* to view more details or *#exit* to exit'
-            return tickets_status
-        return 'You have no inquiries at the moment.'
+    if inquirer:
+        if response == '#exit':
+            inquirer.user_mode = INQUIRY_MODE
+            inquirer.save()
+            return f'Hello {name.title()}, how can i help you today?'
+        if response =='1' or response == '1.':
+            inquirer.user_mode == BRANCH_MODE
+            inquirer.save()
+            return 'Do you want to change your branch?'
+        if response =='2' or response =='2.':
+            inquirer.user_mode == INQUIRY_MODE
+            inquirer.save()
+            return 'What is your inquiry today?'
+        if response =='3' or response =='3.':
+            inquirer.user_mode == INQUIRY_STATUS_MODE
+            inquirer.save()
+            inquirer_tickets = Ticket.objects.filter(created_by=inquirer,status=PENDING_MODE).order_by('-created_at')
+            if inquirer_tickets:
+                tickets_status= 'Here is your inquiry(s) status:\n\n'
+                for i,inquirer_ticket in enumerate(inquirer_tickets,start=1):
+                    if inquirer_ticket.ticket_mode == QUEUED_MODE:
+                        tickets_status += f'*{i}*. Ticket Number: *{inquirer_ticket.id}*\n- Description: {inquirer_ticket.description}\n- Status: *{inquirer_ticket.status}* - *On Hold*\n\n'
+                    else:
+                        tickets_status += f'*{i}*. Ticket Number: *{inquirer_ticket.id}*\n- Description: {inquirer_ticket.description}\n- Status: *{inquirer_ticket.status}*\n\n'
+                    tickets_status += '\nReply with *ticketNo* eg *4* to view more details or *#exit* to exit'
+                return tickets_status
+            return 'You have no inquiries at the moment.'
+        else:
+            menu_option =f'''Golden morning *{inquirer.username.title()}* {inquirer.branch.title()}.\nPlease Choose an option: 
+            \n1. Update branch from *{inquirer.branch}*
+            \n2. ⁠New inquiry 
+            \n3. ⁠Your inquiry status'''
+            inquirer.user_mode = MAIN_MENU_MODE
+            inquirer.save()
+            return menu_option
     else:
-        menu_option =f'''Golden morning *{inquirer.username.title()}* {inquirer.branch.title()}.\nPlease Choose an option: 
-        \n1. Update branch from *{inquirer.branch}*
-        \n2. ⁠New inquiry 
-        \n3. ⁠Your inquiry status'''
-        inquirer.user_mode = MAIN_MENU_MODE
-        inquirer.save()
-        return menu_option
+        return 'Hello, please create a profile first.'
 
 def inquiry_status(inquirer, response):
     if response == '#exit':
