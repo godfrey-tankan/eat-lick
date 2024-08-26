@@ -298,7 +298,8 @@ def hold_ticket(support_member,response):
         data = get_text_message_input(ticket.created_by.phone_number, notifier, None)
         send_message(data)
         message = f'*{support_member.username.title()}* has put the ticket #{ticket.id} on hold.'
-        ticket.status = QUEUED_MODE
+        ticket.status = PENDING_MODE
+        ticket.ticket_mode = QUEUED_MODE
         ticket.queued_at = timezone.now()
         ticket.save()
         return broadcast_messages('',None,message)
