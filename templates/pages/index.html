@@ -75,12 +75,12 @@
         {% endif %}
 
           <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4 home-cards-hover">
-            <a href="{% url 'ticket_list_by_status' 'open' %}" class="card">
+            <a href="{% url 'ticket_list_by_status' 'open' %}" class="card text-light-green">
             <div class="card">
               <div class="card-body p-3">
-                <div class="row">
+                <div class="row">                       
                   <div class="col-8">
-                    <div class="numbers">
+                    <div class="numbers">                                                                                                     
                       <p class="text-sm mb-0 text-capitalize font-weight-bold">Open tickets</p>
                       <h5 class="font-weight-bolder mb-0">
                         {{open_tickets_count}}
@@ -98,8 +98,9 @@
             </div>
             </a>
           </div>
+
           <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4 home-cards-hover">
-            <a href="{% url 'ticket_list_by_status' 'closed' %}" class="card">
+            <a href="{% url 'ticket_list_by_status' 'closed' %}" class="card text-white">
             <div class="card">
               <div class="card-body p-3">
                 <div class="row">
@@ -124,7 +125,7 @@
           </div>
 
           <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4 home-cards-hover">
-            <a href="{% url 'ticket_list_by_status' 'resolved' %}" class="card">
+            <a href="{% url 'ticket_list_by_status' 'resolved' %}" class="card text-success">
             <div class="card">
               <div class="card-body p-3">
                 <div class="row">
@@ -149,7 +150,7 @@
           </div>
 
           <div class="col-xl-3 col-sm-6 home-cards-hover">
-            <a href="{% url 'ticket_list_by_status' 'pending' %}" class="card">
+            <a href="{% url 'ticket_list_by_status' 'pending' %}" class="card text-warning">
             
             <div class="card">
               <div class="card-body p-3">
@@ -159,7 +160,7 @@
                       <p class="text-sm mb-0 text-capitalize font-weight-bold">Pending</p>
                       <h5 class="font-weight-bolder mb-0">
                         {{pending_tickets_count}}
-                        <span class="text-success text-sm font-weight-bolder">+{{pending_tickets_percentage}}%</span>
+                        <span class="text-warning text-sm font-weight-bolder">+{{pending_tickets_percentage}}%</span>
                       </h5>
                     </div>
                   </div>
@@ -548,12 +549,12 @@
                         y: { 
                             stacked: true, 
                             grid: { drawBorder: false, display: true }, 
-                            ticks: { beginAtZero: true, color: "#000" } 
+                            ticks: { beginAtZero: true, color: "#c2c2c2" } 
                         },
                         x: { 
                             stacked: true, 
                             grid: { drawBorder: false, display: false }, 
-                            ticks: { color: "#000" } 
+                            ticks: { color: "#c2c2c2" } 
                         }
                     }
                 }

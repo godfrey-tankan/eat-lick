@@ -57,7 +57,7 @@
   --bs-body-font-weight: 400;
   --bs-body-line-height: 1.5;
   --bs-body-color: #67748e;
-  --bs-body-bg: #fff;
+  --bs-body-bg: #000000;
   --bs-border-width: 1px;
   --bs-border-style: solid;
   --bs-border-color: #dee2e6;
@@ -8006,7 +8006,8 @@ textarea.form-control-lg {
 
 .text-success {
   color: #82d616 !important; }
-
+.text-light-green {
+  color: #4ade80 !important; }
 .text-info {
   color: #17c1e8 !important; }
 
