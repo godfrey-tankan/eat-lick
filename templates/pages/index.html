@@ -500,7 +500,6 @@
 
   {% comment %} REPORT DATA SCRIPT {% endcomment %}
   <script>
-  
       fetch('/get-chart-data/')
         .then(response => response.json())
         .then(data => {
@@ -744,9 +743,7 @@
 
   document.getElementById('close-popup').addEventListener('click', function() {
       document.getElementById('report-popup').style.display = 'none';
-
   });
-
   // Support member searching on report
   document.getElementById('report-type').addEventListener('change', function(e) {
       const selectedType = this.value;
