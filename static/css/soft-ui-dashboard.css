@@ -361,10 +361,13 @@ fieldset {
 
 .custom-list-item {
     transition: background-color 0.3s; /* Smooth background transition */
+  border-bottom:2px solid #c2c2c2 !important;
+    
 }
 
 .custom-list-item:hover {
-    background-color: #eaeaea; /* Light hover background */
+  filter: brightness(80%);
+  border-bottom:2px solid #8f8d8d !important;
     cursor: pointer;
     transition: background-color 0.6s; /* Smooth background transition */
 }
@@ -416,7 +419,7 @@ input, textarea, select {
     cursor: pointer;
 }
 .home-cards-top{
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
   #home-container {
@@ -6918,7 +6921,8 @@ textarea.form-control-lg {
   justify-content: center !important; }
 
 .justify-content-between {
-  justify-content: space-between !important; }
+  justify-content: space-between !important; 
+ }
 
 .justify-content-around {
   justify-content: space-around !important; }
