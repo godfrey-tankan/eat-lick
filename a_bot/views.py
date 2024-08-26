@@ -168,7 +168,6 @@ def main_menu(inquirer,response,wa_id,name):
     if response =='1' or response == '1.':
         inquirer.user_mode == BRANCH_MODE
         inquirer.save()
-        handle_inquiry(wa_id, response, name)
         return 'Do you want to change your branch?'
     if response =='2' or response =='2.':
         inquirer.user_mode == INQUIRY_MODE
@@ -188,14 +187,14 @@ def main_menu(inquirer,response,wa_id,name):
                 tickets_status += '\nReply with *ticketNo* eg *4* to view more details or *#exit* to exit'
             return tickets_status
         return 'You have no inquiries at the moment.'
-        
-    menu_option =f'''Golden morning *{inquirer.username.title()}* {inquirer.branch.title()}.\nPlease Choose an option: 
-    \n1. Update branch from *{inquirer.branch}*
-    \n2. ⁠New inquiry 
-    \n3. ⁠Your inquiry status'''
-    inquirer.user_mode = MAIN_MENU_MODE
-    inquirer.save()
-    return menu_option
+    else:
+        menu_option =f'''Golden morning *{inquirer.username.title()}* {inquirer.branch.title()}.\nPlease Choose an option: 
+        \n1. Update branch from *{inquirer.branch}*
+        \n2. ⁠New inquiry 
+        \n3. ⁠Your inquiry status'''
+        inquirer.user_mode = MAIN_MENU_MODE
+        inquirer.save()
+        return menu_option
 
 def inquiry_status(inquirer, response):
     if response == '#exit':
