@@ -8,6 +8,7 @@
 
 
     <div class="container-fluid py-4" id='home-container-main'>
+      
       <div class="row">
           {% if request.user.is_authenticated and request.user.is_superuser %}
           <div id="report-popup" class="report-popup-form">
@@ -511,31 +512,43 @@
                     datasets: [
                         { 
                             label: "Resolved", 
-                            backgroundColor: "#16a34a", 
+                            backgroundColor: "#16a34a", // Green for Resolved
+                            borderColor: "#15803d",     // Darker green border color (optional)
+                            borderWidth: 2,             // Border width (optional)
+                            hoverBackgroundColor: "#15803d", // Background color on hover (optional)
                             data: data.resolved_counts_weekly,
-                            barThickness: 30, // Set the bar thickness here
-                            maxBarThickness: 35 // Optional: max thickness to limit the width
+                            barThickness: 30,           // Set the bar thickness here
+                            maxBarThickness: 35         // Optional: max thickness to limit the width
                         },
                         { 
                             label: "Open", 
-                            backgroundColor: "#86efac", 
+                            backgroundColor: "#86efac", // Light green for Open
+                            borderColor: "#4ade80",     // Darker light green border color (optional)
+                            borderWidth: 2,             // Border width (optional)
+                            hoverBackgroundColor: "#4ade80", // Background color on hover (optional)
                             data: data.open_counts_weekly,
-                            barThickness: 30, // Set the bar thickness here
-                            maxBarThickness: 35 // Optional: max thickness to limit the width
+                            barThickness: 30,           // Set the bar thickness here
+                            maxBarThickness: 35         // Optional: max thickness to limit the width
                         },
                         { 
                             label: "Closed", 
-                            backgroundColor: "#dc2626", 
+                            backgroundColor: "#dc2626", // Red for Closed
+                            borderColor: "#b91c1c",     // Darker red border color (optional)
+                            borderWidth: 2,             // Border width (optional)
+                            hoverBackgroundColor: "#b91c1c", // Background color on hover (optional)
                             data: data.closed_counts_weekly,
-                            barThickness: 30, // Set the bar thickness here
-                            maxBarThickness: 35 // Optional: max thickness to limit the width
+                            barThickness: 30,           // Set the bar thickness here
+                            maxBarThickness: 35         // Optional: max thickness to limit the width
                         },
                         { 
                             label: "Pending", 
-                            backgroundColor: "#fde047", 
+                            backgroundColor: "#fde047", // Yellow for Pending
+                            borderColor: "#facc15",     // Darker yellow border color (optional)
+                            borderWidth: 2,             // Border width (optional)
+                            hoverBackgroundColor: "#facc15", // Background color on hover (optional)
                             data: data.pending_counts_weekly,
-                            barThickness: 30, // Set the bar thickness here
-                            maxBarThickness: 35 // Optional: max thickness to limit the width
+                            barThickness: 30,           // Set the bar thickness here
+                            maxBarThickness: 35         // Optional: max thickness to limit the width
                         }
                     ]
                 },
@@ -543,8 +556,18 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: true }
+                        legend: { display: true,
+                          labels: {
+                            color: '#a3a3a3', // Default font color for the labels
+                            font: {
+                                size: 14, // Font size (optional)
+                                family: 'Arial, sans-serif' // Font family (optional)
+                            }
+                        }
+                        
+                        }
                     },
+                    
                     scales: {
                         y: { 
                             stacked: true, 
@@ -635,7 +658,15 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: true }
+                        legend: { display: true,
+                          labels: {
+                            color: '#a3a3a3', // Default font color for the labels
+                            font: {
+                                size: 14, // Font size (optional)
+                                family: 'Arial, sans-serif' // Font family (optional)
+                            }
+                        }
+                         }
                     }
                 }
               });
@@ -680,7 +711,16 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: true }
+                        legend: { display: true,
+                          labels: {
+                            color: '#a3a3a3', // Default font color for the labels
+                            font: {
+                                size: 14, // Font size (optional)
+                                family: 'Arial, sans-serif' // Font family (optional)
+                            }
+                        }
+                        
+                        }
                     },
                     scales: {
                         y: { 
