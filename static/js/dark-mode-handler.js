@@ -8,7 +8,7 @@ const pageClass = ["bg-gray-100", "dark-page"]
 
 let currentTheme = localStorage.getItem("theme");
 printBtn = document.getElementById("generate-report-button");
-
+if (printBtn){
 printBtn.addEventListener("click", function () {
     if (currentTheme === 'dark') {
         localStorage.removeItem("theme");
@@ -16,6 +16,7 @@ printBtn.addEventListener("click", function () {
         alert("To get the best experience, we are switching to light mode for the report generation.")
     }
 });
+}
 
 function setTheme(theme) {
     localStorage.setItem("theme", themeStates[theme])

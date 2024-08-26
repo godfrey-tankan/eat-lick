@@ -91,34 +91,34 @@
             <table class="table align-items-center mb-0">
              
               <thead
-              style="background-color: #f8f9fe;"
               >
                 <tr>
-                  <th class="text-uppercase text-black text-xxs font-weight-bolder opacity-7 opened-by">
+                  <th class="text-uppercase  text-xxs font-weight-bolder opacity-7 opened-by">
                     Opened By
                   </th>
-                  <th class="text-uppercase text-black text-xxs font-weight-bolder opacity-7 ps-2 description">
+                  <th class="text-uppercase  text-xxs font-weight-bolder opacity-7 ps-2 description">
                     Description
                   </th>
-                  <th class="text-uppercase text-black text-xxs font-weight-bolder opacity-7 ps-2 branch">
+                  <th class="text-uppercase  text-xxs font-weight-bolder opacity-7 ps-2 branch">
+                    
                     Branch
                   </th>
-                  <th class="text-uppercase text-black text-xxs font-weight-bolder opacity-7 ps-2 status">
+                  <th class="text-uppercase  text-xxs font-weight-bolder opacity-7 ps-2 status">
                     Status
                   </th>
 
                   
-                  <th class="text-center text-uppercase text-black text-xxs font-weight-bolder opacity-7 created-at">
-                    <a href="?sort=created_at" class="text-black">Created At</a>
+                  <th class="text-center text-uppercase  text-xxs font-weight-bolder opacity-7 created-at">
+                    <a href="?sort=created_at" class="">Created At</a>
                   </th>
-                  <th class="text-center text-uppercase text-black text-xxs font-weight-bolder opacity-7 created-at">
-                    <a href="#" class="text-black">Attended At</a>
+                  <th class="text-center text-uppercase  text-xxs font-weight-bolder opacity-7 created-at">
+                    <a href="#" class="">Attended At</a>
                   </th>
-                  <th class="text-center text-uppercase text-black text-xxs font-weight-bolder opacity-7 assigned-to">
+                  <th class="text-center text-uppercase  text-xxs font-weight-bolder opacity-7 assigned-to">
                     Assigned to
                   </th>
-                  <th class="text-center text-uppercase text-black text-xxs font-weight-bolder opacity-7">
-                    <a href="?sort=time_taken" class="text-black">Time Taken</a>
+                  <th class="text-center text-uppercase  text-xxs font-weight-bolder opacity-7">
+                    <a href="?sort=time_taken" class="">Time Taken</a>
                     <form id="filter-form" method="GET" action="" style="display:inline;">
                       <div style="display: flex; align-items: center;">
                         <input 
@@ -129,7 +129,7 @@
                             id="filter-time-input"
                             style="margin-right: 5px; width: 100px;"
                             value="{{ request.GET.filter_time }}">
-                        <select name="operator" id="operator-select" style="margin-right: -200px; width: 80px;">
+                        <select name="operator" id="operator-select" style="margin-right: -200px; width: 80px;background-color:transparent;">
                             <option value="<" {% if request.GET.operator == "<" %}selected{% endif %}><</option>
                             <option value="=" {% if request.GET.operator == "=" %}selected{% endif %}>=</option>
                             <option value=">" {% if request.GET.operator == ">" %}selected{% endif %}>></option>
