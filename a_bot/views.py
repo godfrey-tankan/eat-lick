@@ -67,6 +67,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return get_all_open_tickets(support_member,response,wa_id,name)
         if '#taken' in response.lower() or support_member.user_status == ATTENDED_TICKETS_MODE:
             return get_attended_tickets(support_member,response)
+        if '#relea' in response.lower():
+            return release_ticket(support_member)
 
         if '#resume' in response.lower() or '#conti' in response.lower():
             support_member.user_status = RESUME_MODE
@@ -339,6 +341,19 @@ def get_attended_tickets(support_member,response):
         support_member.save()
         return 'You are now back to your previous mode, you can continue with what you were doing.'
 
+def release_ticket(support_member):
+    ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
+    if ticket:
+        time_opened = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
+        notifier = f'Hello {ticket.created_by.username.title()},\nYour inquiry *({ticket.description})* is now now on hold, please wait for your turn to be assisted.'
+        data = get_text_message_input(ticket.created_by.phone_number, notifier, None)
+        send_message(data)
+        message = f'*{support_member.username.title}* has released the ticket #{ticket.id}\n- Opened by: *{ticket.assigned_to.username}* - *{ticket.branch_opened}* at *{time_opened}* \n- Description: {ticket.description}\n\nYou can reply with #open to assign this open ticket to yourself.'
+        ticket.status = OPEN_MODE
+        ticket.assigned_to=None
+        ticket.save()
+        return broadcast_messages('',None,message)
+
 def send_message_template(recepient):
     return json.dumps(
     {
@@ -378,10 +393,29 @@ def handle_inquiry(wa_id, response, name):
     else:
         if inquirer_obj.user_mode == NAMES_MODE or inquirer_obj.user_mode == BRANCH_MODE:
             if inquirer_obj.user_mode == BRANCH_MODE:
-                inquirer_obj.branch = response
-                inquirer_obj.user_mode = INQUIRY_MODE
-                inquirer_obj.save()
-                return f'Hello {inquirer_obj.username.split()[0].title()}, What is your inquiry?'
+                try:
+                    branch_code = int(response)
+                except Exception as e:
+                    branch_code = None
+                if not branch_code:
+                    branches_list = 'Please select your branch:\n\n'
+                    all_branches = Branch.objects.all()
+                    if all_branches:
+                        for branch in all_branches:
+                            branches_list += f'Branch number: *{branch.id}*\n- Name : *{branch.name}*\n\n'
+                        branches_list += '\n Please reply with your branch number eg *2* .'
+                        return branches_list
+                    return 'No branches found!'
+                selected_branch = Branch.objects.filter(id=branch_code).first()
+                if selected_branch:
+                    inquirer_obj.branch = selected_branch.name
+                    inquirer_obj.user_mode = INQUIRY_MODE
+                    inquirer_obj.save()
+                    message = f'You are now inquiring under *{selected_branch.name.title()}* , to change your branch, send *#menu*'
+                    data = get_text_message_input(inquirer_obj.phone_number,message,None)
+                    send_message(data)
+                    return f'Hello {inquirer_obj.username.split()[0].title()}, What is your inquiry?'
+                
             names = response.split()
             if len(names) < 2:
                 return 'Please provide your first name and last name'
@@ -640,16 +674,15 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
             if message:
                 message=message
             else:
-                pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id,ticket_mode='other').first()
-                if not pending_ticket:
-                    message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
-                    support_member.user_mode = ACCEPT_TICKET_MODE
-                    support_member.save()
-                else:
-                    support_member.status = NEW_TICKET_ACCEPT_MODE
-                    support_member.save()
-                    message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
-                    message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.'
+                message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
+            pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id,ticket_mode='other').first()
+            if not pending_ticket:
+                support_member.user_mode = ACCEPT_TICKET_MODE
+                support_member.save()
+            else:
+                support_member.status = NEW_TICKET_ACCEPT_MODE
+                support_member.save()
+                message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.'
             try:
                 data = get_text_message_input(user_mobile, message, None)
                 response = send_message(data)
