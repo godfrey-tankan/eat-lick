@@ -119,7 +119,6 @@ def generate_response(response, wa_id, name,message_type,message_id):
             data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
             return send_message(data)
         return inquirer_assistance_response(response, check_ticket, inquirer)
-    
     if not support_member :
         if inquirer and inquirer.user_mode == INQUIRY_STATUS_MODE:
             return inquiry_status(inquirer, response)
@@ -167,15 +166,15 @@ def main_menu(response,wa_id):
             inquirer_ob.save()
             return f'Hello {inquirer_ob.username.title()}, how can i help you today?'
         elif response =='1' or response == '1.':
-            inquirer_ob.user_mode == BRANCH_MODE
+            inquirer_ob.user_mode = BRANCH_MODE
             inquirer_ob.save()
             return 'Do you want to change your branch?'
         elif response =='2' or response =='2.':
-            inquirer_ob.user_mode == INQUIRY_MODE
+            inquirer_ob.user_mode = INQUIRY_MODE
             inquirer_ob.save()
             return 'What is your inquiry today?'
         elif response =='3' or response =='3.':
-            inquirer_ob.user_mode == INQUIRY_STATUS_MODE
+            inquirer_ob.user_mode = INQUIRY_STATUS_MODE
             inquirer_ob.save()
             inquirer_tickets = Ticket.objects.filter(created_by=inquirer_ob,status=PENDING_MODE).order_by('-created_at')
             if inquirer_tickets:
