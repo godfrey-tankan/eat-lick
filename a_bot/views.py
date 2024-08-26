@@ -168,7 +168,8 @@ def main_menu(inquirer,response,wa_id,name):
     if response =='1' or response == '1.':
         inquirer.user_mode == BRANCH_MODE
         inquirer.save()
-        return handle_inquiry(wa_id, response, name)
+        handle_inquiry(wa_id, response, name)
+        return 'Do you want to change your branch?'
     if response =='2' or response =='2.':
         inquirer.user_mode == INQUIRY_MODE
         inquirer.save()
