@@ -434,7 +434,7 @@ def release_ticket(support_member):
         notifier = f'Hello {ticket.created_by.username.title()},\nYour inquiry *({ticket.description})* is now now on hold, please wait for your turn to be assisted.'
         data = get_text_message_input(ticket.created_by.phone_number, notifier, None)
         send_message(data)
-        message = f'*{support_member.username.title}* has released the ticket #{ticket.id}\n- Opened by: *{ticket.assigned_to.username}* - *{ticket.branch_opened}* at *{time_opened}* \n- Description: {ticket.description}\n\nYou can reply with #open to assign this open ticket to yourself.'
+        message = f'*{support_member.username.title()}* has released the ticket #{ticket.id}\n- Opened by: *{ticket.created_by.username}* - *{ticket.branch_opened}* at *{time_opened}* \n- Description: {ticket.description}\n\nYou can reply with #open to assign this open ticket to yourself.'
         ticket.status = OPEN_MODE
         ticket.assigned_to=None
         ticket.save()
