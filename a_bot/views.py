@@ -694,6 +694,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                 else:
                     return "Please check the ticket number and try again, use #ticketNo eg *#4*"
         support_member.user_status = HELPING_MODE
+        support_member.user_mode=HELPING_MODE
         support_member.save()
     
     if inquirer:
@@ -712,8 +713,8 @@ def resume_assistance(support_member,response):
     all_queued_tickets = Ticket.objects.filter(status=PENDING_MODE,ticket_mode=QUEUED_MODE,assigned_to=support_member).order_by('queued_at')
     if all_queued_tickets:
         if "#exit" in response.lower() or "#cancel" in response.lower():
-            support_member.user_status = ACCEPT_TICKET_MODE
-            support_member.user_mode = ACCEPT_TICKET_MODE
+            support_member.user_status = HELPING_MODE
+            support_member.user_mode = HELPING_MODE
             support_member.save()
             return "You have exited the resume mode,you can now take new tickets or reply with #resume to re-take inquiries in queue."
         if '#resume' in response or '#cont' in response:
@@ -739,6 +740,7 @@ def resume_assistance(support_member,response):
                     ticket_obj.ticket_mode = 'other'
                     ticket_obj.save()
                     support_member.user_status = HELPING_MODE
+                    support_member.user_mode = HELPING_MODE
                     support_member.save()
                     inquirer_msg = f'Hello {ticket_obj.created_by.username.title()}, your inquiry is now being attended to, please wait for a response.'
                     data_to_inquirer = get_text_message_input(ticket_obj.created_by.phone_number,inquirer_msg , None)
@@ -752,6 +754,7 @@ def resume_assistance(support_member,response):
             else:
                 return "Please check the ticket number and try again, reply with *#resume* to see all your queued tickets. or reply with *#exit* to exit the resume mode."
     support_member.user_status = HELPING_MODE
+    support_member.user_mode = HELPING_MODE
     support_member.save()
     return "You have no queued tickets"
 
