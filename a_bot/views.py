@@ -418,6 +418,7 @@ def get_all_open_tickets(support_member,response,wa_id,name):
         return message
     if '#exit' in response.lower() or '#cancel' in response.lower():
         support_member.user_status = HELPING_MODE
+        support_member.user_mode = HELPING_MODE
         support_member.save()
         return 'You are now back to your previous mode, you can continue with what you were doing.'
     try:
