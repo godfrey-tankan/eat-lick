@@ -85,7 +85,7 @@
                       <p class="text-sm mb-0 text-capitalize font-weight-bold">Open tickets</p>
                       <h5 class="font-weight-bolder mb-0">
                         {{open_tickets_count}}
-                        <span class="text-success text-sm font-weight-bolder">{{open_tickets_percentage}}%</span>
+                        <span class="text-light-green text-sm font-weight-bolder">{{open_tickets_percentage}}%</span>
                       </h5>
                     </div>
                   </div>
@@ -498,9 +498,9 @@
   });
   </script>
 
+  {% comment %} REPORT DATA SCRIPT {% endcomment %}
   <script>
   
-        
       fetch('/get-chart-data/')
         .then(response => response.json())
         .then(data => {
