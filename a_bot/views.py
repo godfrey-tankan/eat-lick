@@ -306,6 +306,7 @@ def hold_ticket(support_member,response):
         ticket.ticket_mode = QUEUED_MODE
         ticket.queued_at = timezone.now()
         ticket.save()
+        TicketLog.objects.create(ticket=ticket, status='pending', timestamp=timezone.now(),changed_by=f'{support_member.username}- ticket on hold')
         return broadcast_messages('',None,message)
 
 def process_message_file_type(body, phone_number_id, profile_name):
@@ -464,6 +465,7 @@ def release_ticket(support_member):
         ticket.status = OPEN_MODE
         ticket.assigned_to=None
         ticket.save()
+        TicketLog.objects.create(ticket=ticket, status='open', timestamp=timezone.now(),changed_by=f'{support_member.username}- ticket released')
         return broadcast_messages('',None,message)
 
 def send_message_template(recepient):
@@ -739,6 +741,7 @@ def resume_assistance(support_member,response):
                         check_other_pending_tickets.ticket_mode = QUEUED_MODE
                         check_other_pending_tickets.queued_at = timezone.now()
                         check_other_pending_tickets.save()
+                        TicketLog.objects.create(ticket=check_other_pending_tickets, status='pending', timestamp=timezone.now(),changed_by=f'{support_member.username}- ticket on hold')
                         notifier = f'Hello {check_other_pending_tickets.created_by.username.title()}.Your inquiry is now on hold, please wait for your turn to be assisted.'
                         data_to_paused_inquirer = get_text_message_input(check_other_pending_tickets.created_by.phone_number, notifier, None)
                         send_message(data_to_paused_inquirer)
