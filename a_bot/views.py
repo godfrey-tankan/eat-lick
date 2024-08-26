@@ -161,6 +161,7 @@ def get_text_message_input(recipient, text,name=None,template=False):
     )
     
 def main_menu(inquirer,response,wa_id,name):
+    inquirer = Inquirer.objects.filter(phone_number=wa_id[0]).first()
     if response == '#exit':
         inquirer.user_mode = INQUIRY_MODE
         inquirer.save()
