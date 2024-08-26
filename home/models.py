@@ -65,16 +65,25 @@ class Ticket(models.Model):
     queued_at = models.DateTimeField(null=True, blank=True)
     
     def get_time_to_resolve(self):
+        # Get the timestamp of the last 'pending' log entry
+        last_pending_log = TicketLog.objects.filter(
+            ticket=self,
+            status__icontains='pending'
+        ).order_by('-timestamp').first()
+
+        if last_pending_log:
+            start_time_local = timezone.localtime(last_pending_log.timestamp)
+        else:
+            start_time_local = timezone.localtime(self.created_at)
+
         if self.resolved_at:
-            resolved_at_local = timezone.localtime(self.resolved_at)
-            created_at_local = timezone.localtime(self.created_at)
-            time_diff = resolved_at_local - created_at_local
+            end_time_local = timezone.localtime(self.resolved_at)
         elif self.closed_at:
-            closed_at_local = timezone.localtime(self.closed_at)
-            created_at_local = timezone.localtime(self.created_at)
-            time_diff = closed_at_local - created_at_local
+            end_time_local = timezone.localtime(self.closed_at)
         else:
             return "Not resolved yet"
+
+        time_diff = end_time_local - start_time_local
 
         weeks, days = divmod(time_diff.days, 7)
         hours, remainder = divmod(time_diff.seconds, 3600)
@@ -93,17 +102,19 @@ class Ticket(models.Model):
         return ', '.join(result) if result else "Less than a minute"
 
     def get_time_to_resolve_duration(self):
-        end_time = timezone.localtime(self.resolved_at or self.closed_at or now())
-        start_time = timezone.localtime(self.created_at)
-        return end_time - start_time
+        # Get the timestamp of the last 'pending' log entry
+        last_pending_log = TicketLog.objects.filter(
+            ticket=self,
+            status__icontains='pending'
+        ).order_by('-timestamp').first()
 
-    def save(self, *args, **kwargs):
-        if self.support_level:
-            self.support_level = self.support_level.split('/')[0]
-        super().save(*args, **kwargs)
+        if last_pending_log:
+            start_time_local = timezone.localtime(last_pending_log.timestamp)
+        else:
+            start_time_local = timezone.localtime(self.created_at)
 
-    def __str__(self):
-        return f"Ticket #{self.id} - {self.title} ({self.status})"
+        end_time_local = timezone.localtime(self.resolved_at or self.closed_at or timezone.now())
+        return end_time_local - start_time_local
     
 
 

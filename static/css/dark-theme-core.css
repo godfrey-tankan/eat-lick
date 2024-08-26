@@ -74,7 +74,46 @@ body.dark-page .sidenav .nav-link.active {
   background-color: #404B69 !important;
   color: #fff !important;
 }
-body.dark-page .list-group-item {
+
+select {
+  background-color: transparent;
+  border: 1px solid #ccc; /* Optional: Add a border to make it visible */
+  color: inherit; /* Keeps the text color consistent with the rest of the page */
+}
+
+/* For textareas */
+textarea {
+  background-color: transparent;
+  border: 1px solid #ccc; /* Optional: Add a border */
+  color: inherit; /* Keeps the text color consistent */
+}
+
+/* For input elements (text, password, etc.) */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"] {
+  background-color: transparent;
+  border: 1px solid #ccc; /* Optional: Add a border */
+  color: inherit; /* Keeps the text color consistent */
+}
+
+/* Add this to avoid the default webkit appearance for input and textarea fields */
+input, textarea, select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+body.dark-page .list-group-item input[type="checkbox"]:checked + .list-group-item-icon input[type ='select-one'] {
   background-color: transparent;
 }
 body.dark-page .list-group-item.bg-gray-100 {

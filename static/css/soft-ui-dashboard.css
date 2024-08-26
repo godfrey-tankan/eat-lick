@@ -379,6 +379,31 @@ fieldset {
     background-color: transparent;
 }
 
+select,
+textarea,
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"] {
+    background-color: transparent;
+    border: 1px solid #ccc; /* Optional: Add a border */
+    color: inherit; /* Keeps the text color consistent */
+}
+
+input, textarea, select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
   
 .text-black{
   color: #000;
@@ -390,6 +415,10 @@ fieldset {
     transition: all 0.3s ease;
     cursor: pointer;
 }
+.home-cards-top{
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
   #home-container {
     position: fixed;
     top: 0;
