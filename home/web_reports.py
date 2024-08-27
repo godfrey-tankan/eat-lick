@@ -128,7 +128,6 @@ def monthly_report_view(request):
 
     tickets = Ticket.objects.filter(created_at__range=[start_date, end_date])
     if tickets:
-        # Perform calculations and prepare context data as in your PDF generation function
         context = prepare_monthly_report_context(tickets, start_date, end_date)
     else:
         context = prepare_empty_monthly_report_context(start_date, end_date)

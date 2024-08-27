@@ -246,15 +246,14 @@ def get_support_members_stats(request):
 @require_GET
 @login_required
 def get_chart_data(request):
-    today = timezone.now()  # Use timezone-aware now
+    today = timezone.now()  
     start_of_week = today - timedelta(days=today.weekday())
     last_seven_days = [start_of_week + timedelta(days=i) for i in range(7)]
-    
+    last_nine_months = [(today - timedelta(days=30 * i)).strftime('%b') for i in reversed(range(9))]
     resolved_counts_weekly = []
     open_counts_weekly = []
     closed_counts_weekly = []
     pending_counts_weekly = []
-    last_nine_months = [(today - timedelta(days=30 * i)).strftime('%b') for i in reversed(range(9))]
     resolved_counts_monthly = []
     open_counts_monthly = []
     closed_counts_monthly = []
