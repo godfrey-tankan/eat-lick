@@ -22,7 +22,6 @@ def escalate_ticket(request, ticket_id):
                 changed_by=f'{ticket.assigned_to}, Ticket escalated to {assign_to.username}',
                 status=ticket.status
             )
-            
             web_messaging(ticket.id,None,True,ticket.assigned_to.id)
                     
         return redirect('ticket_detail', ticket_id=ticket.id)

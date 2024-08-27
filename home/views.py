@@ -244,7 +244,7 @@ def get_support_members_stats(request):
     return support_members
 
 @require_GET
-@login_required
+# @login_required
 def get_chart_data(request):
     today = timezone.now()  
     start_of_week = today - timedelta(days=today.weekday())
@@ -302,60 +302,7 @@ def get_chart_data(request):
             created_at__range=[start_of_month, end_of_month]
         ).count())
     
-    # else:
-    #     support_member = SupportMember.objects.filter(user=request.user).first()
-    #     if not support_member:
-    #         return JsonResponse({"error": "No support member found for this user."})
-        
-    #     for day in last_seven_days:
-    #         day_start = timezone.make_aware(datetime.combine(day, datetime.min.time()))
-    #         day_end = day_start + timedelta(days=1)  # The end of the day
-            
-    #         resolved_counts_weekly.append(Ticket.objects.filter(
-    #             status='resolved',
-    #             resolved_at__range=(day_start, day_end),
-    #             assigned_to=support_member
-    #         ).count())
-    #         open_counts_weekly.append(Ticket.objects.filter(
-    #             status='open',
-    #             created_at__range=(day_start, day_end),
-    #             assigned_to=support_member
-    #         ).count())
-    #         closed_counts_weekly.append(Ticket.objects.filter(
-    #             status='closed',
-    #             closed_at__range=(day_start, day_end),
-    #             assigned_to=support_member
-    #         ).count())
-    #         pending_counts_weekly.append(Ticket.objects.filter(
-    #             status='pending',
-    #             created_at__range=(day_start, day_end),
-    #             assigned_to=support_member
-    #         ).count())
-        
-    #     for month in reversed(range(9)):
-    #         start_of_month = (today.replace(day=1) - timedelta(days=30 * month)).replace(day=1)
-    #         end_of_month = (start_of_month + timedelta(days=31)).replace(day=1) - timedelta(seconds=1)
-            
-    #         resolved_counts_monthly.append(Ticket.objects.filter(
-    #             status='resolved',
-    #             resolved_at__range=[start_of_month, end_of_month],
-    #             assigned_to=support_member
-    #         ).count())
-    #         open_counts_monthly.append(Ticket.objects.filter(
-    #             status='open',
-    #             created_at__range=[start_of_month, end_of_month],
-    #             assigned_to=support_member
-    #         ).count())
-    #         closed_counts_monthly.append(Ticket.objects.filter(
-    #             status='closed',
-    #             closed_at__range=[start_of_month, end_of_month],
-    #             assigned_to=support_member
-    #         ).count())
-    #         pending_counts_monthly.append(Ticket.objects.filter(
-    #             status='pending',
-    #             created_at__range=[start_of_month, end_of_month],
-    #             assigned_to=support_member
-    #         ).count())
+
         
     data = {
         "labels_weekly": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
