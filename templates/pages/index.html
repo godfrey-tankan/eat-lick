@@ -386,7 +386,7 @@
   }
 
   .custom-card-body {
-      height: 300px; /* Fixed height */
+      height: 380px; /* Fixed height */
       overflow-y: auto; /* Enable vertical scrolling */
       background-color: transparent;
   }
@@ -18195,6 +18195,19 @@
           </div>
       </div>
       
+      <!-- Pie Chart -->
+      <div class="col-lg-4 mt-3">
+        <div class="card z-index-2">
+          <div class="card-header pb-0">
+            <h6>Inquiries Status Distribution</h6>
+          </div>
+          <div class="card-body p-3">
+            <div class="chart">
+              <canvas id="chart-pie" class="chart-canvas" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
         <!-- Stacked Bar Chart -->
         <div class="col-lg-8 mt-3 ">
           <div class="card z-index-2 ">
@@ -18214,21 +18227,9 @@
                   </div>
               </div>
           </div>
-      </div>
+        </div>
+        
 
-          <!-- Pie Chart -->
-          <div class="col-lg-4 mt-3">
-            <div class="card z-index-2">
-              <div class="card-header pb-0">
-                <h6>Inquiries Status Distribution</h6>
-              </div>
-              <div class="card-body p-3">
-                <div class="chart">
-                  <canvas id="chart-pie" class="chart-canvas" height="300"></canvas>
-                </div>
-              </div>
-            </div>
-          </div>
       </div>
 {% comment %} 
       <div class="col-lg-12 mt-5">
@@ -18260,13 +18261,13 @@
                             <table class="table align-items-center mb-0">
                                 <thead>
                                     <tr class='text-black'>
-                                        <th class="text-black text-uppercase  text-xxs font-weight-bolder ">Opened By</th>
-                                        <th class="text-black text-uppercase  text-xxs font-weight-bolder ps-2">Description</th>
-                                        <th class="text-black text-uppercase  text-xxs font-weight-bolder ps-2">Branch</th>
-                                        <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder">Status</th>
-                                        <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder">Created At</th>
-                                        <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder">Attended At</th>
-                                        <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder opacity-7">Assigned to</th>
+                                        <th class="text-black text-uppercase  text-xxs font-weight-bolder "><a href='#'>Opened By</a></th>
+                                        <th class="text-black text-uppercase  text-xxs font-weight-bolder ps-2"><a href='#'>Description</a></th>
+                                        <th class="text-black text-uppercase  text-xxs font-weight-bolder ps-2"><a href='#'>Branch</a></th>
+                                        <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder"><a href='#'>Status</a></th>
+                                        <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder"><a href='#'>Created At</a></th>
+                                        <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder"><a href='#'>Attended At</a></th>
+                                        <th class="text-black text-center text-uppercase  text-xxs font-weight-bolder opacity-7"><a href='#'>Assigned to</a></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -18538,7 +18539,7 @@
                           labels: {
                             color: '#a3a3a3', // Default font color for the labels
                             font: {
-                                size: 14, // Font size (optional)
+                                size: 15, // Font size (optional)
                                 family: 'Arial, sans-serif' // Font family (optional)
                             }
                         }
@@ -18640,7 +18641,7 @@
                           labels: {
                             color: '#a3a3a3', // Default font color for the labels
                             font: {
-                                size: 14, // Font size (optional)
+                                size: 15, // Font size (optional)
                                 family: 'Arial, sans-serif' // Font family (optional)
                             }
                         }
@@ -18693,7 +18694,7 @@
                           labels: {
                             color: '#a3a3a3', // Default font color for the labels
                             font: {
-                                size: 14, // Font size (optional)
+                                size: 15, // Font size (optional)
                                 family: 'Arial, sans-serif' // Font family (optional)
                             }
                         }
