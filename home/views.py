@@ -563,11 +563,8 @@ def escalated_tickets(request):
     if filter_time:
         try:
             filter_time = int(filter_time)
-            # Convert minutes to a timedelta object
             filter_time_duration = timedelta(minutes=filter_time)
             end_time = now()
-
-            # Use expression to calculate the duration from creation to the end time
             tickets = tickets.annotate(
                 time_to_resolve=ExpressionWrapper(
                     F('resolved_at') - F('created_at'),

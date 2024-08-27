@@ -5,9 +5,9 @@ const page = document.body;
 const themeStates = ["light", "dark"]
 const indicators = ["bx-moon", "bx-sun"]
 const pageClass = ["bg-gray-100", "dark-page"]
+const printBtn = document.getElementById("generate-report-button");
 
 let currentTheme = localStorage.getItem("theme");
-printBtn = document.getElementById("generate-report-button");
 if (printBtn){
 printBtn.addEventListener("click", function () {
     if (currentTheme === 'dark') {
