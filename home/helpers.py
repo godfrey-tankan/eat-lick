@@ -213,7 +213,8 @@ def prepare_monthly_report_context(tickets, start_date, end_date):
         open_count=Count('id', filter=Q(status='open')),
         pending_count=Count('id', filter=Q(status='pending')),
         closed_count=Count('id', filter=Q(status='closed')),
-        resolved_count=Count('id', filter=Q(status='resolved'))
+        resolved_count=Count('id', filter=Q(status='resolved')),
+        
     )
     branch_most_inquiries = branch_stats.first()
     total_inquiries = branch_stats.aggregate(total=Count('id'))['total']
@@ -311,7 +312,6 @@ def get_current_month_dates(today=None):
         try:
             today = datetime.strptime(today, '%Y-%m-%d').date()
         except ValueError:
-            print('Invalid date format, using current date')
             today = datetime.now().date()
     else:
         today = datetime.now().date()

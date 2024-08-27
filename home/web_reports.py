@@ -167,12 +167,12 @@ def support_member_report_view(request):
         
     if tickets:
         branch_stats = tickets.values('branch_opened').annotate(
-            total_tickets=Count('id', distinct=True),  # Ensure each ticket is counted once
+            total_tickets=Count('id', distinct=True), 
             open_count=Count('id', filter=Q(status='open'), distinct=True),
             pending_count=Count('id', filter=Q(status='pending'), distinct=True),
             closed_count=Count('id', filter=Q(status='closed'), distinct=True),
             resolved_count=Count('id', filter=Q(status='resolved'), distinct=True),
-            message_count=Count('messages', distinct=True),  # Count distinct messages
+            message_count=Count('messages', distinct=True),  
             is_escalated=Exists(escalated_subquery)
         ).order_by('-total_tickets')
         

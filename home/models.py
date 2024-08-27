@@ -21,8 +21,6 @@ class Inquirer(models.Model):
     def __str__(self):
         return f"Inquirer: {self.username}"
 
-# The above classes define models for Support Members and Tickets in a system with various fields and
-# relationships.
 class SupportMember(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     username = models.CharField(max_length=255,null=True, blank=True,default='Support')
@@ -101,7 +99,6 @@ class Ticket(models.Model):
         return ', '.join(result) if result else "Less than a minute"
 
     def get_time_to_resolve_duration(self):
-        # Get the timestamp of the last 'pending' log entry
         last_pending_log = TicketLog.objects.filter(
             ticket=self,
             status__icontains='pending'
