@@ -48,8 +48,10 @@ def generate_response(response, wa_id, name,message_type,message_id):
     if 'tnqn' == response.lower():
         return tankan_self
         
-    if response.lower() in greeting_messages:
+    if response.lower() in greeting_messages or inquirer and inquirer.user_mode == MAIN_MENU_MODE or response.lower() in ['menu','#menu']:
         time_of_day = get_greeting()
+        if inquirer:
+            return main_menu(response,wa_id,time_of_day)
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     if support_member:
         if response.lower() == 'help':
@@ -122,8 +124,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
     if not support_member :
         if inquirer and inquirer.user_mode == INQUIRY_STATUS_MODE:
             return inquiry_status(inquirer, response)
-        if inquirer and inquirer.user_mode == MAIN_MENU_MODE or response.lower() in ['menu','#menu']:
-            return main_menu(response,wa_id)
+        
        
         for thank_you_message in thank_you_messages:
             if thank_you_message in response.lower():
@@ -158,7 +159,7 @@ def get_text_message_input(recipient, text,name=None,template=False):
         }
     )
     
-def main_menu(response,wa_id):
+def main_menu(response,wa_id,time_of_day):
     inquirer_ob = Inquirer.objects.filter(phone_number=wa_id[0]).first()
     if inquirer_ob:
         if response == '#exit':
@@ -189,7 +190,7 @@ def main_menu(response,wa_id):
             return 'You have no inquiries at the moment.'
         else:
             if response.lower() in ['#menu','menu']:
-                menu_option =f'''Golden morning *{inquirer_ob.username.title()}* {inquirer_ob.branch.title()}.\nPlease Choose an option: 
+                menu_option =f'''Golden {time_of_day} *{inquirer_ob.username.title()}* {inquirer_ob.branch.title()}.\nPlease Choose an option: 
                 \n1. Update branch from *{inquirer_ob.branch}*
                 \n2. ⁠New inquiry 
                 \n3. ⁠Your inquiry status'''

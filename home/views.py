@@ -262,7 +262,7 @@ def get_chart_data(request):
     # if request.user.is_superuser:
     for day in last_seven_days:
         day_start = timezone.make_aware(datetime.combine(day, datetime.min.time()))
-        day_end = day_start + timedelta(days=1)  # The end of the day
+        day_end = day_start + timedelta(days=1) 
         
         resolved_counts_weekly.append(Ticket.objects.filter(
             status='resolved',
