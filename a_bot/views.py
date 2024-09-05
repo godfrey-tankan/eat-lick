@@ -189,7 +189,7 @@ def main_menu(response,wa_id,time_of_day):
                 return tickets_status
             return 'You have no inquiries at the moment.'
         else:
-            menu_option =f'''Golden {time_of_day} *{inquirer_ob.username.title()}* {inquirer_ob.branch.title()}.\nPlease Choose an option: 
+            menu_option =f'''Golden {time_of_day} *{inquirer_ob.username.title()}*  — `*{inquirer_ob.branch.title()}`* branch.\nPlease Choose an option: 
             \n1. Update branch from *{inquirer_ob.branch}*
             \n2. ⁠New inquiry 
             \n3. ⁠Your inquiry status'''
