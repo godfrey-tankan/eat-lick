@@ -189,15 +189,13 @@ def main_menu(response,wa_id,time_of_day):
                 return tickets_status
             return 'You have no inquiries at the moment.'
         else:
-            if response.lower() in ['#menu','menu']:
-                menu_option =f'''Golden {time_of_day} *{inquirer_ob.username.title()}* {inquirer_ob.branch.title()}.\nPlease Choose an option: 
-                \n1. Update branch from *{inquirer_ob.branch}*
-                \n2. ⁠New inquiry 
-                \n3. ⁠Your inquiry status'''
-                inquirer_ob.user_mode = MAIN_MENU_MODE
-                inquirer_ob.save()
-                return menu_option
-            return 'Please provide a valid option.'
+            menu_option =f'''Golden {time_of_day} *{inquirer_ob.username.title()}* {inquirer_ob.branch.title()}.\nPlease Choose an option: 
+            \n1. Update branch from *{inquirer_ob.branch}*
+            \n2. ⁠New inquiry 
+            \n3. ⁠Your inquiry status'''
+            inquirer_ob.user_mode = MAIN_MENU_MODE
+            inquirer_ob.save()
+            return menu_option
     else:
         return 'Hello, please create a profile first.'
 
