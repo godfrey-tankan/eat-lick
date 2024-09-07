@@ -47,12 +47,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         check_ticket = None
     if 'tnqn' == response.lower():
         return tankan_self
-        
-    if response.lower() in greeting_messages or inquirer and inquirer.user_mode == MAIN_MENU_MODE or response.lower() in ['menu','#menu']:
-        time_of_day = get_greeting()
-        if inquirer:
-            return main_menu(response,wa_id,time_of_day)
-        return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
+    
     if support_member:
         if response.lower() == 'help':
             return support_member_help_menu
@@ -112,6 +107,11 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 send_message(data)
                 return 'Your message has been sent.'
         return handle_help(wa_id, response, name,message_type,message_id)
+    if  response.lower() in greeting_messages or (inquirer and inquirer.user_mode == MAIN_MENU_MODE)or response.lower() in ['menu','#menu']:
+        time_of_day = get_greeting()
+        if inquirer:
+            return main_menu(response,wa_id,time_of_day)
+        return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
 
     if response.lower() == 'help' or response.lower() == 'usage help':
         return inquirers_help_menu
@@ -125,7 +125,6 @@ def generate_response(response, wa_id, name,message_type,message_id):
         if inquirer and inquirer.user_mode == INQUIRY_STATUS_MODE:
             return inquiry_status(inquirer, response)
         
-       
         for thank_you_message in thank_you_messages:
             if thank_you_message in response.lower():
                 return "You are welcome."
