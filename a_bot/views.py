@@ -1007,7 +1007,6 @@ def get_image_message(recipient, image_id):
             "to": recipient,
             "type": "image",
             "image": {
-                # "link": f'{image_name}',
                 'id':f'{image_id}'
             },
         }
