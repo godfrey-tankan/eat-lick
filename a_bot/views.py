@@ -106,6 +106,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 data= get_text_message_input(check_ticket.assigned_to.phone_number, last_msg.content, None)
                 send_message(data)
                 return 'Your message has been sent.'
+            elif response.lower() in ['#menu','#home']:
+                return main_menu(response,wa_id,time_of_day)
         return handle_help(wa_id, response, name,message_type,message_id)
     if  response.lower() in greeting_messages or (inquirer and inquirer.user_mode == MAIN_MENU_MODE)or response.lower() in ['menu','#menu']:
         time_of_day = get_greeting()
