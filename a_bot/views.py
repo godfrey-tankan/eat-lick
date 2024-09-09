@@ -303,7 +303,7 @@ def hold_ticket(support_member,response):
         else:
             reason = 'no reason provided'
         time_opened = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
-        notifier = f'Hello {ticket.created_by.username.title()},\nYour inquiry *({ticket.description})* is now on hold, because *{reason}*.'
+        notifier = f'Hello {ticket.created_by.username.title()},\nYour inquiry *({ticket.description})* is now on hold, `Reason:`\n*{reason}* .'
         data = get_text_message_input(ticket.created_by.phone_number, notifier, None)
         send_message(data)
         message = f'*{support_member.username.title()}* has put the ticket #{ticket.id} on hold.'
