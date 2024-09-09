@@ -106,10 +106,14 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 data= get_text_message_input(check_ticket.assigned_to.phone_number, last_msg.content, None)
                 send_message(data)
                 return 'Your message has been sent.'
+            
         if response.lower() in ['#menu','#home'] or inquirer.user_mode == MAIN_MENU_MODE:
             time_of_day = get_greeting()
             return main_menu(response,wa_id,time_of_day)
+        if inquirer.user_mode==BRANCH_MODE:
+            return handle_inquiry(wa_id, response, name)
         return handle_help(wa_id, response, name,message_type,message_id)
+    
     if  response.lower() in greeting_messages or (inquirer and inquirer.user_mode == MAIN_MENU_MODE)or response.lower() in ['menu','#menu']:
         time_of_day = get_greeting()
         if inquirer:
@@ -622,7 +626,7 @@ def handle_help(wa_id, response, name,message_type,message_id):
             open_inquiries = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
         except Ticket.DoesNotExist:
             open_inquiries = None
-   
+
     if open_inquiries:
         if support_member:
             try:
