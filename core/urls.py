@@ -32,7 +32,7 @@ from home.web_reports import *
 urlpatterns = [
     path('', include('home.urls')),
     path('admins/logout/', logout_view),
-    path('tables/', test_message, name='support_users_list'),
+    path('tables/', support_users_list, name='support_users_list'),
     
     path('users/', users_list, name='user_list'),
     path('user/<int:id>/', edit_user, name='edit_user'),

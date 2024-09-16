@@ -481,10 +481,6 @@ def create_support_member(request):
         'user_form': user_form,
         'support_member_form': support_member_form,
     })
-def test_message(request):
-    data = get_text_message_input('Hello','263779586059',None)
-    send_message(data)
-    return HttpResponse('Message Sent')
 
 @login_required
 def profile_view(request):
