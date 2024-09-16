@@ -3,6 +3,9 @@ from django.http import JsonResponse
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+from a_bot.views import get_text_message_input,send_message
 from .models import *
 from .serializers import *
 from django.shortcuts import render, get_object_or_404, redirect
@@ -404,6 +407,31 @@ def edit_user(request, id):
 
 @login_required
 @staff_required
+def create_user(request):
+    if request.method == 'POST':
+        form = UserForm(request.POST)
+        if form.is_valid():
+            new_user = form.save(commit=False)
+            password = get_random_string(length=8)
+            new_user.set_password(password)
+            new_user.save()
+            send_mail(
+                subject='Your Account Details',
+                message=f'Your account has been created. Your username is: {new_user.username} and your password is: {password}.\n\nPlease change your password after logging in.',
+                from_email='Support Team',
+                recipient_list=[new_user.email],
+            )
+            return redirect('user_list')
+    else:
+        form = UserForm()
+
+    return render(request, 'pages/create_user.html', {
+        'form': form,
+        'form_action': 'Create',
+    })
+
+@login_required
+@staff_required
 def edit_support_member(request, id):
     member = get_object_or_404(SupportMember, id=id)
     
@@ -415,6 +443,48 @@ def edit_support_member(request, id):
     else:
         form = SupportMemberForm(instance=member)
     return render(request, 'pages/edit_user.html', {'form': form, 'member': member})
+
+@login_required
+@staff_required
+def create_support_member(request):
+    if request.method == 'POST':
+        user_form = UserForm(request.POST)
+        support_member_form = SupportMemberForm(request.POST)
+        if user_form.is_valid() and support_member_form.is_valid():
+            # Save the user
+            user = user_form.save(commit=False)
+            password = User.objects.make_random_password()
+            user.set_password(password) 
+            user.save()
+
+            support_member = support_member_form.save(commit=False)
+            support_member.user = user
+            support_member.save()
+            message=f'Your account has been created. Username: {user.username}, Password: {password}\n\nPlease change your password after logging in.'
+
+            send_mail(
+                subject='Your Support Member Account',
+                message=f"{message}",
+                from_email='Support Team',
+                recipient_list=[user.email],
+            )
+            data = get_text_message_input(message,support_member.phone_number,None)
+            send_message(data)
+        
+
+            return redirect('support_users_list')
+    else:
+        user_form = UserForm()
+        support_member_form = SupportMemberForm()
+
+    return render(request, 'pages/create_support_member.html', {
+        'user_form': user_form,
+        'support_member_form': support_member_form,
+    })
+def test_message(request):
+    data = get_text_message_input('Hello','263779586059',None)
+    send_message(data)
+    return HttpResponse('Message Sent')
 
 @login_required
 def profile_view(request):

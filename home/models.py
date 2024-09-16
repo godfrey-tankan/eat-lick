@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from django.utils import timezone
-
+import re
 # Create your models here.
 
 User = get_user_model()
@@ -23,10 +23,10 @@ class Inquirer(models.Model):
 
 class SupportMember(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    username = models.CharField(max_length=255,null=True, blank=True,default='Support')
+    username = models.CharField(max_length=255, null=True, blank=True, default='Support')
     phone_number = models.CharField(max_length=15, null=True, blank=True)
-    user_mode = models.CharField(max_length=255, null=True, blank=True,default='ticket_acceptance')
-    user_status = models.CharField(max_length=255, null=True, blank=True,default='ticket_acceptance')
+    user_mode = models.CharField(max_length=255, null=True, blank=True, default='ticket_acceptance')
+    user_status = models.CharField(max_length=255, null=True, blank=True, default='ticket_acceptance')
     branch = models.CharField(max_length=255, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
@@ -35,6 +35,13 @@ class SupportMember(models.Model):
 
     def __str__(self):
         return f"Support Member: {self.username}"
+
+    def save(self, *args, **kwargs):
+        if self.phone_number:
+            if not self.phone_number.startswith('2637'):
+                self.phone_number = re.sub(r'^.*?(7)', r'263\1', self.phone_number)
+        
+        super(SupportMember, self).save(*args, **kwargs)
 
 
 class Ticket(models.Model):
@@ -60,6 +67,7 @@ class Ticket(models.Model):
     closed_at = models.DateTimeField(null=True, blank=True)
     expired_at = models.DateTimeField(null=True, blank=True)
     queued_at = models.DateTimeField(null=True, blank=True)
+    inquiry_type = models.CharField(max_length=255, null=True, blank=True)
     
     def get_time_to_resolve(self):
         # Get the timestamp of the last 'pending' log entry
@@ -112,8 +120,6 @@ class Ticket(models.Model):
         end_time_local = timezone.localtime(self.resolved_at or self.closed_at or timezone.now())
         return end_time_local - start_time_local
     
-
-
 class TicketLog(models.Model):
     ticket = models.ForeignKey(Ticket, related_name='logs', on_delete=models.CASCADE)
     status = models.CharField(max_length=255, choices=Ticket.STATUS_CHOICES)

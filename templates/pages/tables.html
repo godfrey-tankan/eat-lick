@@ -6,8 +6,9 @@
   <div class="row">
     <div class="col-12">
       <div class="card mb-4">
-        <div class="card-header pb-0">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
           <h6>Support Members Table</h6>
+          <a href="{% url 'create_support_member' %}" class="btn btn-primary">Create New Support Member</a>
         </div>
         <div class="card-body px-0 pt-0 pb-2">
           <div class="table-responsive p-0">
@@ -25,7 +26,6 @@
                 <tr>
                   <td>
                     <div class="d-flex px-2 py-1">
-                      </div>
                       <div class="d-flex flex-column justify-content-center">
                         <h6 class="mb-0 text-sm">{{ member.username }}</h6>
                       </div>
@@ -39,7 +39,6 @@
                       {% if member.is_active %}Active{% else %}Inactive{% endif %}
                     </span>
                   </td>
-                  
                   <td class="align-middle text-center">
                     <a href="{% url 'edit_support_member' member.id %}" class="text-secondary font-weight-bold text-xs edit-member" data-toggle="tooltip" data-original-title="Edit member">
                       Edit
@@ -59,7 +58,5 @@
     </div>
   </div>
 </div>
-
-
 {% include "includes/footer.html" %}
 {% endblock content %}

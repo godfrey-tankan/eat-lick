@@ -1,0 +1,32 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>Create New Support Member</h6>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <form method="post">
+            {% csrf_token %}
+            <div class="form-row">
+              <div class="col-md-6">
+                {{ user_form.as_p }}
+              </div>
+              <div class="col-md-6">
+                {{ support_member_form.as_p }}
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Support Member</button>
+            <a href="{% url 'support_users_list' %}" class="btn btn-secondary">Cancel</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% include "includes/footer.html" %}
+{% endblock content %}

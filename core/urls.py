@@ -32,7 +32,7 @@ from home.web_reports import *
 urlpatterns = [
     path('', include('home.urls')),
     path('admins/logout/', logout_view),
-    path('tables/', support_users_list, name='support_users_list'),
+    path('tables/', test_message, name='support_users_list'),
     
     path('users/', users_list, name='user_list'),
     path('user/<int:id>/', edit_user, name='edit_user'),
@@ -65,7 +65,8 @@ urlpatterns += [
     path('tickets/edit/<int:pk>/', TicketEditView.as_view(), name='ticket-edit'),
     path('tickets-create/', TicketListCreateView.as_view(), name='ticket-list-create'),
     path('tickets/<int:pk>/', TicketDetailView.as_view(), name='ticket-details'),
-
+    path('create_user/', create_user, name='create_user'),
+    path('support-members/create/', create_support_member, name='create_support_member'),
     path('ticket-logs/', TicketLogListCreateView.as_view(), name='ticketlog-list-create'),
     path('ticket-logs/<int:pk>/', TicketLogDetailView.as_view(), name='ticketlog-detail'),
     path('tickets/delete/<int:pk>/', TicketDeleteView.as_view(), name='ticket-delete'),

@@ -16,7 +16,6 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 import re
 
-
 def get_greeting():
     current_hour = datetime.now().hour
     if 0 <= current_hour < 10:
@@ -615,6 +614,7 @@ def handle_inquiry(wa_id, response, name):
     return 'Thank you for contacting us. A support member will be assisting you shortly.'
 
 def handle_help(wa_id, response, name,message_type,message_id):
+    
     support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
     inquirer = Inquirer.objects.filter(phone_number=wa_id[0]).first()
     try:
@@ -629,6 +629,23 @@ def handle_help(wa_id, response, name,message_type,message_id):
 
     if open_inquiries:
         if support_member:
+            if open_inquiries.inquiry_type is None:
+                inquiry_type_check = f"Before you start assisting the inquirer, please confirm the type of inquiry you are handling.\n\n1. General Inquiry\n2. Technical Inquiry\n3. Sales Inquiry\n4. Support Inquiry\n5. Other Inquiry\n\nReply with the number that corresponds to the inquiry type."
+                if response == '1' or response == '1.':
+                    open_inquiries.inquiry_type = 'General Inquiry'
+                elif response == '2' or response == '2.':
+                    open_inquiries.inquiry_type = 'Technical Inquiry'
+                elif response == '3' or response == '3.':
+                    open_inquiries.inquiry_type = 'Sales Inquiry'
+                elif response == '4' or response == '4.':
+                    open_inquiries.inquiry_type = 'Support Inquiry'
+                elif response == '5' or response == '5.':
+                    open_inquiries.inquiry_type = 'Other Inquiry'
+                else:
+                    return inquiry_type_check
+                open_inquiries.save()
+                return "You have successfully confirmed the inquiry type, you can now continue assisting the inquirer."
+                
             try:
                 Message.objects.create(ticket_id=open_inquiries,inquirer=None, support_member=support_member, content=response)
             except Exception as e:
@@ -901,7 +918,7 @@ def accept_ticket(wa_id,name, ticket_id):
             support_msg = f'You have accepted the ticket number #{ticket_id}, you can now start assisting the inquirer.'
             
         data = get_text_message_input(ticket.created_by.phone_number, message_to_send, None)
-        send_message(data)
+        send_message(data)        
         TicketLog.objects.create(
             ticket=ticket,
             status=PENDING_MODE,

@@ -7,6 +7,18 @@ services:
     networks:
       - db_network
       - web_network
+
+  celery-beats:
+    container_name: celery-beats
+    restart: always
+    build: .
+    networks:
+      - db_network
+      - web_network
+    depends_on:
+      - appseed-app
+      - redis
+
   nginx:
     container_name: nginx
     restart: always
@@ -17,11 +29,21 @@ services:
       - ./nginx:/etc/nginx/conf.d
     networks:
       - web_network
-    depends_on: 
+    depends_on:
       - appseed-app
+
+  flower_monitor:
+    container_name: flower_monitor
+    restart: always
+    build: .
+    networks:
+      - db_network
+      - web_network
+    depends_on:
+      - appseed-app
+
 networks:
   db_network:
     driver: bridge
   web_network:
     driver: bridge
- 
