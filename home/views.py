@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from .models import *
+from celery import shared_task
 from .serializers import *
 from django.shortcuts import render, get_object_or_404, redirect
 from .forms import *
@@ -403,6 +404,10 @@ def edit_user(request, id):
     else:
         form = UserForm(instance=user)
     return render(request, 'pages/edit_system_user.html', {'form': form, 'user': user})
+
+@shared_task
+def send_email_task(subject, message, from_email, recipient_list):
+    send_mail(subject, message, from_email, recipient_list)
 
 @login_required
 @staff_required
