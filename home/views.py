@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
-from a_bot.views import get_text_message_input,send_message
 from .models import *
 from .serializers import *
 from django.shortcuts import render, get_object_or_404, redirect
@@ -468,9 +467,6 @@ def create_support_member(request):
                 from_email='Support Team',
                 recipient_list=[user.email],
             )
-            data = get_text_message_input(message,support_member.phone_number,None)
-            send_message(data)
-        
 
             return redirect('support_users_list')
     else:
