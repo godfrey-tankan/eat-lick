@@ -4,6 +4,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
+from a_bot.views import forward_message
 from django.utils.crypto import get_random_string
 from .models import *
 from celery import shared_task
@@ -419,12 +420,14 @@ def create_user(request):
             password = get_random_string(length=8)
             new_user.set_password(password)
             new_user.save()
+            message=f'Your account has been created. Your username is: {new_user.username} and your password is: {password}.\n\nPlease change your password after logging in.',
             send_mail(
                 subject='Your Account Details',
-                message=f'Your account has been created. Your username is: {new_user.username} and your password is: {password}.\n\nPlease change your password after logging in.',
+                message=f"{message}",
                 from_email='Support Team',
                 recipient_list=[new_user.email],
             )
+            # forward_message('263779586059', message)
             return redirect('user_list')
     else:
         form = UserForm()
@@ -464,15 +467,9 @@ def create_support_member(request):
             support_member = support_member_form.save(commit=False)
             support_member.user = user
             support_member.save()
-            message=f'Your account has been created. Username: {user.username}, Password: {password}\n\nPlease change your password after logging in.'
+            message=f'Your Support Member account has been created!\nUsername: {user.username}\nPassword: {password}\n\nPlease change your password after logging in.'
 
-            send_mail(
-                subject='Your Support Member Account',
-                message=f"{message}",
-                from_email='Support Team',
-                recipient_list=[user.email],
-            )
-
+            forward_message(message,support_member.phone_number)
             return redirect('support_users_list')
     else:
         user_form = UserForm()

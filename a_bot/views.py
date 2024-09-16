@@ -1036,8 +1036,8 @@ def get_image_message(recipient, image_id):
         }
     )
 
-def forward_message(request):
-    data =get_text_message_input('263779586059', 'Hello', 'customer_helped_template',True)
+def forward_message(message,number):
+    data =get_text_message_input(number, message, None)
     return send_message(data)
     
 def get_document_message(recipient, document_id, caption='New document'):
