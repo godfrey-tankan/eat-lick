@@ -511,6 +511,10 @@ def handle_inquiry(wa_id, response, name):
     else:
         if inquirer_obj.user_mode == NAMES_MODE or inquirer_obj.user_mode == BRANCH_MODE:
             if inquirer_obj.user_mode == BRANCH_MODE:
+                if response.lower() == 'no':
+                    inquirer_obj.user_mode = MAIN_MENU_MODE
+                    inquirer_obj.save()
+                    return main_menu(response,wa_id,get_greeting())
                 try:
                     branch_code = int(response)
                 except Exception as e:
