@@ -48,6 +48,10 @@ def generate_response(response, wa_id, name,message_type,message_id):
         return tankan_self
     
     if support_member:
+        if  response.lower() in greeting_messages:
+            time_of_day = get_greeting()
+            return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
+    
         if response.lower() == 'help':
             return support_member_help_menu
         if support_member.user_status==NEW_TICKET_ACCEPT_MODE:
