@@ -77,7 +77,7 @@ class FAQDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = FAQ.objects.all()
     serializer_class = FAQSerializer
     permission_classes = [IsAuthenticated]
-    
+
 @login_required
 def index(request):
     # Get all tickets
@@ -384,7 +384,7 @@ def ticket_list_by_status(request, status):
     return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'status': status})
 
 def home_view(request):
-    return JsonResponse({'message': 'Home!'})
+    return render(request, 'pages/home/landing.html')
 
 @login_required
 @staff_required
