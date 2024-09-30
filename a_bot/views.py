@@ -915,7 +915,7 @@ def accept_ticket(wa_id,name, ticket_id):
             
         else:
             message_to_send = (
-                f'Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to.'
+                f'Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to by {ticket.assigned_to.username}.'
             )
             support_msg = f'You have accepted the ticket number #{ticket_id}, you can now start assisting the inquirer.'
             
