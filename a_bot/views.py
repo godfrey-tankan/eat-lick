@@ -48,7 +48,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
         return tankan_self
     
     if support_member:
-        if  response.lower() in greeting_messages:
+        pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
+        if  response.lower() in greeting_messages and not pending_ticket:
             time_of_day = get_greeting()
             return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
     
