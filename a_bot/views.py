@@ -597,8 +597,7 @@ def handle_inquiry(wa_id, response, name):
             )
             inquirer_obj.user_status = INQUIRY_MODE
             inquirer_obj.save()
-            with contextlib.suppress(SupportMember.DoesNotExist):
-                broadcast_messages(name,ticket)
+            broadcast_messages(name,ticket)
             return new_inquiry_opened_response
 
     if len(response) < 5:
@@ -617,8 +616,7 @@ def handle_inquiry(wa_id, response, name):
         status=OPEN_MODE,
         changed_by=inquirer_obj
     )
-    with contextlib.suppress(SupportMember.DoesNotExist):
-        broadcast_messages(name,ticket)
+    broadcast_messages(name,ticket)
     return 'Thank you for contacting us. A support member will be assisting you shortly.'
 
 def handle_help(wa_id, response, name,message_type,message_id):
