@@ -2,6 +2,14 @@
 {% load static %}
 
 {% block content %}
+<style>
+  hr {
+    border: 0; /* Remove default border */
+    height: 2px; /* Set height */
+    background-color: #000; /* Set color */
+    margin: 20px 0; /* Add margin */
+}
+</style>
 <div class="container-fluid py-4">
   <div class="row">
     <div class="col-12">
@@ -14,9 +22,15 @@
             {% csrf_token %}
             <div class="form-row">
               <div class="col-md-6">
+                <h2>User Details Section</h2>
+                <p> this information will be used to login on the system</p>
                 {{ user_form.as_p }}
+                
               </div>
+              <hr>
               <div class="col-md-6">
+                <h2>Support Member Details Section</h2>
+                <p>this will be used on the chatbot</p>
                 {{ support_member_form.as_p }}
               </div>
             </div>

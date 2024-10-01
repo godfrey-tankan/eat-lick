@@ -18,6 +18,7 @@ class SupportMemberForm(forms.ModelForm):
     class Meta:
         model = SupportMember
         fields = ['username', 'phone_number', 'is_active'] 
+        
 
 class UserForm(forms.ModelForm):
     class Meta:
