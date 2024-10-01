@@ -8,14 +8,49 @@
     height: 2px; /* Set height */
     background-color: #000; /* Set color */
     margin: 20px 0; /* Add margin */
-}
+  }
+
+  /* Styles for the help modal */
+  .modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 10%;
+    top: 0;
+    width: 70%; /* Full width */
+    height: 80%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+  }
+
+  .modal-content {
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+  }
+
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
 </style>
+
 <div class="container-fluid py-4">
   <div class="row">
     <div class="col-12">
       <div class="card mb-4">
         <div class="card-header pb-0">
           <h6>Create New Support Member</h6>
+          <!-- Help Link -->
         </div>
         <div class="card-body px-0 pt-0 pb-2">
           <form method="post">
@@ -23,14 +58,17 @@
             <div class="form-row">
               <div class="col-md-6">
                 <h2>User Details Section</h2>
-                <p> this information will be used to login on the system</p>
+                <p>This information will be used to log in to the system 
+                  
+                  <span id="helpLink" style="cursor: pointer; color: blue; text-decoration: underline;">Help</span>
+                </p>
                 {{ user_form.as_p }}
-                
               </div>
               <hr>
               <div class="col-md-6">
                 <h2>Support Member Details Section</h2>
-                <p>information entered below will be used on the chatbot</p>
+                <p  >Information entered below will be used on the chatbot
+                </p>
                 {{ support_member_form.as_p }}
               </div>
             </div>
@@ -42,5 +80,49 @@
     </div>
   </div>
 </div>
+
+<!-- Help Modal -->
+<div id="helpModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h4>Help Information</h4>
+    <p>The first section is for users that login, then the next is the support member details that will be used on WhatsApp. The two usernames are now dependent on each other.</p>
+  </div>
+</div>
+
+<script>
+  // Get the modal
+  var modal = document.getElementById("helpModal");
+
+  // Get the link that opens the modal
+  var helpLink = document.getElementById("helpLink");
+
+  // Get the <span> element that closes the modal
+  var span = document.getElementsByClassName("close")[0];
+
+  // When the user clicks on the link, open the modal
+
+  helpLink.onclick = function() {
+    modal.style.display = "block";
+  }
+  function togleHelp(){
+    helpLink.onclick = function() {
+      modal.style.display = "block";
+    }
+  }
+
+  // When the user clicks on <span> (x), close the modal
+  span.onclick = function() {
+    modal.style.display = "none";
+  }
+
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
+</script>
+
 {% include "includes/footer.html" %}
 {% endblock content %}
