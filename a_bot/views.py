@@ -860,6 +860,12 @@ def accept_ticket(wa_id,name, ticket_id):
         else:
             return "wrong ticket id"
     except Ticket.DoesNotExist:
+        pending_ticket= Ticket.objects.filter(assigned_to=support_member.id,status=PENDING_MODE,ticket_mode='other').first()
+        if pending_ticket:
+            support_member.user_mode =HELPING_MODE
+            support_member.user_status=HELPING_MODE
+            support_member.save()
+            return f'inquiry not available or already assigned\n\nplease continue assisting *{pending_ticket.created_by.username}* , ticket number *{pending_ticket.id}* by sending them messages now!.'
         return "error ticket not available or already assigned "
     if is_ticket_open:
         try:
