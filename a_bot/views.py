@@ -602,7 +602,7 @@ def handle_inquiry(wa_id, response, name):
                 inquirer_obj.user_status = INQUIRY_MODE
                 inquirer_obj.user_mode = INQUIRY_MODE
                 inquirer_obj.save()
-                message_to_send = f'You have exited the inquiry process, now you can continue sending messages on inquiry *#{open_inquiries.id}*' if other_pending_issues else 'You have exited the inquiry process, you can open a new inquiry anytime.'
+                message_to_send = f'You have exited the inquiry process, now you can continue sending messages on inquiry *#{other_pending_issues.id}*' if other_pending_issues else 'You have exited the inquiry process, you can open a new inquiry anytime.'
                 return message_to_send
             if other_pending_issues:
                 other_pending_issues.ticket_mode = QUEUED_MODE
@@ -1099,7 +1099,7 @@ def get_image_message(recipient, image_id):
 
 def forward_message(message,number):
     data =get_text_message_input(number, message, None)
-    return send_message(number,)
+    return send_message(number)
     
 def get_document_message(recipient, document_id, caption='New document'):
     return json.dumps(
