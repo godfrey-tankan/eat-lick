@@ -192,7 +192,7 @@ def main_menu(response,wa_id,time_of_day):
             if check_pending_inquiries:
                 inquirer_ob.user_status = NEW_TICKET_MODE
                 inquirer_ob.save()
-                return 'What is your inquiry?'
+                return 'What is your inquiry?\n\nReply with exit or q to exit.'
             inquirer_ob.user_mode = INQUIRY_MODE
             inquirer_ob.save()
             return 'What is your inquiry today?'
@@ -598,6 +598,12 @@ def handle_inquiry(wa_id, response, name):
             return "You have an open inquiry, Do you want to open a new inquiry?"
         if inquirer_obj.user_status == NEW_TICKET_MODE:
             other_pending_issues = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj,ticket_mode='other').first()
+            if response.lower() == 'exit' or response.lower() == 'q':
+                inquirer_obj.user_status = INQUIRY_MODE
+                inquirer_obj.user_mode = INQUIRY_MODE
+                inquirer_obj.save()
+                message_to_send = f'You have exited the inquiry process, now you can continue sending messages on inquiry *#{open_inquiries.id}*' if other_pending_issues else 'You have exited the inquiry process, you can open a new inquiry anytime.'
+                return message_to_send
             if other_pending_issues:
                 other_pending_issues.ticket_mode = QUEUED_MODE
                 other_pending_issues.queued_at = timezone.now()
