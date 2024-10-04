@@ -576,7 +576,7 @@ def handle_inquiry(wa_id, response, name):
         open_inquiries = Ticket.objects.filter(status=OPEN_MODE,created_by=inquirer_obj.id).first()
     except Ticket.DoesNotExist:
         open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj.id).first()
-    if open_inquiries:
+    if open_inquiries or inquirer_obj.user_status == NEW_TICKET_MODE:
         for no_response in deny_open_new_ticket:
             if no_response == response.lower():
                 return 'Your inquiry is still being attended to.Please wait for a response.'
@@ -591,7 +591,7 @@ def handle_inquiry(wa_id, response, name):
                     # new_message = f"Hi {open_inquiries.assigned_to.username.split()[0].title()}, {inquirer_obj.username} has opened a new inquiry,Your pending ticket (#{open_inquiries.id})  with them have now been queued.You can resume assisting them anytime by replying with #resume or #continue."
                     # data = get_text_message_input(open_inquiries.assigned_to.phone_number,new_message ,None)
                     # send_message(data)
-                    return 'What is your inquiry?'
+                    return 'What is your inquiry?.'
             return "You have an open inquiry, Do you want to open a new inquiry?"
         if inquirer_obj.user_status == NEW_TICKET_MODE:
             other_pending_issues = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj,ticket_mode='other').first()
