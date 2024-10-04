@@ -154,10 +154,10 @@ def generate_response(response, wa_id, name,message_type,message_id):
 def get_text_message_input(recipient, text,name=None,template=False):
 
     if template:
+        print('template',name,recipient)
         return json.dumps(
             {
                 "messaging_product": "whatsapp",
-                "recipient_type": "individual",
                 "to": recipient,
                 "type": "template",
                 "template": {
@@ -893,8 +893,13 @@ def testing(request):
     name ='tankan'
     wa_id = ['263779586059']
     ticket_id =90
-    x=accept_ticket(wa_id,name, ticket_id)
-    return JsonResponse(x,safe=False)
+    # x = get_text_message_input(wa_id[0], 'hello', 'rate_support_user',True)
+    x = get_text_message_input(wa_id[0], 'hello', 'customer_helped_template',True)
+    
+    e=send_message(x)
+    print('response',e)
+    # x=accept_ticket(wa_id,name, ticket_id)
+    return JsonResponse({'data':'y'})
     
     
 def accept_ticket(wa_id,name, ticket_id):
@@ -1175,7 +1180,7 @@ def mark_as_resolved( ticket_id,is_closed=False):
             message = f'Hello {ticket.assigned_to.username.title()},\nYou still have pending tickets in the queue, pick one to resume assisting the inquirer now.\n\n'
             
             for i, pending_ticket in enumerate(other_pending_tickets, start=1):
-                alert_message = f'Your inquiry is now number # *{i}* in the queue, please wait for the support member to assist you.'
+                alert_message = f'Your inquiry *({pending_ticket.description})* is now number # *{i}* in the queue, please wait for your turn to be assisted.'
                 data = get_text_message_input(pending_ticket.created_by.phone_number, alert_message, None)
                 send_message(data)
                 created_time = timezone.localtime(pending_ticket.created_at).strftime('%Y-%m-%d %H:%M')
