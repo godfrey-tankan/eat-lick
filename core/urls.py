@@ -25,7 +25,7 @@ from home.report import *
 from home.global_search import global_search
 from home.escalate_ticket import escalate_ticket, send_message
 from home.fetch_messages import fetch_messages
-from a_bot.views import forward_message
+from a_bot.views import forward_message, testing
 from home.web_support import web_support
 from home.web_reports import *
 
@@ -89,6 +89,7 @@ urlpatterns += [
     path('tickets/branch/<str:branch_name>/', branch_tickets, name='tickets_by_branch'),
     path('tickets/escalated/', escalated_tickets, name='escalated_tickets'),
     path('tickets/creator/<str:creator>/', creator_tickets, name='tickets_by_creator'),
+    path('testing/', testing, name='testing'),
 ]
 all_tickets_list
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

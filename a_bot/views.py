@@ -887,7 +887,16 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                 data = get_text_message_input(support_member.phone_number, message, None)
                 send_message(data)
 
+
 @csrf_exempt
+def testing(request):
+    name ='tankan'
+    wa_id = ['263779586059']
+    ticket_id =90
+    x=accept_ticket(wa_id,name, ticket_id)
+    return JsonResponse(x,safe=False)
+    
+    
 def accept_ticket(wa_id,name, ticket_id):
     try:
         ticket_id = int(ticket_id)
@@ -958,7 +967,10 @@ def accept_ticket(wa_id,name, ticket_id):
         ).order_by('queued_at')
 
         if other_tickets_pending:
-            position_in_queue = list(other_tickets_pending).index(ticket) + 1
+            try:
+                position_in_queue = list(other_tickets_pending).index(ticket) + 1
+            except ValueError:
+                position_in_queue = 'N/A'
             if ticket.ticket_mode == QUEUED_MODE:
                 message_to_send = (
                     f'Your inquiry is now in the queue, please wait for your turn to be assisted.\n\n'
