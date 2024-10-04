@@ -577,6 +577,7 @@ def handle_inquiry(wa_id, response, name):
     except Ticket.DoesNotExist:
         open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj.id).first()
     if open_inquiries or inquirer_obj.user_status == NEW_TICKET_MODE:
+        
         for no_response in deny_open_new_ticket:
             if no_response == response.lower():
                 return 'Your inquiry is still being attended to.Please wait for a response.'
@@ -603,6 +604,13 @@ def handle_inquiry(wa_id, response, name):
                     status=QUEUED_MODE,
                     changed_by=inquirer_obj,
                 )
+                inquirer_obj.user_status =INQUIRY_MODE
+                inquirer_obj.user_mode = INQUIRY_MODE
+                inquirer_obj.save()
+                assigned_member = SupportMember.objects.filter(phone_number=other_pending_issues.assigned_to.phone_number).first()
+                assigned_member.user_status = ACCEPT_TICKET_MODE
+                assigned_member.user_mode = ACCEPT_TICKET_MODE
+                assigned_member.save()
                 message_alert = f'Hello *{other_pending_issues.assigned_to.username.title()}* , {inquirer_obj.username.upper()} has opened a new inquiry,Your pending ticket (#{other_pending_issues.id})  with them have now been queued,This new inquiry might be urgent so you should consider assisting them first before resuming with inquiry *(#{other_pending_issues.id})* .You can resume assisting them anytime by replying with #resume or #continue.'
                 data = get_text_message_input(other_pending_issues.assigned_to.phone_number,message_alert ,None)
                 send_message(data)
@@ -856,7 +864,7 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                     support_member.user_mode = ACCEPT_TICKET_MODE
                     support_member.save()
                 else:
-                    support_member.status = NEW_TICKET_ACCEPT_MODE
+                    support_member.user_status = NEW_TICKET_ACCEPT_MODE
                     support_member.save()
                     message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.'
                 data = get_text_message_input(support_member.phone_number, message, None)
