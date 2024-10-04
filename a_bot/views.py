@@ -319,7 +319,7 @@ def hold_ticket(support_member,response):
         else:
             reason = 'no reason provided'
         time_opened = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
-        notifier = f'Hello {ticket.created_by.username.title()},\nYour inquiry *({ticket.description})* is now on hold, `Reason:`\n*{reason}* .'
+        notifier = f'Hello {ticket.created_by.username.title()},\nYour inquiry *({ticket.description})* is now on hold, `Reason:`\n *{reason}* .'
         data = get_text_message_input(ticket.created_by.phone_number, notifier, None)
         send_message(data)
         message = f'*{support_member.username.title()}* has put the ticket #{ticket.id} on hold.'
@@ -803,7 +803,7 @@ def resume_assistance(support_member,response):
         if '#resume' in response or '#cont' in response:
             tickets_info = 'Please select the ticket you want to resume assisting:\n\n'
             for i,queued_ticket in enumerate(all_queued_tickets,start=1):
-                tickets_info +=f"Number in Queue: {i}\n- Ticket Number: # *{queued_ticket.id}*\nOpened By: {queued_ticket.created_by.username} from {queued_ticket.branch_opened} branch.\n- {queued_ticket.description}\n"
+                tickets_info +=f"Number in Queue: {i}\n- Ticket Number: # *{queued_ticket.id}*\nOpened By: {queued_ticket.created_by.username} from {queued_ticket.branch_opened} branch.\n- {queued_ticket.description}\n\n"
             tickets_info += '\nReply with #ticketNo eg *#1* to resume assisting the inquirer.'
             data = get_text_message_input(support_member.phone_number, tickets_info, None)
             return send_message(data)
