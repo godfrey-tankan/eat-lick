@@ -51,7 +51,12 @@ def generate_response(response, wa_id, name,message_type,message_id):
         pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
         if  response.lower() in greeting_messages and not pending_ticket:
             time_of_day = get_greeting()
-            return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
+            try:
+                open_inquiries_total= Ticket.objects.filter(status=OPEN_MODE,ticket_mode='other').count()
+                open_tasks = f'`current open inquiries` : *{open_inquiries_total}*'
+            except Ticket.DoesNotExist:
+                open_tasks = None
+            return f"Golden  {time_of_day} {name.title()}, how can i help you today?\n\n{open_tasks}"
     
         if response.lower() == 'help':
             return support_member_help_menu
@@ -122,9 +127,9 @@ def generate_response(response, wa_id, name,message_type,message_id):
         time_of_day = get_greeting()
         if inquirer:
             return main_menu(response,wa_id,time_of_day)
-        return f"Golden  {time_of_day} {name.title()}, how can i help you today?"
+        return f"Golden  {time_of_day} {name.title()}, how can i help you today?\n\n_reply with #menu to view the main menu or #help to view the help menu._"
 
-    if response.lower() == 'help' or response.lower() == 'usage help':
+    if response.lower() in ['help','#help'] or response.lower() == 'usage help':
         return inquirers_help_menu
 
     if inquirer and inquirer.user_status == SUPPORT_RATING:
@@ -181,6 +186,11 @@ def main_menu(response,wa_id,time_of_day):
             inquirer_ob.save()
             return 'Do you want to change your branch?'
         elif response =='2' or response =='2.':
+            check_pending_inquiries = Ticket.objects.filter(created_by=inquirer_ob,status=PENDING_MODE,ticket_mode='other').first()
+            if check_pending_inquiries:
+                inquirer_ob.user_status = NEW_TICKET_MODE
+                inquirer_ob.save()
+                return 'What is your inquiry?'
             inquirer_ob.user_mode = INQUIRY_MODE
             inquirer_ob.save()
             return 'What is your inquiry today?'
@@ -584,6 +594,18 @@ def handle_inquiry(wa_id, response, name):
                     return 'What is your inquiry?'
             return "You have an open inquiry, Do you want to open a new inquiry?"
         if inquirer_obj.user_status == NEW_TICKET_MODE:
+            other_pending_issues = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj,ticket_mode='other').first()
+            if other_pending_issues:
+                other_pending_issues.ticket_mode = QUEUED_MODE
+                other_pending_issues.save()
+                TicketLog.objects.create(
+                    ticket=other_pending_issues,
+                    status=QUEUED_MODE,
+                    changed_by=inquirer_obj,
+                )
+                message_alert = f'Hello *{other_pending_issues.assigned_to.username.title()}* , {inquirer_obj.username.upper()} has opened a new inquiry,Your pending ticket (#{other_pending_issues.id})  with them have now been queued,This new inquiry might be urgent so you should consider assisting them first before resuming with inquiry *(#{other_pending_issues.id})* .You can resume assisting them anytime by replying with #resume or #continue.'
+                data = get_text_message_input(other_pending_issues.assigned_to.phone_number,message_alert ,None)
+                send_message(data)
             ticket = Ticket.objects.create(
                 title=f"Inquiry from {name}",
                 description=response,
