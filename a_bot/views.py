@@ -39,7 +39,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         inquirer = None
     if inquirer:
         name = inquirer.username.split()[0]
-        check_ticket = Ticket.objects.filter(created_by=inquirer.id,status=PENDING_MODE).first()
+        check_ticket = Ticket.objects.filter(created_by=inquirer.id,status=PENDING_MODE,ticket_mode='other').first()
         if inquirer.user_status == NEW_TICKET_MODE:
             return handle_inquiry(wa_id, response, name)
     else:
@@ -773,14 +773,22 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
         support_member.save()
     
     if inquirer:
-        queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,created_by=inquirer,status=PENDING_MODE).first()
+        queued_tickets = Ticket.objects.filter(ticket_mode=QUEUED_MODE,created_by=inquirer,status=PENDING_MODE)
+        not_found =True
         if queued_tickets:
             assignee_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,assigned_to=queued_tickets.assigned_to,ticket_mode=QUEUED_MODE).order_by('queued_at')
-            if assignee_pending_tickets:
-                position_in_queue = list(assignee_pending_tickets).index(queued_tickets) + 1
-                message_to_send = f'Hello {inquirer.username.title()}.\nYour inquiry *({queued_tickets.description})* is currently in position # *{position_in_queue}* in the queue,please wait for your turn to be assisted.'
+            message_to_send =f'Hello {inquirer.username.title()}.\nYou have the following inquiries in queue:\n\n'
+            for queued_ticket in queued_tickets:
+                if assignee_pending_tickets:
+                    position_in_queue = list(assignee_pending_tickets).index(queued_ticket) + 1
+                    message_to_send += f'Inquiry #{queued_ticket.id} \n- *({queued_ticket.description})* is currently in position # *{position_in_queue}* in the queue.\n\n'
+                else:
+                    not_found = False
+            message_to_send += '\nPlease wait for your turn to be assisted.'
+            if not_found:
                 data = get_text_message_input(inquirer.phone_number, message_to_send, None)
                 return send_message(data)
+        return 
         
     return "You have no queued inquiries"
 
