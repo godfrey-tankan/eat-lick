@@ -946,7 +946,7 @@ def accept_ticket(wa_id,name, ticket_id):
             message_to_send = (
                 f'Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to by *{ticket.assigned_to.username}*.'
             )
-            support_msg = f'You have accepted the ticket number #{ticket_id}, you can now start assisting the inquirer.'
+            support_msg = f'You have accepted the ticket number #{ticket_id}\n\nBut before you start assisting the inquirer, please confirm the type of inquiry you are handling.\n\n1. General Inquiry\n2. Technical Inquiry\n3. Sales Inquiry\n4. Support Inquiry\n5. Other Inquiry\n\nReply with the number that corresponds to the inquiry type.'
             
         data = get_text_message_input(ticket.created_by.phone_number, message_to_send, None)
         send_message(data)        
