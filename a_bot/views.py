@@ -598,6 +598,7 @@ def handle_inquiry(wa_id, response, name):
             other_pending_issues = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj,ticket_mode='other').first()
             if other_pending_issues:
                 other_pending_issues.ticket_mode = QUEUED_MODE
+                other_pending_issues.queued_at = timezone.now()
                 other_pending_issues.save()
                 TicketLog.objects.create(
                     ticket=other_pending_issues,
@@ -942,13 +943,18 @@ def accept_ticket(wa_id,name, ticket_id):
 
         if other_tickets_pending:
             position_in_queue = list(other_tickets_pending).index(ticket) + 1
-
-            message_to_send = (
-                f'Your inquiry is now in the queue, please wait for your turn to be assisted.\n\n'
-                f'Queue Number: *{position_in_queue}*\n'
-                f'Your Inquiry: {ticket.description}'
-            )
-            support_msg = f'You have accepted the ticket number #{ticket_id},it is now in the queue, please continue with your current task first or reply with #resume to take it from the queued list.'
+            if ticket.ticket_mode == QUEUED_MODE:
+                message_to_send = (
+                    f'Your inquiry is now in the queue, please wait for your turn to be assisted.\n\n'
+                    f'Queue Number: *{position_in_queue}*\n'
+                    f'Your Inquiry: {ticket.description}'
+                )
+                support_msg = f'You have accepted the ticket number #{ticket_id},it is now in the queue, please continue with your current task first or reply with #resume to take it from the queued list.'
+            else:
+                message_to_send = (
+                    f'Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to by *{ticket.assigned_to.username}*.'
+                )
+                support_msg = f'You have accepted the ticket number #{ticket_id}\n\nBut before you start assisting the inquirer, please confirm the type of inquiry you are handling.\n\n1. General Inquiry\n2. Technical Inquiry\n3. Sales Inquiry\n4. Support Inquiry\n5. Other Inquiry\n\nReply with the number that corresponds to the inquiry type.'
             
         else:
             message_to_send = (
