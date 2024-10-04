@@ -202,10 +202,10 @@ def main_menu(response,wa_id,time_of_day):
                 tickets_status= 'Here is your inquiry(s) status:\n\n'
                 for i,inquirer_ticket in enumerate(inquirer_tickets,start=1):
                     if inquirer_ticket.ticket_mode == QUEUED_MODE:
-                        tickets_status += f'*{i}*. Ticket Number: *{inquirer_ticket.id}*\n- Description: {inquirer_ticket.description}\n- Status: *{inquirer_ticket.status}* - *On Hold*\n'
+                        tickets_status += f'*{i}*. Ticket Number: *{inquirer_ticket.id}*\n- Description: {inquirer_ticket.description}\n- Status: *{inquirer_ticket.status}* - *On Hold*\n\n'
                     else:
-                        tickets_status += f'*{i}*. Ticket Number: *{inquirer_ticket.id}*\n- Description: {inquirer_ticket.description}\n- Status: *{inquirer_ticket.status}*\n'
-                    tickets_status += '\nReply with *ticketNo* eg *4* to view more details or *#exit* to exit\n\n'
+                        tickets_status += f'*{i}*. Ticket Number: *{inquirer_ticket.id}*\n- Description: {inquirer_ticket.description}\n- Status: *{inquirer_ticket.status}*\n\n'
+                tickets_status += '\nReply with *ticketNo* eg *4* to view more details or *#exit* to exit\n\n'
                 return tickets_status
             return 'You have no inquiries at the moment.'
         else:
