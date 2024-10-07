@@ -53,7 +53,9 @@ def generate_response(response, wa_id, name,message_type,message_id):
             time_of_day = get_greeting()
             try:
                 open_inquiries_total= Ticket.objects.filter(status=OPEN_MODE,ticket_mode='other').count()
-                open_tasks = f'`current open inquiries` : *{open_inquiries_total}*'
+                open_tasks = f'`current open inquiries` : *{open_inquiries_total}* \n\n'
+                if float(open_inquiries_total) > 0:
+                    open_tasks += 'Reply with *#open* to view all open tickets.'
             except Ticket.DoesNotExist:
                 open_tasks = None
             return f"Golden  {time_of_day} {name.title()}, how can i help you today?\n\n{open_tasks}"
