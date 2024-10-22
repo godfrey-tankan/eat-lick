@@ -7,30 +7,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Done</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
         .popup {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            padding: 30px;
+            padding: 20px;
             background-color: #f0f8ff;
             border: 2px solid #007bff;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             z-index: 1000;
-            animation: fadeIn 0.5s, slideDown 0.5s forwards 0.5s;
-            text-align: center;  /* Center text */
+            max-width: 90%;
+            width: 90%;
             max-width: 500px;
-            width: 90%;  /* Ensure it scales on smaller screens */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Align everything to center */
         }
 
         h2 {
-            font-size: 2rem;
-            margin-bottom: 15px;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
         }
 
         p {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             margin-bottom: 20px;
         }
 
@@ -38,27 +56,44 @@
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 12px 18px;
-            font-size: 1.1rem;
+            padding: 10px;
+            font-size: 1rem;
             cursor: pointer;
             border-radius: 5px;
+            width: auto; /* Adjust width based on content */
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
+        @media (max-width: 768px) {
+            h2 {
+                font-size: 1.3rem;
             }
-            to {
-                opacity: 1;
+
+            p {
+                font-size: 1rem;
+            }
+
+            .close-btn {
+                font-size: 0.9rem;
+                padding: 8px;
             }
         }
 
-        @keyframes slideDown {
-            from {
-                transform: translate(-50%, -60%);
+        @media (max-width: 480px) {
+            .popup {
+                padding: 15px;
             }
-            to {
-                transform: translate(-50%, -50%);
+
+            h2 {
+                font-size: 1.2rem;
+            }
+
+            p {
+                font-size: 0.9rem;
+            }
+
+            .close-btn {
+                font-size: 0.8rem;
+                padding: 7px;
             }
         }
     </style>
