@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9; /* Light gray background */
+            color: #333; /* Dark text color for readability */
+        }
+        header {
+            background: #000; /* Black header background */
+            color: white; /* White text for contrast */
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 36px;
+        }
+        .dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .card {
+            background: white; /* White card background */
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            flex: 1 1 calc(30% - 20px);
+            min-width: 250px;
+            max-width: 300px;
+            height: max-content; /* Increased height for cards */
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: scale(1.02);
+        }
+        .card h3 {
+            margin: 0;
+            font-size: 24px;
+            color: #000; /* Black text for card headers */
+        }
+        .card p, .card ul {
+            font-size: 18px;
+            color: #555; /* Dark gray text for readability */
+            margin-top: 10px;
+        }
+        .view-more-button {
+            margin: 20px 0;
+            display: block;
+            text-align: center;
+            padding: 10px 20px;
+            background-color: #555; /* Primary button color */
+            color: white; /* White text */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        .view-more-button:hover {
+            background-color: #556; /* Darker shade on hover */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Staff Dashboard</h1>
+    </header>
+    <div class="dashboard">
+        <div class="card">
+            <h3>Total Participants</h3>
+            <p>{{ total_participants }}</p>
+        </div>
+        <div class="card">
+            <h3>High Rated Department</h3>
+            <p>
+                {% if most_proper_department %}
+                    {{ most_proper_department.department }} - Average Feedback: {{ most_proper_department.avg_feedback|floatformat:2 }}
+                {% else %}
+                    No data available.
+                {% endif %}
+            </p>
+        </div>
+        <div class="card">
+            <h3>Average Qualifications</h3>
+            <p>
+                {% if average_qualification %}
+                    {{ average_qualification }}
+                {% else %}
+                    No data available.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    <a href="{% url 'feedback_detail' %}" class="view-more-button">View More Feedback</a>
+
+</body>
+</html>

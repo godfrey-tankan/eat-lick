@@ -1,0 +1,27 @@
+{% load static %}
+<!-- feedback_list.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Feedback</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="feedback-container">
+        {% for feedback in feedbacks %}
+            <div class="feedback-card" style="height: 200px;"> <!-- Adjust height as needed -->
+                <h4>Question: {{ feedback.question.question_text }}</h4>
+                <p>Response: {{ feedback.get_response_display }}</p>
+                <p>Date: {{ feedback.response_date|date:"Y-m-d H:i" }}</p>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <button onclick="window.location.href='{% url 'feedback_detail' %}'">Show More Feedback</button>  <!-- This will lead to all feedbacks -->
+    <script>
+        function showPopup(feedbackId) {
+        }
+    </script>
+</body>
+</html>

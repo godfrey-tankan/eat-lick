@@ -893,7 +893,8 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
 @csrf_exempt
 def testing(request):
     name ='tankan'
-    wa_id = ['263779586059']
+    wa_id = ['263772428281']
+    # 263 77 242 8281
     ticket_id =90
     # x = get_text_message_input(wa_id[0], 'hello', 'rate_support_user',True)
     x = get_text_message_input(wa_id[0], 'hello', 'customer_helped_template',True)

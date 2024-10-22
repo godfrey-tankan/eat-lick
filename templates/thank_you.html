@@ -1,0 +1,86 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You</title>
+    <link rel="stylesheet" href="{% static 'css/form_styles.css' %}">
+    <style>
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: #f0f8ff;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: none;  /* Initially hidden */
+            z-index: 1000;
+            animation: fadeIn 0.5s, slideDown 0.5s forwards 0.5s; /* Animation */
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translate(-50%, -60%);
+            }
+            to {
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .popup.active {
+            display: block; /* Show popup when active */
+        }
+        
+        .close-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="thankYouPopup" class="popup">
+        <h2>Thank You!</h2>
+        <p>Thank you for dedicating your time to us!</p>
+        <button class="close-btn" id="closePopup">Close</button>
+    </div>
+
+    <script>
+        // Show the popup when the page loads
+        window.onload = function() {
+            document.getElementById('thankYouPopup').classList.add('active');
+        };
+
+        // Close the popup when the button is clicked
+        document.getElementById('closePopup').onclick = function() {
+            document.getElementById('thankYouPopup').style.display = 'none';
+            window.location.href = '/';  // Redirect to the home page
+        };
+
+        // Optional: Close the popup when clicking outside of it
+        window.onclick = function(event) {
+            var popup = document.getElementById('thankYouPopup');
+            if (event.target === popup) {
+                popup.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>

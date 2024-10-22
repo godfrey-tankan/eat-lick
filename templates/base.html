@@ -1,0 +1,169 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tnqn</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/htmx.org/dist/htmx.js" defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+     <style type="text/tailwindcss">
+        [x-cloak] { 
+            display: none !important; 
+        }
+        h1 {
+            @apply text-2xl font-bold mb-2  
+        }
+        h2 {
+            @apply text-xl font-bold mb-1
+        }
+        p {
+            @apply mb-2
+        }
+        .button, button, [type='submit'], [type='button'] {
+            @apply bg-indigo-600 text-white font-bold px-2 py-2 inline-block 
+            rounded-lg shadow-lg transition-all cursor-pointer
+        }
+        .button:hover, button:hover, [type='submit']:hover, [type='button']:hover {
+            @apply bg-indigo-700
+        }
+        .button:active, button:active, [type='submit']:active, [type='button']:active {
+            @apply scale-95
+        }
+        .button.alert, button.alert {
+            @apply bg-red-700
+        }
+        .button.alert:hover, button.alert:hover {
+            @apply bg-red-600
+        }
+        .button-red {
+            @apply !bg-red-500 hover:!bg-red-600
+        }
+        .button-green {
+            @apply !bg-green-500 hover:!bg-green-600
+        }
+        .button-blue {
+            @apply !bg-blue-500 hover:!bg-blue-600
+        }
+        .button-gray {
+            @apply !bg-gray-300 hover:!bg-[#c3c9d0]
+        }
+        .navitems>li>a {
+            @apply flex items-center gap-2 h-12 px-4 hover:bg-gray-700 rounded-lg;
+        }
+        .hoverlist>* {
+            @apply hover:bg-gray-100 rounded-md transition duration-150;
+        }
+        .hoverlist>*>a {
+            @apply flex items-center p-2;
+        }
+        .highlight {
+            @apply !bg-indigo-100;
+        }
+        .allauth content a {
+            @apply underline underline-offset-2
+        }
+        .allauth content a:hover {
+            @apply text-indigo-500
+        }
+        .allauth form[action="/accounts/signup/"] ul {
+            @apply hidden
+        }
+        .allauth form[action="/accounts/signup/"] ul.errorlist {
+            @apply block
+        }
+        .allauth .helptext {
+            @apply block mt-4
+        }
+        label {
+            @apply hidden
+        }
+        input[type=file] {
+            @apply bg-white pl-0
+        }
+        .textarea, textarea, input {
+            @apply w-full rounded-lg py-2 px-2 sm:py-4 sm:px-4 bg-gray-100;
+        }
+        .errorlist li {
+            @apply p-1 pl-4 border-l-red-500 border-l-4 border-solid mb-2 text-red-500
+        }
+        label[for="id_remember"] {
+            @apply inline-block w-auto mr-2
+        }
+        input[type="checkbox"] {
+            /* Customize the checkbox appearance */
+            width: 30px; /* Increase size if necessary */
+            height: 30px; /* Increase size if necessary */
+            margin-left: 10px; /* Adds space between the checkbox and label */
+        }
+     
+        label[for="user_"] {
+            color: #000; /* Text color */
+            font-weight: 500; /* Slightly bolder text */
+            font-size: 1rem; /* Adjust font size as needed */
+        }
+        
+        /* Hover effect for checkboxes */
+        input[type="checkbox"]:hover {
+            cursor: pointer; /* Change cursor on hover */
+        }
+        input[name="remember"] {
+            @apply w-auto
+        }
+        .alert-info { @apply bg-blue-300 }
+        .alert-success { @apply bg-green-400 }
+        .alert-warning { @apply bg-amber-400 }
+        .alert-danger { @apply bg-amber-500 }
+    </style> 
+</head>
+<body class="{% block class %}{% endblock %}">
+	
+{% include 'includes/messages.html' %}
+{% include 'includes/header.html' %}
+
+<div class="flex">
+    <!-- Sidebar -->
+    {% if request.user.is_authenticated %}
+    <!-- Mobile Toggle Button (Hamburger Icon) -->
+        
+
+    <!-- Sidebar -->
+    {% comment %} <nav id="sidebar" class="bg-gray-800 text-white w-64 h-screen p-5 fixed top-0 left-0 transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:relative md:w-64">
+        <h2 class="text-lg font-bold mb-5">Menu</h2>
+        <ul class="navitems">
+            <li><a href="{% url 'start' %}" class="hoverlist">Participate</a></li>
+        </ul>
+    </nav> {% endcomment %}
+{% endif %}
+
+    <!-- Main Content Area -->
+    <div class="flex-1 p-8">
+        {% block layout %}
+        {% endblock %}
+    </div>
+</div>
+<script>
+    document.getElementById('sidebar-toggle').addEventListener('click', function() {
+        const sidebar = document.getElementById('sidebar');
+        const icon = document.getElementById('hamburger-icon');
+        sidebar.classList.toggle('-translate-x-full');
+
+        // Toggle between hamburger and close icon
+        if (sidebar.classList.contains('-translate-x-full')) {
+            icon.innerHTML = `
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            `;
+        } else {
+            icon.innerHTML = `
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            `;
+        }
+    });
+</script>
+
+
+</body>
+</html>

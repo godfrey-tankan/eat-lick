@@ -1,0 +1,65 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demographic Data Form</title>
+    <link rel="stylesheet" href="{% static 'css/form_styles.css' %}">
+</head>
+<body>
+    
+    <form method="post">
+        {% csrf_token %}
+        <h2>Demographic Data Form
+        </h2>
+        <p class="info-icon">Please fill in the following details accordingly:
+            <span clas='icon-icon' >ℹ️</span>
+            
+        </p>
+        <div class="tooltip">
+            Your responses will remain anonymous and confidential.<br>
+            We value your privacy and ensure that your data will only be used for statistical purposes.
+        </div>
+
+    <div>
+        <label>Gender:</label>
+        {{ form.gender }}
+    </div>
+
+    <div>
+        <label>Age Group:</label>
+        {{ form.age_group }}
+    </div>
+
+    <div>
+        <label>Work Experience:</label>
+        {{ form.work_experience }}
+    </div>
+
+    <div>
+        <label>Highest Qualification:</label>
+        {{ form.highest_qualification }}
+    </div>
+
+    <div>
+        <label>Designation:</label>
+        {{ form.designation }}
+    </div>
+
+    <div>
+        <label>Department:</label>
+        {{ form.department }}
+    </div>
+
+    <div>
+        <label>Contract Type:</label>
+        {{ form.contract_type }}
+    </div>
+
+    <button type="submit">Submit</button>
+</form>
+
+</body>
+</html>

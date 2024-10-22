@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All Feedbacks</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        .feedback-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Create responsive grid */
+            gap: 20px;  /* Space between grid items */
+            margin-bottom: 20px;
+        }
+
+        .feedback-item {
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Add shadow for card effect */
+        }
+
+        .feedback-item:hover {
+            background-color: #e9e9e9;
+        }
+
+        /* Popup styles */
+        .popup {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80%;
+            overflow-y: auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .close {
+            cursor: pointer;
+            font-size: 24px;
+            float: right;
+        }
+    </style>
+</head>
+<body>
+    <h2>All User Feedbacks</h2>
+    <div class="feedback-list">
+        {% for feedback in feedbacks %}
+            <div class="feedback-item" onclick="showPopup('{{ feedback.user_id.id }}')">
+                <p><strong>User</strong>: Anonymous User {{ forloop.counter }}</p>
+                <p><strong>Gender</strong>: {{ feedback.gender }}</p>
+                <p><strong>Designation</strong>: {{ feedback.designation }}</p>
+                <p><strong>Date Submitted</strong>: {{ feedback.response_date|date:"Y-m-d" }}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div id="popup" class="popup" onclick="closePopup(event)">
+        <div class="popup-content" onclick="event.stopPropagation()">
+            <span class="close" onclick="closePopup(event)">&times;</span>
+            <h3>Feedback Details</h3>
+            <div id="popup-details"></div>
+        </div>
+    </div>
+
+    <script>
+        function showPopup(userId) {
+            fetch(`/feedback/${userId}/details/`)
+                .then(response => response.json())
+                .then(data => {
+                    const details = data.feedbacks.map((feedback, index) => `
+                        <div style="margin-bottom: 20px;">
+                            <strong>Question ${index + 1}:</strong> ${feedback.question}<br>
+                            <div style="margin-left: 20px; margin-top: 5px;">
+                                Answer: ${feedback.response}
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('popup-details').innerHTML = details || 'No feedback available for this user.';
+                    document.getElementById('popup').style.display = 'flex';
+                })
+                .catch(error => {
+                    console.error('Error fetching feedback:', error);
+                    document.getElementById('popup-details').innerHTML = 'Error fetching feedback.';
+                });
+        }
+
+        function closePopup(event) {
+            document.getElementById('popup').style.display = 'none';
+        }
+    </script>
+
+</body>
+</html>

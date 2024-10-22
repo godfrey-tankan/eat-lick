@@ -1,0 +1,45 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMEDCO Survey - Welcome</title>
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  
+</head>
+<body>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="content">
+            <h1 class="title">Welcome to the SMEDCO Employee Satisfaction Survey</h1>
+            <div class="card">
+                <!-- Image container replacing the text -->
+                <img src="{% static 'img/landing.png' %}" alt="Survey Image">
+            </div>
+            <p class="description">Your feedback matters! Help us improve the workplace by sharing your insights anonymously.</p>
+            {% if user.is_authenticated %}
+                <a href="/smedco/start" class="btn">Take Survey</a>
+            {% else %}
+                <a href="/accounts/login" class="btn">Get Started</a>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Optional Additional Sections -->
+    <section class="about">
+        <h2>What You Can Expect</h2>
+        <p>Take a short, 20-minute survey that helps us understand your needs, experiences, and opportunities for improvement. Your responses will remain anonymous and confidential.</p>
+    </section>
+
+    <footer>
+        <p>powered by Empyrean Intergrated Solutions | &copy; 2024</p>
+    </footer>
+
+    <!-- Optional Script for Animations -->
+    <script src="{% static 'js/landing.js' %}"></script>
+</body>
+</html>

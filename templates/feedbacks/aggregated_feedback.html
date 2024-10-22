@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aggregated Feedback</title>
+</head>
+<body>
+    <h2>Aggregated Feedback Summary</h2>
+    
+    <p>Total Responses: {{ total_responses }}</p>
+
+    <h3>Question Summary</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>Average Response</th>
+                <th>Percentage Positive Responses</th>
+                <th>Total Responses</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for question, summary in question_summary.items %}
+                <tr>
+                    <td>{{ question.question_text }}</td>
+                    <td>{{ summary.average|floatformat:2 }}</td>
+                    <td>{{ summary.percentage_positive|floatformat:2 }}%</td>
+                    <td>{{ summary.count }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Department with Worst Feedback</h3>
+    {% if worst_department %}
+        <p>Department: {{ worst_department.department }}</p>
+        <p>Average Feedback: {{ worst_department.avg_feedback|floatformat:2 }}</p>
+    {% else %}
+        <p>No department data available.</p>
+    {% endif %}
+
+    <h3>Salary Complaints</h3>
+    <p>Number of complaints regarding salary (scores of 3 or below): {{ salary_complaints }}</p>
+</body>
+</html>
