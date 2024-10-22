@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from .forms import *
@@ -11,13 +11,11 @@ from django.db.models import Count, Avg, OuterRef, Subquery,When, IntegerField, 
 from .decorators import check_user_feedback
 
 
-
 # Create your views here.
 def home_view(request):
     if request.user.is_staff:
         return redirect('staff_dashboard')
     return render(request,'home.html')
-
 
 from django.db.models import Subquery, OuterRef, Avg, Count, Case, When, IntegerField
 from django.contrib.auth.decorators import login_required
@@ -26,6 +24,8 @@ from .models import LikertScaleAnswer, DemographicData
 
 @login_required
 def staff_dashboard_view(request):
+    if not request.user.is_staff:
+        return HttpResponse('You are not authorized to view this page', status=403)
     QUALIFICATION_VALUE_MAP = {
         'below_o': 0,
         'o_level': 1,
@@ -97,6 +97,8 @@ def staff_dashboard_view(request):
 
 @login_required
 def aggregated_feedback_view(request):
+    if  not request.user.is_staff:
+        return HttpResponse('You are not authorized to view this page', status=403)
     total_responses = LikertScaleAnswer.objects.count()
 
     question_summary = {}
@@ -172,20 +174,23 @@ def job_satisfaction_view(request):
 def thank_you(request):
     return render(request, 'thank_you.html')
 
-
+@login_required
 def feedback_details(request, user_id):
     # Get all feedback entries for the specific user
-    user = get_object_or_404(User, id=user_id)
-    feedbacks = LikertScaleAnswer.objects.filter(user_id=user)
+    if request.user.is_staff:
+        user = get_object_or_404(User, id=user_id)
+        feedbacks = LikertScaleAnswer.objects.filter(user_id=user)
 
-    feedback_details = []
-    
-    for feedback in feedbacks:
-        details = {
-            'question': feedback.question.question_text,
-            'response': feedback.get_response_display(),
-        }
-        feedback_details.append(details)
+        feedback_details = []
+        
+        for feedback in feedbacks:
+            details = {
+                'question': feedback.question.question_text,
+                'response': feedback.get_response_display(),
+            }
+            feedback_details.append(details)
+    else:
+        return HttpResponse('You are not authorized to view this page', status=403)
 
     # Check if the user has any feedback
     if feedback_details:
@@ -194,14 +199,18 @@ def feedback_details(request, user_id):
         return JsonResponse({'feedbacks': []})  #
 
 def feedback_list(request):
-    feedbacks = LikertScaleAnswer.objects.select_related('question').order_by('-response_date')[:3]
-    return render(request, 'feedbacks/feedback_list.html', {'feedbacks': feedbacks})
+    if request.user.is_staff:
+        feedbacks = LikertScaleAnswer.objects.select_related('question').order_by('-response_date')[:3]
+        return render(request, 'feedbacks/feedback_list.html', {'feedbacks': feedbacks})
+    return HttpResponse('You are not authorized to view this page', status=403)
 
 
 def feedback_detail(request):
-    users = User.objects.all()
-    feedbacks = DemographicData.objects.filter(user_id__in=users).order_by('-response_date')
-    return render(request, 'feedbacks/feedback_detail.html', {'feedbacks': feedbacks})
+    if request.user.is_staff:
+        users = User.objects.all()
+        feedbacks = DemographicData.objects.filter(user_id__in=users).order_by('-response_date')
+        return render(request, 'feedbacks/feedback_detail.html', {'feedbacks': feedbacks})
+    return HttpResponse('You are not authorized to view this page', status=403)
 
 def get_user_feedback(request, user_id):
     feedbacks = LikertScaleAnswer.objects.filter(user_id=user_id).select_related('question')
