@@ -48,7 +48,7 @@ body {
 }
 
 .description {
-    font-size: 1.2rem;
+    font-size: .8rem;
     margin: 20px 0;
     opacity: 0;
     animation: fade-in 2s 0.5s forwards;
@@ -76,7 +76,7 @@ body {
 
 /* About Section */
 .about {
-    padding: 40px;
+    padding: 30px;
     text-align: center;
     background-color: #f7f7f7;
     color: #333;
@@ -137,17 +137,46 @@ footer {
 }
 
 .card {
-    width: 50%;
-    margin: 0 auto;
+    width: 50%;            
+    margin: 0 auto;       
     background-color: #fff;
-    padding: 20px;
+    padding: 10px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     text-align: center;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {  /* Adjust this breakpoint as needed */
+    .card {
+        width: 85%;        /* Width for smaller screens */
+    }
+    .title {
+        font-size: 1rem;   /* Font size for smaller screens */
+    }
 }
 
 .card img {
     width: 100%;
     height: auto;
     border-radius: 8px;
+}
+
+.zoom-modal {
+    display: none;  /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+.zoomed-image {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;  /* Maintain aspect ratio */
 }

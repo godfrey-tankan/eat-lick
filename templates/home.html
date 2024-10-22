@@ -8,7 +8,6 @@
     <title>SMEDCO Survey - Welcome</title>
     <link rel="stylesheet" href="{% static 'css/landing.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  
 </head>
 <body>
 
@@ -17,8 +16,8 @@
         <div class="content">
             <h1 class="title">Welcome to the SMEDCO Employee Satisfaction Survey</h1>
             <div class="card">
-                <!-- Image container replacing the text -->
-                <img src="{% static 'img/landing.png' %}" alt="Survey Image">
+                <!-- Image container -->
+                <img src="{% static 'img/landing.png' %}" alt="Survey Image" onclick="openZoom(this.src)">
             </div>
             <p class="description">Your feedback matters! Help us improve the workplace by sharing your insights anonymously.</p>
             {% if user.is_authenticated %}
@@ -36,10 +35,26 @@
     </section>
 
     <footer>
-        <p>powered by Empyrean Intergrated Solutions | &copy; 2024</p>
+        <p>powered by Empyrean Integrated Solutions | &copy; 2024</p>
     </footer>
+
+    <!-- Modal for Zoomed Image -->
+    <div id="zoom-modal" class="zoom-modal" onclick="closeZoom()">
+        <span class="close" onclick="closeZoom()">&times;</span>
+        <img id="zoomed-image" class="zoomed-image" src="" alt="Zoomed Image">
+    </div>
 
     <!-- Optional Script for Animations -->
     <script src="{% static 'js/landing.js' %}"></script>
+    <script>
+        function openZoom(src) {
+            document.getElementById('zoomed-image').src = src;
+            document.getElementById('zoom-modal').style.display = 'flex';
+        }
+
+        function closeZoom() {
+            document.getElementById('zoom-modal').style.display = 'none';
+        }
+    </script>
 </body>
 </html>

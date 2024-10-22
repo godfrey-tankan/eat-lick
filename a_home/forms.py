@@ -19,6 +19,10 @@ class DemographicDataForm(forms.ModelForm):
             'designation': forms.Select,
             'contract_type': forms.RadioSelect,  
         }
+        def __init__(self, *args, **kwargs):
+            super(DemographicDataForm, self).__init__(*args, **kwargs)
+            for field in self.fields.values():
+                field.required = True 
         
 
 class JobSatisfactionForm(forms.Form):

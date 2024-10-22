@@ -175,22 +175,16 @@ def thank_you(request):
     return render(request, 'thank_you.html')
 
 
-def test(request):
-    print('tested.......')
-    return HttpResponse('Hello World')
 
 @login_required
 def feedback_details(request, user_id):
     # Get all feedback entries for the specific user
-    print('request.user......',request.user)
     
     if request.user.is_staff:
-        print('user_id',user_id)
         user = get_object_or_404(User, id=user_id)
         feedbacks = LikertScaleAnswer.objects.filter(user_id=user)
 
         feedback_details = []
-        print('feedbacks',feedbacks)
         for feedback in feedbacks:
             details = {
                 'question': feedback.question.question_text,
