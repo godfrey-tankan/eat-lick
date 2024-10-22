@@ -92,9 +92,14 @@
 
     <script>
         function showPopup(userId) {
-            fetch(`/feedback/${userId}/details/`)
-                .then(response => response.json())
-                .then(data => {
+            fetch(`/smedco/feedback/${userId}/details/`)
+                .then(response => {
+                    // Log the response for debugging
+                    console.log('Response status:', response.status);
+                    return response.text();  // Get the response as text
+                })
+                .then(text => {
+                    const data = JSON.parse(text);  // Try parsing the text as JSON
                     const details = data.feedbacks.map((feedback, index) => `
                         <div style="margin-bottom: 20px;">
                             <strong>Question ${index + 1}:</strong> ${feedback.question}<br>
