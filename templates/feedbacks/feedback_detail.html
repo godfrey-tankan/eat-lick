@@ -11,20 +11,21 @@
             margin: 20px;
             background-color: #f4f4f4;
         }
-
+       
         h2 {
             text-align: center;
+            font-size: 2.3rem; /* Make heading larger */
         }
 
         .feedback-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Create responsive grid */
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Default: responsive grid */
             gap: 20px;  /* Space between grid items */
             margin-bottom: 20px;
         }
 
         .feedback-item {
-            padding: 15px;
+            padding: 25px;
             background-color: #fff;
             border-radius: 8px;
             cursor: pointer;
@@ -54,7 +55,7 @@
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
-            width: 90%;
+            width: 100%;
             max-width: 800px;
             max-height: 80%;
             overflow-y: auto;
@@ -64,9 +65,37 @@
 
         .close {
             cursor: pointer;
-            font-size: 24px;
+            font-size: 56px; /* Larger close icon */
             float: right;
         }
+        .popup-details {
+            font-size: 3.2rem;
+        }
+
+        /* Responsive styling */
+        @media (max-width: 768px) {
+            .popup-qes{
+                font-size: 2.5rem;
+            }
+    
+            h2 {
+                font-size: 2.8rem; /* Adjust heading size for mobile */
+            }
+
+            .feedback-list {
+                grid-template-columns: 1fr; /* One column layout on mobile */
+            }
+
+            .feedback-item {
+                font-size: 2.1rem; /* Increase text size on mobile */
+                padding: 20px; /* Adjust padding for better spacing */
+            }
+
+            .close {
+                font-size: 60px; /* Even larger close icon for mobile */
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -85,7 +114,7 @@
     <div id="popup" class="popup" onclick="closePopup(event)">
         <div class="popup-content" onclick="event.stopPropagation()">
             <span class="close" onclick="closePopup(event)">&times;</span>
-            <h3>Feedback Details</h3>
+            <h2>Feedback Details</h2>
             <div id="popup-details"></div>
         </div>
     </div>
@@ -93,21 +122,24 @@
     <script>
         function showPopup(userId) {
             fetch(`/smedco/feedback/${userId}/details/`)
-                .then(response => {
-                    // Log the response for debugging
-                    console.log('Response status:', response.status);
-                    return response.text();  // Get the response as text
-                })
+                .then(response => response.text())
                 .then(text => {
-                    const data = JSON.parse(text);  // Try parsing the text as JSON
-                    const details = data.feedbacks.map((feedback, index) => `
-                        <div style="margin-bottom: 20px;">
-                            <strong>Question ${index + 1}:</strong> ${feedback.question}<br>
-                            <div style="margin-left: 20px; margin-top: 5px;">
-                                Answer: ${feedback.response}
+                    const data = JSON.parse(text);
+                    console.log('Feedback Data:', data); // Log feedback data
+                    const details = data.feedbacks.map((feedback, index) => {
+                        const response = feedback.response; // Get the string response
+                        console.log(`Feedback Response: ${response}`); // Log the response value
+                        const responseColor = getColor(response); // Get color based on string response
+                        console.log(`Response: ${response}, Color: ${responseColor}`); // Log response and color
+                        return `
+                            <div class='popup-qes' style="margin-bottom: 20px;">
+                                <strong>Question ${index + 1}:</strong> ${feedback.question}<br>
+                                <div class='popup-ans' style="margin-left: 20px; margin-top: 5px; color: ${responseColor};">
+                                    Answer: ${response}
+                                </div>
                             </div>
-                        </div>
-                    `).join('');
+                        `;
+                    }).join('');
                     document.getElementById('popup-details').innerHTML = details || 'No feedback available for this user.';
                     document.getElementById('popup').style.display = 'flex';
                 })
@@ -116,11 +148,31 @@
                     document.getElementById('popup-details').innerHTML = 'Error fetching feedback.';
                 });
         }
-
+        
+        function getColor(response) {
+            switch (response) {
+                case 'Disagree very much':
+                    return 'red'; // Disagree very much
+                case 'Disagree moderately':
+                    return 'darkred'; // Disagree moderately
+                case 'Disagree slightly':
+                    return 'lightcoral'; // Disagree slightly
+                case 'Agree slightly':
+                    return 'lightgreen'; // Agree slightly
+                case 'Agree moderately':
+                    return 'mediumseagreen'; // Agree moderately
+                case 'Agree very much':
+                    return 'green'; // Agree very much
+                default:
+                    return 'black'; // Default color if response is out of range
+            }
+        }
+        
         function closePopup(event) {
             document.getElementById('popup').style.display = 'none';
         }
-    </script>
+        </script>
+        
 
 </body>
 </html>
