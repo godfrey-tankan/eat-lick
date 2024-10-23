@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Feedbacks</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <style>
+<style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -151,13 +151,114 @@
             cursor: pointer;
             margin-top: 10px;
         }
-    </style>
+        /* Overlay to blur the background when the popup is open */
+        .unique-report-popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        /* Popup form container */
+        .unique-report-popup-form {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.3s;
+            position: relative;
+        }
+
+        /* Fade-in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Form styles */
+        .unique-report-popup-form h2 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .unique-report-popup-form label {
+            display: block;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .unique-report-popup-form select,
+        .unique-report-popup-form input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .unique-report-popup-form button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .unique-report-popup-form button[type="button"] {
+            background-color: #f44336;
+        }
+
+        .unique-report-popup-form button:hover {
+            background-color: #45a049;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .unique-report-popup-form {
+                width: 90%;
+            }
+
+            .unique-report-popup-form h2 {
+                font-size: 20px;
+            }
+        }
+
+</style>
+
 </head>
 <body>
     <h2>All User Feedbacks</h2>
 
     <div class="generate-report-button">
-        <button onclick="showReportPopup()">Generate Report</button>
+        <button onclick="showReportPopup()" >Generate Report</button>
+    </div>
+    <div class="unique-report-popup-overlay" id="uniqueReportPopup">
+        <div class="unique-report-popup-form">
+            <h2>Select Report Type</h2>
+            <form id="uniqueReportForm">
+                <label for="reportType">Report Type:</label>
+                <select id="reportType" name="reportType">
+                    <option value="Department">Department</option>
+                    <option value="Designation">Designation</option>
+                    <option value="overall">Overall</option>
+                </select>
+                <button type="submit" onclick="showReportPopup()">Generate</button>
+                <button type="button" onclick="closeReportPopup()">Close</button>
+            </form>
+        </div>
     </div>
 
     <div class="feedback-list" id="feedbackList">
@@ -184,61 +285,83 @@
     <div id="popup" class="popup" onclick="closePopup(event)">
         <div class="popup-content" onclick="event.stopPropagation()">
             <span class="close" onclick="closePopup(event)">&times;</span>
+            <h3>Feedback Details</h3>
             <div id="popup-details"></div>
+            <button style ='background-color:green; cursor:pointer;' onclick="exportToPDF()">Export to PDF</button>
+            <button style ='background-color:green; cursor:pointer;' onclick="exportToExcel()">Export to Excel</button>
+            <button style ='background-color:grey; cursor:pointer;' onclick="closeReport()">Back</button>
         </div>
     </div>
 
     <script>
-        function showReportPopup() {
-            // Simulating report data received from the backend
-            const reportData = {
-                feedback_by_department: [{'department': 'MKT', 'total_responses': 1}],
-                feedback_by_qualification: [{'highest_qualification': 'o_level', 'total_responses': 1}],
-                feedback_by_age_group: [{'age_group': '20_below', 'total_responses': 1}],
-                feedback_by_designation: [{'designation': 'line_employees', 'total_responses': 1}],
-                feedback_by_question: [{'category': 'absorption', 'question_text': 'I am immersed in my work', 'response_counts': 1, 'avg_response': 4.0}]
-            };
+     // Function to display the report popup and fetch the report data from the backend
+function showReportPopup() {
+    console.log('hit..')
+    const reportType = document.getElementById('reportType').value;  // Get selected report type
 
-            // Show report
-            const reportDiv = document.getElementById('report');
-            const reportContentDiv = document.getElementById('reportContent');
+    // Post the selected report type and date range to the backend
+    fetch('smedco/generate-full-report/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()  // Include CSRF token for Django
+        },
+        body: JSON.stringify({
+            report_type: reportType,
+        })
+    })
+    .then(response => response.json())  // Parse the JSON response
+    .then(reportData => {
+        // Once the data is received, show the report
+        const reportDiv = document.getElementById('report');
+        const reportContentDiv = document.getElementById('reportContent');
 
-            let reportHTML = '<h4>Feedback by Department</h4><ul>';
-            reportData.feedback_by_department.forEach(item => {
-                reportHTML += `<li>${item.department}: ${item.total_responses} responses</li>`;
-            });
-            reportHTML += '</ul>';
+        let reportHTML = '<h4>Feedback by Department</h4><ul>';
+        reportData.feedback_by_department.forEach(item => {
+            reportHTML += `<li>${item.department}: ${item.total_responses} responses</li>`;
+        });
+        reportHTML += '</ul>';
 
-            reportHTML += '<h4>Feedback by Qualification</h4><ul>';
-            reportData.feedback_by_qualification.forEach(item => {
-                reportHTML += `<li>${item.highest_qualification}: ${item.total_responses} responses</li>`;
-            });
-            reportHTML += '</ul>';
+        reportHTML += '<h4>Feedback by Qualification</h4><ul>';
+        reportData.feedback_by_qualification.forEach(item => {
+            reportHTML += `<li>${item.highest_qualification}: ${item.total_responses} responses</li>`;
+        });
+        reportHTML += '</ul>';
 
-            reportHTML += '<h4>Feedback by Age Group</h4><ul>';
-            reportData.feedback_by_age_group.forEach(item => {
-                reportHTML += `<li>${item.age_group}: ${item.total_responses} responses</li>`;
-            });
-            reportHTML += '</ul>';
+        reportHTML += '<h4>Feedback by Age Group</h4><ul>';
+        reportData.feedback_by_age_group.forEach(item => {
+            reportHTML += `<li>${item.age_group}: ${item.total_responses} responses</li>`;
+        });
+        reportHTML += '</ul>';
 
-            reportHTML += '<h4>Feedback by Designation</h4><ul>';
-            reportData.feedback_by_designation.forEach(item => {
-                reportHTML += `<li>${item.designation}: ${item.total_responses} responses</li>`;
-            });
-            reportHTML += '</ul>';
+        reportHTML += '<h4>Feedback by Designation</h4><ul>';
+        reportData.feedback_by_designation.forEach(item => {
+            reportHTML += `<li>${item.designation}: ${item.total_responses} responses</li>`;
+        });
+        reportHTML += '</ul>';
 
-            reportHTML += '<h4>Feedback by Question</h4><ul>';
-            reportData.feedback_by_question.forEach(item => {
-                reportHTML += `<li>${item.question_text}: ${item.avg_response} (Responses: ${item.response_counts})</li>`;
-            });
-            reportHTML += '</ul>';
+        reportHTML += '<h4>Feedback by Question</h4><ul>';
+        reportData.feedback_by_question.forEach(item => {
+            reportHTML += `<li>${item.question_text}: ${item.avg_response} (Responses: ${item.response_counts})</li>`;
+        });
+        reportHTML += '</ul>';
 
-            reportContentDiv.innerHTML = reportHTML;
+        reportContentDiv.innerHTML = reportHTML;
 
-            // Show only the report
-            reportDiv.style.display = 'block';
-            document.getElementById('feedbackList').style.display = 'none'; // Hide feedback list
-        }
+        // Show only the report
+        reportDiv.style.display = 'block';
+        document.getElementById('feedbackList').style.display = 'none';  // Hide feedback list
+    })
+    .catch(error => {
+        console.error('Error fetching report data:', error);
+    });
+}
+
+// Helper function to get CSRF token (Django)
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
 
         function closeReport() {
             const reportDiv = document.getElementById('report');
@@ -260,12 +383,14 @@
                         const response = feedback.response;
                         const responseColor = getColor(response);
                         return `
-                        <strong> ${feedback.question}</strong><br>
+                            <strong>${index + 1}. ${feedback.question}</strong><br>
                             <div class='popup-qes' style="margin-bottom: 10px; border-bottom: 1px solid #c2c2c2; padding: 10px; border-radius: 5px;">
-                                 | ${response} <span style='color: ${responseColor};font-size:5px;'>${getIcon(response)}</span><br> 
+                                | ${response} <span style='color: ${responseColor};font-size:5px;'>${getIcon(response)}</span><br/> <br/>
                             </div>
+                            
                         `;
                     }).join('');
+                    
 
                     const popupDetails = document.getElementById('popup-details');
                     popupDetails.innerHTML = details;
@@ -300,14 +425,23 @@
         }
 
         function exportToPDF() {
-            // Implement PDF export logic
             window.print();
         }
 
         function exportToExcel() {
-            // Implement Excel export logic
             alert('Exporting to Excel...');
         }
     </script>
+    <script>
+        function showReportPopup() {
+            document.getElementById('uniqueReportPopup').style.display = 'block';
+        }
+        
+        function closeReportPopup() {
+            document.getElementById('uniqueReportPopup').style.display = 'none';
+        }
+        
+       
+        </script>
 </body>
 </html>
