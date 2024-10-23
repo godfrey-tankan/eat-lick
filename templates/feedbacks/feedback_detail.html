@@ -16,6 +16,7 @@
         h2 {
             text-align: center;
             font-size: 2.3rem;
+            margin-bottom: 20px;
         }
 
         .feedback-list {
@@ -53,6 +54,16 @@
             color: white;
         }
 
+        .report {
+            display: none; /* Hide the report by default */
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            margin: 20px auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px; /* Center the report */
+        }
+
         .popup {
             position: fixed;
             left: 0;
@@ -82,18 +93,6 @@
             cursor: pointer;
             font-size: 56px;
             float: right;
-        }
-
-        .popup-details {
-            font-size: 1.2rem;
-        }
-
-        .report {
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            margin: 20px 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .export-buttons {
@@ -131,7 +130,7 @@
             }
         }
 
-        .report-popup h2 {
+        .report-popup h3 {
             font-size: 1.8rem;
             margin-bottom: 20px;
         }
@@ -161,7 +160,7 @@
         <button onclick="showReportPopup()">Generate Report</button>
     </div>
 
-    <div class="feedback-list">
+    <div class="feedback-list" id="feedbackList">
         {% for feedback in feedbacks %}
             <div class="feedback-item" onclick="showPopup('{{ feedback.user_id.id }}')">
                 <p><strong>User</strong>: Anonymous User {{ forloop.counter }}</p>
@@ -172,38 +171,86 @@
         {% endfor %}
     </div>
 
+    <div class="report" id="report">
+        <h3>Generated Report</h3>
+        <div id="reportContent"></div>
+        <div class="export-buttons">
+            <button onclick="exportToPDF()">Export to PDF</button>
+            <button onclick="exportToExcel()">Export to Excel</button>
+            <button onclick="closeReport()">Back</button>
+        </div>
+    </div>
+
     <div id="popup" class="popup" onclick="closePopup(event)">
         <div class="popup-content" onclick="event.stopPropagation()">
             <span class="close" onclick="closePopup(event)">&times;</span>
-            <h2>Feedback Details</h2>
             <div id="popup-details"></div>
         </div>
     </div>
 
-    <!-- Report Popup -->
-    <div id="report-popup" class="popup" onclick="closeReportPopup(event)">
-        <div class="popup-content report-popup" onclick="event.stopPropagation()">
-            <span class="close" onclick="closeReportPopup(event)">&times;</span>
-            <h2>Select Report Type</h2>
-            <form id="report-form">
-                <label><input type="radio" name="report_type" value="full_report" checked> Full Report</label>
-                <label><input type="radio" name="report_type" value="feedback_by_department"> Feedbacks By Department</label>
-                <label><input type="radio" name="report_type" value="questionaire_analysis"> Questionnaire Analysis</label>
-                <button type="button" onclick="generateReport()">Generate</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="report-container" class="report" style="display: none;">
-        <h2>Generated Report</h2>
-        <div id="report-data"></div>
-        <div class="export-buttons">
-            <button onclick="exportToPDF()">Export to PDF</button>
-            <button onclick="exportToExcel()">Export to Excel</button>
-        </div>
-    </div>
-
     <script>
+        function showReportPopup() {
+            // Simulating report data received from the backend
+            const reportData = {
+                feedback_by_department: [{'department': 'MKT', 'total_responses': 1}],
+                feedback_by_qualification: [{'highest_qualification': 'o_level', 'total_responses': 1}],
+                feedback_by_age_group: [{'age_group': '20_below', 'total_responses': 1}],
+                feedback_by_designation: [{'designation': 'line_employees', 'total_responses': 1}],
+                feedback_by_question: [{'category': 'absorption', 'question_text': 'I am immersed in my work', 'response_counts': 1, 'avg_response': 4.0}]
+            };
+
+            // Show report
+            const reportDiv = document.getElementById('report');
+            const reportContentDiv = document.getElementById('reportContent');
+
+            let reportHTML = '<h4>Feedback by Department</h4><ul>';
+            reportData.feedback_by_department.forEach(item => {
+                reportHTML += `<li>${item.department}: ${item.total_responses} responses</li>`;
+            });
+            reportHTML += '</ul>';
+
+            reportHTML += '<h4>Feedback by Qualification</h4><ul>';
+            reportData.feedback_by_qualification.forEach(item => {
+                reportHTML += `<li>${item.highest_qualification}: ${item.total_responses} responses</li>`;
+            });
+            reportHTML += '</ul>';
+
+            reportHTML += '<h4>Feedback by Age Group</h4><ul>';
+            reportData.feedback_by_age_group.forEach(item => {
+                reportHTML += `<li>${item.age_group}: ${item.total_responses} responses</li>`;
+            });
+            reportHTML += '</ul>';
+
+            reportHTML += '<h4>Feedback by Designation</h4><ul>';
+            reportData.feedback_by_designation.forEach(item => {
+                reportHTML += `<li>${item.designation}: ${item.total_responses} responses</li>`;
+            });
+            reportHTML += '</ul>';
+
+            reportHTML += '<h4>Feedback by Question</h4><ul>';
+            reportData.feedback_by_question.forEach(item => {
+                reportHTML += `<li>${item.question_text}: ${item.avg_response} (Responses: ${item.response_counts})</li>`;
+            });
+            reportHTML += '</ul>';
+
+            reportContentDiv.innerHTML = reportHTML;
+
+            // Show only the report
+            reportDiv.style.display = 'block';
+            document.getElementById('feedbackList').style.display = 'none'; // Hide feedback list
+        }
+
+        function closeReport() {
+            const reportDiv = document.getElementById('report');
+            reportDiv.style.display = 'none'; // Hide report
+            document.getElementById('feedbackList').style.display = 'grid'; // Show feedback list
+        }
+
+        function closePopup(event) {
+            const popup = document.getElementById('popup');
+            popup.style.display = 'none';
+        }
+
         function showPopup(userId) {
             fetch(`/smedco/feedback/${userId}/details/`)
                 .then(response => response.text())
@@ -213,87 +260,53 @@
                         const response = feedback.response;
                         const responseColor = getColor(response);
                         return `
-                            <div class='popup-qes' style="margin-bottom: 20px;">
-                                <strong>Question ${index + 1}:</strong> ${feedback.question}<br>
-                                <div class='popup-ans' style="margin-left: 20px; margin-top: 5px; color: ${responseColor};">
-                                    Answer: ${response}
-                                </div>
+                        <strong> ${feedback.question}</strong><br>
+                            <div class='popup-qes' style="margin-bottom: 10px; border-bottom: 1px solid #c2c2c2; padding: 10px; border-radius: 5px;">
+                                 | ${response} <span style='color: ${responseColor};font-size:5px;'>${getIcon(response)}</span><br> 
                             </div>
                         `;
                     }).join('');
-                    document.getElementById('popup-details').innerHTML = details || 'No feedback available for this user.';
-                    document.getElementById('popup').style.display = 'flex';
-                })
-                .catch(error => {
-                    console.error('Error fetching feedback:', error);
-                    document.getElementById('popup-details').innerHTML = 'Error fetching feedback.';
-                });
-        }
 
-        function closePopup(event) {
-            document.getElementById('popup').style.display = 'none';
+                    const popupDetails = document.getElementById('popup-details');
+                    popupDetails.innerHTML = details;
+
+                    const popup = document.getElementById('popup');
+                    popup.style.display = 'flex';
+                })
+                .catch(error => console.error('Error fetching feedback details:', error));
         }
 
         function getColor(response) {
             switch (response) {
-                case 'Disagree very much':
-                    return 'red';
-                case 'Disagree moderately':
-                    return 'darkred';
-                case 'Disagree slightly':
-                    return 'lightcoral';
-                case 'Agree slightly':
-                    return 'lightgreen';
-                case 'Agree moderately':
-                    return 'mediumseagreen';
-                case 'Agree very much':
-                    return 'green';
-                default:
-                    return 'black';
+                case 'Disagree very much': return '#dc2626';
+                case 'Disagree moderately': return '#dc2626';
+                case 'Disagree slightly': return '#ef4444';
+                case 'Agree slightly': return '#86efac';
+                case 'Agree moderately': return '#4ade80';
+                case 'Agree very much': return '#14532d';
+                default: return 'black';
+            }
+        }
+        function getIcon(response) {
+            switch (response) {
+                case 'Disagree very much': return '❌';
+                case 'Disagree moderately': return '❌';
+                case 'Disagree slightly': return '❌';
+                case 'Agree slightly': return '✔️';
+                case 'Agree moderately': return '✔️';
+                case 'Agree very much': return '✔️';
+                default: return '➡';
             }
         }
 
-        function showReportPopup() {
-            document.getElementById('report-popup').style.display = 'flex';
-        }
-
-        function closeReportPopup(event) {
-            document.getElementById('report-popup').style.display = 'none';
-        }
-
-        function generateReport() {
-            const form = document.getElementById('report-form');
-            const formData = new FormData(form);
-            const reportType = formData.get('report_type');
-
-            fetch('smedco/generate-report/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({ report_type: reportType })
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('report-data').innerHTML = data.report_content; // Replace with your data
-                document.getElementById('report-container').style.display = 'block';
-                closeReportPopup(); // Close the report popup
-            })
-            .catch(error => {
-                console.error('Error generating report:', error);
-                alert('Error generating report.');
-            });
-        }
-
         function exportToPDF() {
-            // Logic to export report data to PDF
-            alert("Export to PDF functionality to be implemented.");
+            // Implement PDF export logic
+            alert('Exporting to PDF...');
         }
 
         function exportToExcel() {
-            // Logic to export report data to Excel
-            alert("Export to Excel functionality to be implemented.");
+            // Implement Excel export logic
+            alert('Exporting to Excel...');
         }
     </script>
 </body>

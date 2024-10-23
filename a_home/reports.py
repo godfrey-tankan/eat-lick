@@ -2,9 +2,10 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from .models import JobSatisfactionQuestion, LikertScaleAnswer, DemographicData
 from django.db.models import Count, Avg
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt
 def generate_full_report(request):
-    print('hit...................')
     feedback_by_department = DemographicData.objects.values('department').annotate(
         total_responses=Count('user_id')
     )
