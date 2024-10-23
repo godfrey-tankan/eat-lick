@@ -266,7 +266,7 @@
             const formData = new FormData(form);
             const reportType = formData.get('report_type');
 
-            fetch('/smedco/generate-full-report/', {
+            fetch('smedco/generate-report/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
