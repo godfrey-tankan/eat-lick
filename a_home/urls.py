@@ -12,5 +12,9 @@ urlpatterns = [
     path('smedco/staff/', staff_dashboard_view, name='staff_dashboard'),
     path('feedbacks/', feedback_list, name='feedback_list'),
     path('feedbacks/details/', feedback_detail, name='feedback_detail'),
-      path('generate-full-report/', generate_full_report, name='generate_full_report'),
+    path('generate-full-report/', generate_full_report, name='generate_full_report'),
+    path('report/department/', generate_department_report, name='department_report'),
+    path('report/designation/', generate_designation_report, name='designation_report'),
+    path('report/qualification/', generate_qualification_report, name='qualification_report'),
+    path('report/age-group/', generate_age_group_report, name='age_group_report'),
 ]

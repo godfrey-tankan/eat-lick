@@ -151,7 +151,6 @@
             cursor: pointer;
             margin-top: 10px;
         }
-        /* Overlay to blur the background when the popup is open */
         .unique-report-popup-overlay {
             display: none;
             position: fixed;
@@ -159,82 +158,45 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
         }
-
-        /* Popup form container */
         .unique-report-popup-form {
-            background-color: white;
-            margin: 10% auto;
+            background-color: #fff;
             padding: 20px;
-            border-radius: 10px;
-            width: 80%;
+            border-radius: 8px;
             max-width: 400px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            animation: fadeIn 0.3s;
-            position: relative;
-        }
-
-        /* Fade-in animation */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* Form styles */
-        .unique-report-popup-form h2 {
-            text-align: center;
-            font-size: 24px;
-            margin-bottom: 15px;
-        }
-
-        .unique-report-popup-form label {
-            display: block;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-
-        .unique-report-popup-form select,
-        .unique-report-popup-form input {
             width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-
+        .unique-report-popup-form h2 {
+            margin-bottom: 15px;
+        }
+        .unique-report-popup-form select,
         .unique-report-popup-form button {
             width: 100%;
             padding: 10px;
-            border: none;
-            background-color: #4CAF50;
-            color: white;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
             margin-top: 10px;
+            border-radius: 5px;
         }
-
+        .unique-report-popup-form button {
+            cursor: pointer;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            margin-top: 20px;
+        }
         .unique-report-popup-form button[type="button"] {
-            background-color: #f44336;
+            background-color: #6c757d;
         }
-
-        .unique-report-popup-form button:hover {
-            background-color: #45a049;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
+        @media screen and (max-width: 600px) {
             .unique-report-popup-form {
-                width: 90%;
-            }
-
-            .unique-report-popup-form h2 {
-                font-size: 20px;
+                max-width: 90%;
             }
         }
+      
+            
 
 </style>
 
@@ -248,14 +210,25 @@
     <div class="unique-report-popup-overlay" id="uniqueReportPopup">
         <div class="unique-report-popup-form">
             <h2>Select Report Type</h2>
-            <form id="uniqueReportForm">
+            <form id="uniqueReportForm" onsubmit="submitReportForm(event)">
+                {% csrf_token %}
                 <label for="reportType">Report Type:</label>
                 <select id="reportType" name="reportType">
                     <option value="Department">Department</option>
                     <option value="Designation">Designation</option>
                     <option value="overall">Overall</option>
                 </select>
-                <button type="submit" onclick="showReportPopup()">Generate</button>
+    
+                <label for="department">Select Department:</label>
+                <select id="department" name="department">
+                    <option value="HR">Human Resources</option>
+                    <option value="IT">Information Technology</option>
+                    <option value="FIN">Finance</option>
+                    <option value="MKT">Marketing</option>
+                    <option value="DEV">Development</option>
+                </select>
+    
+                <button type="submit">Generate</button>
                 <button type="button" onclick="closeReportPopup()">Close</button>
             </form>
         </div>
@@ -267,6 +240,7 @@
                 <p><strong>User</strong>: Anonymous User {{ forloop.counter }}</p>
                 <p><strong>Gender</strong>: {{ feedback.gender }}</p>
                 <p><strong>Designation</strong>: {{ feedback.designation }}</p>
+                <p><strong>Email</strong>: {{ feedback.user_id.email }}</p>
                 <p><strong>Date Submitted</strong>: {{ feedback.response_date|date:"Y-m-d" }}</p>
             </div>
         {% endfor %}
@@ -425,7 +399,44 @@ function getCSRFToken() {
         }
 
         function exportToPDF() {
-            window.print();
+            // Get the content of the popup-details
+            let popupDetails = document.getElementById('popup-details').innerHTML;
+        
+            // Create a new window for printing
+            let printWindow = window.open('', '_blank');
+        
+            // Create the HTML structure for the new window
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Print Report</title>
+                        <style>
+                            /* Add any styles you want to apply to the print content */
+                            body {
+                                font-family: Arial, sans-serif;
+                            }
+                            .content {
+                                margin: 20px;
+                            }
+                            /* Optionally add styles for page breaks */
+                            @media print {
+                                .content {
+                                    page-break-after: always; /* Forces a page break after each section */
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="content">${popupDetails}</div>
+                    </body>
+                </html>
+            `);
+        
+            // Wait for the content to load and then print
+            printWindow.document.close(); // Close the document to trigger rendering
+            printWindow.onload = function() {
+                printWindow.print(); // Trigger the print dialog
+            };
         }
 
         function exportToExcel() {
@@ -434,14 +445,51 @@ function getCSRFToken() {
     </script>
     <script>
         function showReportPopup() {
-            document.getElementById('uniqueReportPopup').style.display = 'block';
+            document.getElementById('uniqueReportPopup').style.display = 'flex';
         }
-        
+    
         function closeReportPopup() {
             document.getElementById('uniqueReportPopup').style.display = 'none';
         }
+    
+        function toggleDepartmentField() {
+            const reportType = document.getElementById('reportType').value;
+            const departmentField = document.getElementById('departmentField');
+            if (reportType === 'Department') {
+                departmentField.style.display = 'block';
+            } else {
+                departmentField.style.display = 'none';
+            }
+        }
+    
+        function submitReportForm(event) {
+            event.preventDefault();  // Prevent the default form submission
         
-       
-        </script>
+            const reportType = document.getElementById('reportType').value;
+            const department = document.getElementById('department').value;
+        
+            // Prepare the request data
+            const requestData = new URLSearchParams();
+            requestData.append('reportType', reportType);
+            requestData.append('department', department);
+        
+            fetch('/smedco/report/department//', {  // Update this URL to match your routing
+                method: 'POST',
+                body: requestData,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCSRFToken()  // Include your CSRF token if necessary
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Report Data:', data);
+                // Process and display the report data here
+            })
+            .catch(error => {
+                console.error('Error fetching report:', error);
+            });
+        }
+    </script>
 </body>
 </html>

@@ -62,14 +62,12 @@ def staff_dashboard_view(request):
             )
         )
     )['avg_qualification']
-
     average_qualification_str = None
     if average_qualification is not None:
         average_qualification_str = next(
             (key for key, value in QUALIFICATION_VALUE_MAP.items() if value == int(round(average_qualification))),
             None
         )
-
     # Determine critical branch needing attention using LikertScaleAnswer directly
     critical_branch = DemographicData.objects.annotate(
         avg_feedback=Avg('user_id__likertscaleanswer__response')  # Adjusting the query to reflect proper relations
