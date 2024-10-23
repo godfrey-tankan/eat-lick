@@ -1,5 +1,6 @@
 from django.urls import path, include
 from a_home.views import *
+from .reports import *
 
 urlpatterns = [
     path('', home_view, name='home'),
@@ -11,7 +12,5 @@ urlpatterns = [
     path('smedco/staff/', staff_dashboard_view, name='staff_dashboard'),
     path('feedbacks/', feedback_list, name='feedback_list'),
     path('feedbacks/details/', feedback_detail, name='feedback_detail'),
-    #  path('feedback/<int:user_id>/details/', get_user_feedback, name='user_feedback_details'),
-    # path('members/',test,name='members')
-    
+      path('generate-full-report/', generate_full_report, name='generate_full_report'),
 ]

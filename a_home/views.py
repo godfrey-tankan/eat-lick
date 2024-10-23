@@ -224,3 +224,5 @@ def get_user_feedback(request, user_id):
         } for feedback in feedbacks
     ]
     return JsonResponse({'feedbacks': feedback_details})
+
+
