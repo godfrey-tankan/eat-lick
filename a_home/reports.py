@@ -3,39 +3,68 @@ from django.http import JsonResponse
 from .models import JobSatisfactionQuestion, LikertScaleAnswer, DemographicData
 from django.db.models import Count, Avg,Count, Q
 from django.views.decorators.csrf import csrf_exempt
-
-@csrf_exempt
+from django.utils.timezone import now
+import datetime
 def generate_full_report(request):
-    feedback_by_department = DemographicData.objects.values('department').annotate(
-        total_responses=Count('user_id')
-    )
-    feedback_by_qualification = DemographicData.objects.values('highest_qualification').annotate(
-        total_responses=Count('user_id')
-    )
-    feedback_by_age_group = DemographicData.objects.values('age_group').annotate(
-        total_responses=Count('user_id')
-    )
-
-    feedback_by_designation = DemographicData.objects.values('designation').annotate(
-        total_responses=Count('user_id')
-    )
-
-    feedback_by_question = JobSatisfactionQuestion.objects.values('category', 'question_text').annotate(
-        response_counts=Count('answers'),
-        avg_response=Avg('answers__response')
-    )
     report_data = {
-        'feedback_by_department': list(feedback_by_department),
-        'feedback_by_qualification': list(feedback_by_qualification),
-        'feedback_by_age_group': list(feedback_by_age_group),
-        'feedback_by_designation': list(feedback_by_designation),
-        'feedback_by_question': list(feedback_by_question),
+        "feedback_by_department": [],
+        "feedback_by_qualification": [],
+        "feedback_by_age_group": [],
+        "feedback_by_designation": [],
+        "feedback_by_question": []
     }
-    print('report_data -> ', report_data)
 
-    return JsonResponse(report_data, safe=False)
+    # Fetching feedback data based on department
+    feedback_by_department = DemographicData.objects.values('department').annotate(
+        total_responses=Count('user_id' ,distinct=True),
+        positive_feedback_count=Count('user_id__likertscaleanswer__response', filter=Q(user_id__likertscaleanswer__response__in=[4, 5, 6])),
+        negative_feedback_count=Count('user_id__likertscaleanswer__response', filter=Q(user_id__likertscaleanswer__response__in=[1, 2, 3])),
+    )
 
+    report_data["feedback_by_department"] = list(feedback_by_department)
 
+    # Fetching feedback data based on highest qualification
+    feedback_by_qualification = DemographicData.objects.values('highest_qualification').annotate(
+        total_responses=Count('user_id', distinct=True),
+        positive_feedback_count=Count('user_id__likertscaleanswer__response', filter=Q(user_id__likertscaleanswer__response__in=[4, 5, 6])),
+        negative_feedback_count=Count('user_id__likertscaleanswer__response', filter=Q(user_id__likertscaleanswer__response__in=[1, 2, 3])),
+    )
+
+    report_data["feedback_by_qualification"] = list(feedback_by_qualification)
+
+    # Fetching feedback data based on age group
+    feedback_by_age_group = DemographicData.objects.values('age_group').annotate(
+        total_responses=Count('user_id' ,distinct=True),
+        positive_feedback_count=Count('user_id__likertscaleanswer__response', filter=Q(user_id__likertscaleanswer__response__in=[4, 5, 6])),
+        negative_feedback_count=Count('user_id__likertscaleanswer__response', filter=Q(user_id__likertscaleanswer__response__in=[1, 2, 3])),
+    )
+
+    report_data["feedback_by_age_group"] = list(feedback_by_age_group)
+
+    # Fetching feedback data based on designation
+    feedback_by_designation = DemographicData.objects.values('designation').annotate(
+        total_responses=Count('user_id' ,distinct=True),
+        positive_feedback_count=Count('user_id__likertscaleanswer__response', filter=Q(user_id__likertscaleanswer__response__in=[4, 5, 6])),
+        negative_feedback_count=Count('user_id__likertscaleanswer__response', filter=Q(user_id__likertscaleanswer__response__in=[1, 2, 3])),
+    )
+
+    report_data["feedback_by_designation"] = list(feedback_by_designation)
+    questions = JobSatisfactionQuestion.objects.prefetch_related('answers').annotate(
+        response_counts=Count('answers'),
+        positive_feedback_count=Count('answers', filter=Q(answers__response__in=[4, 5, 6])),
+        negative_feedback_count=Count('answers', filter=Q(answers__response__in=[1, 2, 3])),
+    )
+
+    for question in questions:
+        report_data["feedback_by_question"].append({
+            "category": question.category,
+            "question_text": question.question_text,
+            "response_counts": question.response_counts,
+            "positive_feedback_count": question.positive_feedback_count,
+            "negative_feedback_count": question.negative_feedback_count,
+        })
+
+    return render(request, 'staff/full_report.html', {'report_data': report_data, 'date': now()})
 @csrf_exempt
 def generate_department_report(request):
     

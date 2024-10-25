@@ -2,12 +2,13 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from .forms import *
+import json
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from a_bot.views import get_text_message_input,send_message
 from django.contrib.auth.decorators import login_required
 from .models import *
-from django.db.models import Count, Avg, OuterRef, Subquery,When, IntegerField, Case
+from django.db.models import Count, Avg, OuterRef, Subquery,When, IntegerField, Case, Q
 from .decorators import check_user_feedback
 
 
@@ -17,15 +18,11 @@ def home_view(request):
         return redirect('staff_dashboard')
     return render(request,'home.html')
 
-from django.db.models import Subquery, OuterRef, Avg, Count, Case, When, IntegerField
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from .models import LikertScaleAnswer, DemographicData
-
-@login_required
+login_required
 def staff_dashboard_view(request):
     if not request.user.is_staff:
         return HttpResponse('You are not authorized to view this page', status=403)
+
     QUALIFICATION_VALUE_MAP = {
         'below_o': 0,
         'o_level': 1,
@@ -62,18 +59,20 @@ def staff_dashboard_view(request):
             )
         )
     )['avg_qualification']
+    
     average_qualification_str = None
     if average_qualification is not None:
         average_qualification_str = next(
             (key for key, value in QUALIFICATION_VALUE_MAP.items() if value == int(round(average_qualification))),
             None
         )
-    # Determine critical branch needing attention using LikertScaleAnswer directly
-    critical_branch = DemographicData.objects.annotate(
-        avg_feedback=Avg('user_id__likertscaleanswer__response')  # Adjusting the query to reflect proper relations
+
+    # Determine critical department needing attention
+    critical_department = DemographicData.objects.annotate(
+        avg_feedback=Avg('user_id__likertscaleanswer__response')
     ).order_by('avg_feedback').first()
 
-    # Get the most top 3 complaints (assuming complaints are in a specific question)
+    # Get the most top 3 complaints
     top_complaints = LikertScaleAnswer.objects.values('question__question_text').annotate(
         complaint_count=Count('id')
     ).order_by('-complaint_count')[:3]
@@ -81,13 +80,30 @@ def staff_dashboard_view(request):
     # Format complaints for display
     top_complaints_list = [complaint['question__question_text'] for complaint in top_complaints]
 
+    # Prepare data for charts
+    feedback_distribution_by_department = DemographicData.objects.values('department').annotate(
+        positive_feedback=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__gte=4)),
+        negative_feedback=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__lt=4))
+    )
+
+    average_feedback_by_department = DemographicData.objects.values('department').annotate(
+        avg_feedback=Avg('user_id__likertscaleanswer__response')
+    )
+
+    # Prepare data for the template
+    chart_data = {
+        'feedback_distribution_by_department': list(feedback_distribution_by_department),
+        'average_feedback_by_department': list(average_feedback_by_department),
+    }
+
     # Pass the new context variables
     context = {
         'total_participants': total_participants,
         'most_proper_department': most_proper_department,
         'average_qualification': average_qualification_str,
-        'critical_branch': critical_branch,
+        'critical_department': critical_department,
         'top_complaints': top_complaints_list,
+        'chart_data': json.dumps(chart_data),  # Serialize to JSON for JavaScript
     }
 
     return render(request, 'staff/staff_dashboard.html', context)

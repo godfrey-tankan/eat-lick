@@ -468,23 +468,42 @@ function getCSRFToken() {
             const reportType = document.getElementById('reportType').value;
             const department = document.getElementById('department').value;
         
+            // Set the URL based on the selected report type
+            let url = '';
+            switch (reportType) {
+                case 'Department':
+                    url = '/smedco/report/department/';
+                    break;
+                case 'Designation':
+                    url = '/smedco/report/designation/';
+                    break;
+                case 'overall':
+                    url = '/smedco/generate-full-report/';
+                    window.location.href = url;
+                default:
+                    return;
+            }
+        
             // Prepare the request data
             const requestData = new URLSearchParams();
             requestData.append('reportType', reportType);
             requestData.append('department', department);
         
-            fetch('/smedco/report/department//', {  // Update this URL to match your routing
+            // Fetch the CSRF token from the form
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+            // Make the fetch request
+            fetch(url, {
                 method: 'POST',
                 body: requestData,
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': getCSRFToken()  // Include your CSRF token if necessary
+                    'X-CSRFToken': csrfToken
                 }
             })
             .then(response => response.json())
             .then(data => {
                 console.log('Report Data:', data);
-                // Process and display the report data here
             })
             .catch(error => {
                 console.error('Error fetching report:', error);

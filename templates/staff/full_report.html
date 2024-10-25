@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Full Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h2 {
+            color: #2C3E50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f6f9;
+        }
+        .section {
+            margin-top: 40px;
+        }
+        .btn-container {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        @media print {
+            .btn-container {
+                display: none;
+            }
+            
+        }
+        .view-more-button {
+            margin: 20px 0;
+            display: block;
+            text-align: center;
+            padding: 10px 20px;
+            background-color: #555; /* Primary button color */
+            color: white; /* White text */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="#" class="view-more-button">Full Report - {{date}}</a>
+
+
+    <div class="btn-container">
+        <button onclick="exportToExcel()">Export to Excel</button>
+        <button onclick="window.print()">Print Report</button>
+    </div>
+
+    <div id="reportContent">
+
+        {% comment %} <div class="section">
+            <h2>Feedback by Department</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Total Responses</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in report_data.feedback_by_department %}
+                        <tr>
+                            <td>{{ item.department }}</td>
+                            <td>{{ item.total_responses }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div> {% endcomment %}
+        <div class="section">
+            <h2>Feedback by Department</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Total Responses</th>
+                        <th>Positive Feedback</th>
+                        <th>Negative Feedback</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in report_data.feedback_by_department %}
+                        <tr>
+                            <td>{{ item.department }}</td>
+                            <td>{{ item.total_responses }}</td>
+                            <td>{{ item.positive_feedback_count }}</td>
+                            <td>{{ item.negative_feedback_count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+
+        <div class="section">
+            <h2>Feedback by Highest Qualification</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Qualification</th>
+                        <th>Total Responses</th>
+                        <th>Positive Feedback</th>
+                        <th>Negative Feedback</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in report_data.feedback_by_qualification %}
+                        <tr>
+                            <td>{{ item.highest_qualification }}</td>
+                            <td>{{ item.total_responses }}</td>
+                            <td>{{ item.positive_feedback_count }}</td>
+                            <td>{{ item.negative_feedback_count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Feedback by Age Group</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Age Group</th>
+                        <th>Total Responses</th>
+                        <th>Positive Feedback</th>
+                        <th>Negative Feedback</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in report_data.feedback_by_age_group %}
+                        <tr>
+                            <td>{{ item.age_group }}</td>
+                            <td>{{ item.total_responses }}</td>
+                            <td>{{ item.positive_feedback_count }}</td>
+                            <td>{{ item.negative_feedback_count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Feedback by Designation</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Designation</th>
+                        <th>Total Responses</th>
+                        <th>Positive Feedback</th>
+                        <th>Negative Feedback</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in report_data.feedback_by_designation %}
+                        <tr>
+                            <td>{{ item.designation }}</td>
+                            <td>{{ item.total_responses }}</td>
+                            <td>{{ item.positive_feedback_count }}</td>
+                            <td>{{ item.negative_feedback_count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Feedback by Question</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Question Text</th>
+                        <th>Response Count</th>
+                        <th>Positive Feedback</th>
+                        <th>Negative Feedback</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in report_data.feedback_by_question %}
+                        <tr>
+                            <td>{{ item.category }}</td>
+                            <td>{{ item.question_text }}</td>
+                            <td>{{ item.response_counts }}</td>
+                            <td>{{ item.positive_feedback_count }}</td>
+                            <td>{{ item.negative_feedback_count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        function exportToExcel() {
+            const reportContent = document.getElementById("reportContent").innerHTML;
+            const tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+                <x:Name>Sheet 1</x:Name><x:WorksheetOptions><x:Panes></x:Panes></x:WorksheetOptions></x:ExcelWorksheet>
+                </x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+                </head><body>${reportContent}</body></html>`;
+            
+            const blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "Feedback_Report.xls";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+
+</body>
+</html>

@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Staff Dashboard</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -72,6 +73,26 @@
         .view-more-button:hover {
             background-color: #556; /* Darker shade on hover */
         }
+        
+        /* Style for the chart containers */
+        .chart-container {
+            flex: 0 1 50%; /* Allow each chart container to take up 50% */
+            max-width: 50%; /* Ensure max width does not exceed 50% */
+            padding: 10px; /* Padding for spacing */
+        }
+        
+        /* Adjust chart container for mobile devices */
+        @media (max-width: 768px) {
+            .chart-container {
+                flex: 1 1 100%; /* 100% width on mobile */
+                max-width: 100%; /* Ensure max width does not exceed 100% */
+            }
+        }
+        
+        canvas {
+            width: 100% !important; /* Make canvas take full width */
+            height: auto !important; /* Maintain aspect ratio */
+        }
     </style>
 </head>
 <body>
@@ -104,7 +125,70 @@
             </p>
         </div>
     </div>
-    <a href="{% url 'feedback_detail' %}" class="view-more-button">View More Feedback</a>
+    <a href="#" class="view-more-button">Feedback Distribution</a>
 
+    
+    <!-- Chart.js Graphs -->
+    <div class="dashboard">
+        <div class="chart-container">
+            <canvas id="barChart"></canvas>
+        </div>
+        
+    </div>
+        <a href="{% url 'feedback_detail' %}" class="view-more-button">View More Feedback</a>
+    
+    <script type="application/json" id="chart-data">
+        {{ chart_data|safe }}
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const chartDataElement = document.getElementById('chart-data');
+            if (chartDataElement) {
+                const chartData = JSON.parse(chartDataElement.textContent);
+        
+                // Process the data
+                const departments = chartData.feedback_distribution_by_department.map(item => item.department);
+                const positiveFeedback = chartData.feedback_distribution_by_department.map(item => item.positive_feedback);
+                const negativeFeedback = chartData.feedback_distribution_by_department.map(item => item.negative_feedback);
+        
+                // Create the bar chart
+                const barCtx = document.getElementById('barChart').getContext('2d');
+                const barChart = new Chart(barCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: departments,
+                        datasets: [
+                            {
+                                label: 'Positive Feedback',
+                                data: positiveFeedback,
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1,
+                                barThickness: 60 // Thin bars
+                            },
+                            {
+                                label: 'Negative Feedback',
+                                data: negativeFeedback,
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1,
+                                barThickness: 60 // Thin bars
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+        
+            
+            }
+        });
+    </script>
 </body>
 </html>
