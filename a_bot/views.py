@@ -328,14 +328,20 @@ def create_manual_ticket(response,wa_id,support_member):
         if not created_ticket:
             ticket = Ticket.objects.create(
                 created_by=inquirer,
+                description = response if support_member.user_status == INQUIRER_BRANCH_MODE else None,
                 status=PENDING_MODE,
                 ticket_mode='other',
                 branch_opened=inquirer.branch
             )
             TicketLog.objects.create(ticket=ticket, status='resolved', timestamp=timezone.now(),changed_by=f'{support_member}- ticket manually created')
-            support_member.user_status = TICKET_INFO_MODE
-            support_member.save()
-            return f'Ticket is being created, Please provide the ticket description.'
+            if ticket.description is None:
+                support_member.user_status = TICKET_INFO_MODE
+                support_member.save()
+                return 'Ticket is being created, Please provide the ticket description.'
+            else:
+                support_member.user_status = TICKET_TYPE_MODE
+                support_member.save()
+                return 'Description captured, please provide the inquiry type (eg. Technical, General, etc.)'
         else:
             if support_member.user_status == TICKET_INFO_MODE:
                 created_ticket.description = response
