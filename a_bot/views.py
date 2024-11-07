@@ -48,7 +48,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         return tankan_self
     
     if support_member:
-        if 'create' or 'add' in response.lower():
+        if 'create' in response.lower() or 'add' in response.lower():
             support_member.user_mode = MANUAL_RESOLUTION_MODE
             support_member.user_status = INQUIRER_NUMBER_MODE
             support_member.save()
