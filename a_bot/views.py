@@ -321,6 +321,8 @@ def create_manual_ticket(response,wa_id,support_member):
         else:
             return 'Please provide a valid phone number.'
     inquirer = Inquirer.objects.filter(phone_number=inquirer_mobile_1).first()
+    if  not inquirer:
+        inquirer = Inquirer.objects.filter(updated_at=timezone.now().date()).last()
     if inquirer and inquirer.branch:
         created_ticket = Ticket.objects.filter(created_by=inquirer,status=PENDING_MODE,ticket_mode='other').last()
         if not created_ticket:
