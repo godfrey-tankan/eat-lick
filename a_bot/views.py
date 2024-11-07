@@ -302,6 +302,11 @@ def send_message(data,template=False):
         return response
 
 def create_manual_ticket(response,wa_id,support_member):
+    if 'exit' in response.lower() or 'cancel' in response.lower():
+        support_member.user_mode = HELPING_MODE
+        support_member.user_status = HELPING_MODE
+        support_member.save()
+        return 'You are now back to your previous mode, you can continue with what you were doing.'
     inquirer_mobile_1 = None 
     match = re.search(r'\b(\d+)\b', response)
     if match or support_member.user_status == INQUIRER_NUMBER_MODE :
