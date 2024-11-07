@@ -48,6 +48,14 @@ def generate_response(response, wa_id, name,message_type,message_id):
         return tankan_self
     
     if support_member:
+        if 'create' or 'add' in response.lower():
+            support_member.user_mode = MANUAL_RESOLUTION_MODE
+            support_member.user_status = INQUIRER_NUMBER_MODE
+            support_member.save()
+            return "please provide the number of the inquirer you want to create a ticket for."
+            
+        if support_member.user_mode == MANUAL_RESOLUTION_MODE:
+            return create_manual_ticket(response,wa_id,support_member)
         pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
         if  response.lower() in greeting_messages and not pending_ticket:
             time_of_day = get_greeting()
@@ -292,6 +300,67 @@ def send_message(data,template=False):
     else:
         # Process the response as normal
         return response
+
+def create_manual_ticket(response,wa_id,support_member):
+    inquirer_mobile_1 = None 
+    match = re.search(r'\b(\d+)\b', response)
+    if match or support_member.user_status == INQUIRER_NUMBER_MODE :
+        phone_number = match.group(1) 
+        if '263' not in phone_number:
+            first_seven_index = phone_number.find('7')
+            if first_seven_index != -1:
+                phone_number = '263' + phone_number[first_seven_index:]
+        
+        if len(phone_number) == 12 and re.match(r'^263(77|78|71)\d{7}$', phone_number):
+            inquirer_mobile_1 = phone_number 
+        else:
+            return 'Please provide a valid phone number.'
+    inquirer = Inquirer.objects.filter(phone_number=inquirer_mobile_1).first()
+    if inquirer and inquirer.branch:
+        created_ticket = Ticket.objects.filter(created_by=inquirer,status=PENDING_MODE,ticket_mode='other').last()
+        if not created_ticket:
+            ticket = Ticket.objects.create(
+                created_by=inquirer,
+                status=PENDING_MODE,
+                ticket_mode='other',
+                branch_opened=inquirer.branch
+            )
+            TicketLog.objects.create(ticket=ticket, status='resolved', timestamp=timezone.now(),changed_by=f'{support_member}- ticket manually created')
+            support_member.user_status = TICKET_INFO_MODE
+            support_member.save()
+            return f'Ticket is being created, Please provide the ticket description.'
+        else:
+            if support_member.user_status == TICKET_INFO_MODE:
+                created_ticket.description = response
+                created_ticket.save()
+                support_member.user_status = TICKET_TYPE_MODE
+                support_member.save()
+                return "Ticket description has been captured, Please add the inquiry type (eg. Technical, General, etc.)"
+            elif support_member.user_status == TICKET_TYPE_MODE:
+                created_ticket.inquiry_type = response
+                created_ticket.save()
+                support_member.user_status = HELPING_MODE
+                support_member.user_mode = HELPING_MODE
+                support_member.save()
+                return f'Ticket created successfully, ticket number is #{created_ticket.id}'
+    else:
+        if support_member.user_status == INQUIRER_NAME_MODE:
+            inquirer.username = response
+            inquirer.save()
+            support_member.user_status = INQUIRER_BRANCH_MODE
+            support_member.save()
+            return 'Inquirer is being created, please provide the inquirer name.'
+        if support_member.user_status == INQUIRER_BRANCH_MODE:
+            inquirer.branch = response
+            inquirer.save()
+            support_member.user_status = TICKET_INFO_MODE
+            support_member.save()
+            return 'Inquirer details has been captured, please provide the ticket description.'
+        new_inquirer = Inquirer.objects.create(phone_number=inquirer_mobile_1)
+        support_member.user_status = INQUIRER_NAME_MODE
+        support_member.save()
+        return 'Inquirer is being created, please provide the inquirer name.'
+    return "please provide the number of the inquirer you want to create a ticket for."
 
 def process_whatsapp_message(body):
     data = body

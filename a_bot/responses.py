@@ -33,6 +33,12 @@ CONFIRM_RESPONSE ='confirming_response'
 SUPPORT_MEMBER_ASSISTANCE_MODE = "support_assistance"
 SUPPORT_MEMBER_ASSISTING_MODE="support_assisting"
 SUPPORT_MEMBER_ASSISTING='support_member_assisting'
+MANUAL_RESOLUTION_MODE = "manual_resolution"
+INQUIRER_NUMBER_MODE = "providing_number"
+INQUIRER_NAME_MODE = "providing_name"
+INQUIRER_BRANCH_MODE = "providing_branch"
+TICKET_TYPE_MODE = "providing_ticket_type"
+TICKET_INFO_MODE = "providing_ticket_info"
 support_member_help_requests = ["#help","#assist","#support","#trouble"]
 back_to_helping_mode = "You are now back to helping mode, you're now chatting with the inquirer."
 tankan_self='This bot was created by tnqn @ clava.co.zw'
@@ -67,7 +73,10 @@ support_member_help_menu = '''*👨‍💻 SUPPORT MEMBER GUIDE*\n\n
    \n- If you are unable to assist an inquirer, you can release the ticket by sending *#release*.\n\n
 10. *RELEASING A TICKET*
    \n- If you are unable to assist an inquirer, you can release the ticket by sending *#release*.\n\n
-11. *EXITING*
+11. *MANUALLY CREATE A TICKET*
+   \n- If you need to create a ticket manually on behalf of an inquirer, send ( *create ticket* or *add ticket* ).
+   \n- You will be prompted to provide the necessary details to create a new ticket.\n\n
+12. *EXITING*
    \n- If you need to exit any mode, send *#exit* or *#cancel* .\n\n
 *Remember:* Your role is crucial in providing timely and effective support. Keep track of your tickets, prioritize as needed, and don’t hesitate to ask for help when necessary. You can always refer to this by sending word *help*.
 > Also, remember to interact with this bot daily! 🤖🚀
