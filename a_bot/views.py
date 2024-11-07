@@ -353,6 +353,8 @@ def create_manual_ticket(response,wa_id,support_member):
                 return "Ticket description has been captured, Please add the inquiry type (eg. Technical, General, etc.)"
             elif support_member.user_status == TICKET_TYPE_MODE:
                 created_ticket.inquiry_type = response
+                created_ticket.status = RESOLVED_MODE
+                created_ticket.resolved_at = timezone.now()
                 created_ticket.save()
                 support_member.user_status = HELPING_MODE
                 support_member.user_mode = HELPING_MODE
