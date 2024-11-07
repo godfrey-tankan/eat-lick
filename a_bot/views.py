@@ -322,7 +322,7 @@ def create_manual_ticket(response,wa_id,support_member):
             return 'Please provide a valid phone number.'
     inquirer = Inquirer.objects.filter(phone_number=inquirer_mobile_1).first()
     if  not inquirer:
-        inquirer = Inquirer.objects.filter(updated_at=timezone.now().date()).last()
+        inquirer = Inquirer.objects.filter(user_status=support_member.phone_number).last()
     if inquirer and inquirer.branch:
         created_ticket = Ticket.objects.filter(created_by=inquirer,status=PENDING_MODE,ticket_mode='other').last()
         if not created_ticket:
@@ -352,20 +352,18 @@ def create_manual_ticket(response,wa_id,support_member):
                 return f'Ticket created successfully, ticket number is #{created_ticket.id}'
     else:
         if support_member.user_status == INQUIRER_NAME_MODE:
-            inquirer = Inquirer.objects.filter(username='Inquirer').last()
             inquirer.username = response
             inquirer.save()
             support_member.user_status = INQUIRER_BRANCH_MODE
             support_member.save()
             return 'Name captured, please provide Inquirer branch.'
         if support_member.user_status == INQUIRER_BRANCH_MODE:
-            inquirer = Inquirer.objects.filter(branch=None).last()
             inquirer.branch = response
             inquirer.save()
             support_member.user_status = TICKET_INFO_MODE
             support_member.save()
             return 'Inquirer details has been captured, please provide the ticket description.'
-        new_inquirer = Inquirer.objects.create(phone_number=inquirer_mobile_1)
+        new_inquirer = Inquirer.objects.create(phone_number=inquirer_mobile_1, user_status=support_member.phone_number)
         support_member.user_status = INQUIRER_NAME_MODE
         support_member.save()
         return 'Inquirer is being created, please provide the inquirer name!'
