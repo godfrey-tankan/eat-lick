@@ -352,7 +352,7 @@ def create_manual_ticket(response,wa_id,support_member):
             support_member.save()
             return 'Name captured, please provide Inquirer branch.'
         if support_member.user_status == INQUIRER_BRANCH_MODE:
-            inquirer = Inquirer.objects.filter(branch='').last()
+            inquirer = Inquirer.objects.filter(branch=None).last()
             inquirer.branch = response
             inquirer.save()
             support_member.user_status = TICKET_INFO_MODE
