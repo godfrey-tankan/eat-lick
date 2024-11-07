@@ -350,7 +350,7 @@ def create_manual_ticket(response,wa_id,support_member):
             inquirer.save()
             support_member.user_status = INQUIRER_BRANCH_MODE
             support_member.save()
-            return 'Inquirer is being created, please provide the inquirer name.'
+            return 'Name captured, please provide Inquirer branch.'
         if support_member.user_status == INQUIRER_BRANCH_MODE:
             inquirer = Inquirer.objects.filter(branch='').last()
             inquirer.branch = response
