@@ -65,7 +65,10 @@ support_member_help_menu = '''*👨‍💻 SUPPORT MEMBER GUIDE*\n\n
    \n- You can view all the tickets that have been assigned and are currently being assisted.\n\n
 9. *RELEASING TICKETS*
    \n- If you are unable to assist an inquirer, you can release the ticket by sending *#release*.\n\n
-10. *EXITING*
+10. *RELEASING A TICKET*
+   \n- If you are unable to assist an inquirer, you can release the ticket by sending *#release*.\n\n
+11. *EXITING*
    \n- If you need to exit any mode, send *#exit* or *#cancel* .\n\n
 *Remember:* Your role is crucial in providing timely and effective support. Keep track of your tickets, prioritize as needed, and don’t hesitate to ask for help when necessary. You can always refer to this by sending word *help*.
+> Also, remember to interact with this bot daily! 🤖🚀
 '''
