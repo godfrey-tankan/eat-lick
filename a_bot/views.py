@@ -345,12 +345,14 @@ def create_manual_ticket(response,wa_id,support_member):
                 return f'Ticket created successfully, ticket number is #{created_ticket.id}'
     else:
         if support_member.user_status == INQUIRER_NAME_MODE:
+            inquirer = Inquirer.objects.filter(username='Inquirer').last()
             inquirer.username = response
             inquirer.save()
             support_member.user_status = INQUIRER_BRANCH_MODE
             support_member.save()
             return 'Inquirer is being created, please provide the inquirer name.'
         if support_member.user_status == INQUIRER_BRANCH_MODE:
+            inquirer = Inquirer.objects.filter(branch='').last()
             inquirer.branch = response
             inquirer.save()
             support_member.user_status = TICKET_INFO_MODE
@@ -359,7 +361,7 @@ def create_manual_ticket(response,wa_id,support_member):
         new_inquirer = Inquirer.objects.create(phone_number=inquirer_mobile_1)
         support_member.user_status = INQUIRER_NAME_MODE
         support_member.save()
-        return 'Inquirer is being created, please provide the inquirer name.'
+        return 'Inquirer is being created, please provide the inquirer name!'
     return "please provide the number of the inquirer you want to create a ticket for."
 
 def process_whatsapp_message(body):
