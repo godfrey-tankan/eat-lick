@@ -655,12 +655,12 @@ def handle_inquiry(wa_id, response, name):
                 return f'Hello {inquirer_obj.username.split()[0].title()}, What is your inquiry?'
             inquirer_obj.user_mode=BRANCH_MODE
             inquirer_obj.save()
-            branches_list = '> PLEASE SELECT YOUR BRANCH: \n- Please reply with your branch number eg *22* .\n\n'
+            branches_list = '> PLEASE SELECT YOUR BRANCH: \n\nPlease reply with your branch number eg *22* .\n\n'
             all_branches = Branch.objects.all()
             if all_branches:
                 for branch in all_branches:
                     branches_list += f'Branch number: *{branch.id}*\n- Name : *{branch.name}*\n\n'
-                branches_list += '\n Please reply with your branch number eg *2* .'
+                branches_list += '\n Please reply with your branch number eg *40* .'
                 return branches_list
             return 'No branches to choose from found!'
     try:
