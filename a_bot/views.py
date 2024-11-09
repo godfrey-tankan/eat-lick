@@ -139,8 +139,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         time_of_day = get_greeting()
         if inquirer:
             return main_menu(response,wa_id,time_of_day)
-        if not inquirer and response.lower() in greeting_messages:
-            return f"Golden  {time_of_day} {name.title()}, Please proceed by entering your *First Name* and *Surname* (e.g *Batsirai Musabayana* )."
+        
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?\n\n_reply with #menu to view the main menu or #help to view the help menu._"
 
     if response.lower() in ['help','#help'] or response.lower() == 'usage help':
