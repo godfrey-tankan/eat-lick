@@ -626,12 +626,12 @@ def handle_inquiry(wa_id, response, name):
                 except Exception as e:
                     branch_code = None
                 if not branch_code:
-                    branches_list = 'Please select a branch:\n\n'
+                    branches_list = 'Please select a branch: \n\nPlease reply with your branch number eg *10* .\n\n'
                     all_branches = Branch.objects.all()
                     if all_branches:
                         for branch in all_branches:
                             branches_list += f'Branch number: *{branch.id}*\n- Name : *{branch.name}*\n\n'
-                        branches_list += '\n Please reply with your branch number eg *2* .'
+                        branches_list += '\n> Please reply with your branch number eg *2* .'
                         return branches_list
                     return 'No branches to choose from found!'
                 selected_branch = Branch.objects.filter(id=branch_code).first()
@@ -660,7 +660,7 @@ def handle_inquiry(wa_id, response, name):
             if all_branches:
                 for branch in all_branches:
                     branches_list += f'Branch number: *{branch.id}*\n- Name : *{branch.name}*\n\n'
-                branches_list += '\n Please reply with your branch number eg *40* .'
+                branches_list += '\n> Please reply with your branch number eg *40* .'
                 return branches_list
             return 'No branches to choose from found!'
     try:
