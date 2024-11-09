@@ -139,6 +139,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
         time_of_day = get_greeting()
         if inquirer:
             return main_menu(response,wa_id,time_of_day)
+        if not inquirer and response.lower() in greeting_messages:
+            return f"Golden  {time_of_day} {name.title()}, Please proceed by entering your *First Name* and *Surname* (e.g * Batsirai Musabayana* )."
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?\n\n_reply with #menu to view the main menu or #help to view the help menu._"
 
     if response.lower() in ['help','#help'] or response.lower() == 'usage help':
@@ -159,7 +161,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         # for help_message in help_messages:
         #     if help_message in response.lower() or len(response) > :
         return handle_inquiry(wa_id, response, name)
-    return f"Hello,golden greetings. How can i help you today?"    
+    return f"Golden greetings. How can i help you today?"    
 
 def get_text_message_input(recipient, text,name=None,template=False):
 
@@ -612,7 +614,7 @@ def handle_inquiry(wa_id, response, name):
     inquirer_obj = Inquirer.objects.filter(phone_number=wa_id[0]).first()
     if not inquirer_obj:
         Inquirer.objects.create(phone_number=wa_id[0],user_mode=NAMES_MODE)
-        return f'Hello {name}, please provide your *first name* and *last name*'
+        return f'Please provide your *first name* and *last name* (e.g *Batsirai Musabayana* )'
     else:
         if inquirer_obj.user_mode == NAMES_MODE or inquirer_obj.user_mode == BRANCH_MODE:
             if inquirer_obj.user_mode == BRANCH_MODE:
@@ -654,7 +656,7 @@ def handle_inquiry(wa_id, response, name):
                 return f'Hello {inquirer_obj.username.split()[0].title()}, What is your inquiry?'
             inquirer_obj.user_mode=BRANCH_MODE
             inquirer_obj.save()
-            branches_list = 'Please select your branch:\n\n'
+            branches_list = '> PLEASE SELECT YOUR BRANCH: \n- Please reply with your branch number eg *22* .\n\n'
             all_branches = Branch.objects.all()
             if all_branches:
                 for branch in all_branches:

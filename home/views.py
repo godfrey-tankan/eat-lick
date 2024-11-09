@@ -27,6 +27,8 @@ from django.db.models import Prefetch
 from rest_framework.decorators import api_view
 from django.db.models import Count, Q, FloatField, ExpressionWrapper, F, Value, Avg
 from django.db.models.functions import Cast, Coalesce
+from django.views.decorators.csrf import csrf_exempt
+
 class TicketListCreateView(generics.ListCreateAPIView):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
@@ -868,4 +870,5 @@ def ticket_create(request):
     else:
         form = TicketForm()
     return render(request, 'tickets/create_ticket.html', {'form': form})
+
 
