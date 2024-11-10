@@ -1116,9 +1116,8 @@ def request_assistance_support_member(id):
         if member.id != request_user.id:
             member.user_status = SUPPORT_MEMBER_ASSISTING_MODE
             member.save()
-        else:
-            member.user_status = SUPPORT_MEMBER_ASSISTANCE_MODE
-            member.save()
+    request_user.user_status = SUPPORT_MEMBER_ASSISTANCE_MODE
+    request_user.save()
     message = f'🔔 *Support Member {request_user.username.title()}* is requesting assistance.\nPlease select:\n\n1. Assist\n2. Skip \n\n `please choose an option to continue!`'
     broadcast_messages(None,None,message,request_user.phone_number)
     data = get_text_message_input(request_user.phone_number, support_users_interaction, None)
