@@ -137,9 +137,16 @@ def generate_response(response, wa_id, name,message_type,message_id):
     
     if  response.lower() in greeting_messages or (inquirer and inquirer.user_mode == MAIN_MENU_MODE)or response.lower() in ['menu','#menu']:
         time_of_day = get_greeting()
+        names_ob = response.split()
         if inquirer:
             return main_menu(response,wa_id,time_of_day)
-        
+        else:
+            if response.lower() in greeting_messages:
+                return f"Golden  {time_of_day}, Please provide your *first name* and *surname* (e.g *Batsirai Musabayana* )"
+            if len(names_ob) > 2:
+                inquirer_person = Inquirer.objects.create(phone_number=wa_id[0], username=response,user_mode=BRANCH_MODE)
+            else:
+                return "Please provide both *firstname* and *surname*"
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?\n\n> reply with #help to view the help menu."
 
     if response.lower() in ['help','#help'] or response.lower() == 'usage help':
@@ -638,6 +645,7 @@ def handle_inquiry(wa_id, response, name):
                 if selected_branch:
                     inquirer_obj.branch = selected_branch.name
                     inquirer_obj.user_mode = INQUIRY_MODE
+                    inquirer_obj.user_status = INQUIRY_MODE
                     inquirer_obj.save()
                     message = f'You are now inquiring under *{selected_branch.name.title()}* ,to change your branch, send *#menu*'
                     data = get_text_message_input(inquirer_obj.phone_number,message,None)
