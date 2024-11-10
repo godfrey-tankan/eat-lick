@@ -650,10 +650,10 @@ def handle_inquiry(wa_id, response, name):
                     return f'Hello {inquirer_obj.username.split()[0].title()}, What is your inquiry?'
                 return 'Invalid branch number, please try again!'
             names = response.split()
-            if len(names) < 2:
-                return 'Please provide both your first name and last name'
             if len(names) > 3:
                 return "> Please provide valid name(s)"
+            if len(names) < 2:
+                return 'Please provide both your first name and last name'
             inquirer_obj.username = response
             inquirer_obj.save()
             if inquirer_obj.branch:
