@@ -652,6 +652,8 @@ def handle_inquiry(wa_id, response, name):
             names = response.split()
             if len(names) < 2:
                 return 'Please provide both your first name and last name'
+            if len(names) > 3:
+                return "> Please provide valid name(s)"
             inquirer_obj.username = response
             inquirer_obj.save()
             if inquirer_obj.branch:
