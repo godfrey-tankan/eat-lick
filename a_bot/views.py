@@ -142,11 +142,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return main_menu(response,wa_id,time_of_day)
         else:
             if response.lower() in greeting_messages:
+                inquirer_person = Inquirer.objects.create(phone_number=wa_id[0],user_mode=NAMES_MODE)
                 return f"Golden  {time_of_day}, Please provide your *first name* and *surname* (e.g *Batsirai Musabayana* )"
-            if len(names_ob) > 2:
-                inquirer_person = Inquirer.objects.create(phone_number=wa_id[0], username=response,user_mode=BRANCH_MODE)
-            else:
-                return "Please provide both *firstname* and *surname*"
         return f"Golden  {time_of_day} {name.title()}, how can i help you today?\n\n> reply with #help to view the help menu."
 
     if response.lower() in ['help','#help'] or response.lower() == 'usage help':
