@@ -88,6 +88,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return release_ticket(support_member)
         if '#hold' in response.lower():
             return hold_ticket(support_member,response)
+        if response.lower() in ['#commands','#codes']:
+            return COMMANDS
 
         if '#resume' in response.lower() or '#conti' in response.lower():
             support_member.user_status = RESUME_MODE
