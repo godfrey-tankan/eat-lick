@@ -39,7 +39,7 @@ INQUIRER_NAME_MODE = "providing_name"
 INQUIRER_BRANCH_MODE = "providing_branch"
 TICKET_TYPE_MODE = "providing_ticket_type"
 TICKET_INFO_MODE = "providing_ticket_info"
-support_member_help_requests = ["#help","#assist","#support","#trouble"]
+support_member_help_requests = ["#assist","#support","#trouble"]
 back_to_helping_mode = "You are now back to helping mode, you're now chatting with the inquirer."
 tankan_self='This bot was created by tnqn @ clava.co.zw'
 passed_support_helping ="You have passed the request,you can now continue with your current task."
@@ -81,3 +81,13 @@ support_member_help_menu = '''*👨‍💻 SUPPORT MEMBER GUIDE*\n\n
 *Remember:* Your role is crucial in providing timely and effective support. Keep track of your tickets, prioritize as needed, and don’t hesitate to ask for help when necessary. You can always refer to this by sending word *help*.
 > Also, remember to interact with this bot daily! 🤖🚀
 '''
+COMMANDS ="""
+> LIST OF HELPFUL COMMANDS TO USE.\n\n
+
+1. #taken\n- This lists all the tickets being attended to\n\n
+2. #resume \n- This lists all your tickets that are in the queue\n\n
+3. #assist, #support \n- This will request assistance or help from other support members\n\n
+4. #open \n- this will list all the open tickets that are not being attended to\n\n
+5. #exit \n- This will exit th current mode back to inquirer assistance mode or ticket acceptance mode provided you do not have any in hand.
+
+"""
