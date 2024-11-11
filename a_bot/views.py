@@ -71,6 +71,9 @@ def generate_response(response, wa_id, name,message_type,message_id):
         if response.lower() == 'help':
             return support_member_help_menu
         if support_member.user_status==NEW_TICKET_ACCEPT_MODE:
+            if response.lower() in ["skip", "cancel","#skip","#cancel"]:
+                support_member.user_status = HELPING_MODE
+                support_member.save()
             if response == '1' or response == '1.':
                 support_member.user_status = HELPING_MODE
                 support_member.save()
