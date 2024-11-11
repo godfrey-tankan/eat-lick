@@ -838,11 +838,14 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                 tickets_info = 'Please select the ticket you want to resume assisting:\n\n'
                 for i,queued_ticket in enumerate(all_queued_tickets,start=1):
                     tickets_info +=f"Number in queue: {i}.\n- Ticket Number: # *{queued_ticket.id}*\nInquirer: {queued_ticket.created_by.username.title()} from {queued_ticket.branch_opened.title()}\nDescription: {queued_ticket.description}\n"
-                tickets_info += '\nReply with #ticketNo eg *#4* to resume assisting the inquirer.'
+                tickets_info += '\nReply with ticketNo eg *4* to resume assisting the inquirer.'
                 data = get_text_message_input(support_member.phone_number, tickets_info, None)
                 return send_message(data)
             else:
-                match = re.search(r'#(\d+)', response)
+                try:
+                    match = int(response)
+                except Exception as e:
+                    match = False
                 if match:
                     current_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
                     if current_ticket:
@@ -852,7 +855,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                         current_ticket.ticket_mode = QUEUED_MODE
                         current_ticket.queued_at = timezone.now()
                         current_ticket.save()
-                    ticket_obj = Ticket.objects.filter(id=match.group(1)).first()
+                    ticket_obj = Ticket.objects.filter(id=match).first()
                     if ticket_obj:
                         ticket_obj.ticket_mode = 'other'
                         ticket_obj.save()
@@ -865,7 +868,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                     else:
                         return "Ticket not found"
                 else:
-                    return "Please check the ticket number and try again, use #ticketNo eg *#4*"
+                    return "Please check the ticket number and try again, use ticketNo eg *4*"
         support_member.user_status = HELPING_MODE
         support_member.user_mode=HELPING_MODE
         support_member.save()
@@ -901,14 +904,17 @@ def resume_assistance(support_member,response):
         if '#resume' in response or '#cont' in response:
             tickets_info = 'Please select the ticket you want to resume assisting:\n\n'
             for i,queued_ticket in enumerate(all_queued_tickets,start=1):
-                tickets_info +=f"Number in Queue: {i}\n- Ticket Number: # *{queued_ticket.id}*\nOpened By: {queued_ticket.created_by.username} from {queued_ticket.branch_opened} branch.\n- {queued_ticket.description}\n\n"
-            tickets_info += '\nReply with #ticketNo eg *#1* to resume assisting the inquirer.'
+                tickets_info +=f"Number in Queue: {i}\n- Ticket Number: *{queued_ticket.id}*\nOpened By: {queued_ticket.created_by.username} from {queued_ticket.branch_opened} branch.\n- {queued_ticket.description}\n\n"
+            tickets_info += '\nReply with ticketNo eg *1* to resume assisting the inquirer.'
             data = get_text_message_input(support_member.phone_number, tickets_info, None)
             return send_message(data)
         else:
-            match = re.search(r'#(\d+)', response)
+            try:
+                match = int(response)
+            except Exception as e:
+                match = False
             if match:
-                ticket_obj = Ticket.objects.filter(id=int(match.group(1)),assigned_to=support_member,ticket_mode=QUEUED_MODE,status=PENDING_MODE).first()
+                ticket_obj = Ticket.objects.filter(id=match,assigned_to=support_member,ticket_mode=QUEUED_MODE,status=PENDING_MODE).first()
                 if ticket_obj:
                     check_other_pending_tickets = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
                     if check_other_pending_tickets:
