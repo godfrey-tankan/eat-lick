@@ -91,6 +91,11 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return release_ticket(support_member)
         if '#hold' in response.lower():
             return hold_ticket(support_member,response)
+        if ("#take" in response.lower()  and support_member.phone_number =='263772428281') or support_member.user_status == REVOKE_TICKET_MODE:
+            support_member.user_status = REVOKE_TICKET_MODE
+            support_member.save()   
+            return revoke_ticket(support_member,response)
+            
         if response.lower() in ['#commands','#codes']:
             return COMMANDS
         if response.lower() in ["#current","#pending"]:
@@ -1019,6 +1024,20 @@ def testing(request):
     return JsonResponse({'data':'y'})
     
     
+def revoke_ticket(support_member,ticket_id):
+    ticket_id_ob = ticket_id.split()[1]
+    ticket = Ticket.objects.filter(id=ticket_id_ob).first()
+    try:
+        support_member.user_status = HELPING_MODE
+        support_member.save()
+    except Exception as e:
+        ...
+    if ticket:
+        ticket.assigned_to = support_member
+        ticket.save()
+        return f'Ticket number #{ticket_id_ob.id} is now assigned to you'
+    return 'Ticket not found please check the ticket id, please use #revoke ticketNo to revoke a ticket e.g #revoke 4'
+
 def accept_ticket(wa_id,name, ticket_id):
     try:
         ticket_id = int(ticket_id)
