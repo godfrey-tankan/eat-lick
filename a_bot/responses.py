@@ -1,4 +1,4 @@
-accept_ticket_response = "🟢There is a ticket opened just now by *{} - {}*.\n\n*Ticket ID:* {}\n*Description:* \n- {}\n\nPlease reply with this ticket id to assign it to yourself."
+accept_ticket_response = "🟢There is a ticket opened just now by *{} - {}* mobile *{}* .\n\n*Ticket ID:* {}\n*Description:* \n- {}\n\nPlease reply with this ticket id to assign it to yourself."
 greeting_messages = ["hi","hy", "hello", "hey", "good day", "good morning", "good afternoon", "good evening"]
 thank_you_messages = ["thank",'zvaita','yaita','now working','#cancel','#exit']
 help_messages = ["help", "help me", "i need help", "can you help me", "can you help me with this",'please','assist','support','can you ','is not','a problem','an issue','error','fault','mistake','wrong','fail','trouble']

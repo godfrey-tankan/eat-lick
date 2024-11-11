@@ -48,7 +48,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         return tankan_self
     
     if support_member:
-        if 'create' in response.lower() or 'add' in response.lower():
+        if 'create ticket' in response.lower() or 'add ticket' in response.lower():
             support_member.user_mode = MANUAL_RESOLUTION_MODE
             support_member.user_status = INQUIRER_NUMBER_MODE
             support_member.save()
@@ -973,7 +973,7 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                 if message:
                     message=message
                 else:
-                    message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.id, ticket.description)
+                    message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.created_by.phone_number,ticket.id, ticket.description)
                 pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id,ticket_mode='other').first()
                 if not pending_ticket:
                     support_member.user_mode = ACCEPT_TICKET_MODE
