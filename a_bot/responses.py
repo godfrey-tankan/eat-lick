@@ -59,8 +59,8 @@ support_member_help_menu = '''*👨‍💻 SUPPORT MEMBER GUIDE*\n\n
    \n- To close a ticket, send *#close*.
    \n- If the inquiry is resolved, send *#done*. This will mark the ticket as resolved.
 5. *REQUESTING ASSISTANCE*
-   \n- If you need help with a ticket, send *#help* or *#assist*.
-   \n- All support members will be notified of your request, and those who choose to assist will follow the prompts.\n\n
+   \n- If you need help from other support members, send *#assist*.
+   \n- All support members will be notified of your request, and one who chooses to assist will start assisting you.\n\n
 6. *Exiting Assistance Mode*
    \n- If you decide to exit the support member assistance mode, send *#exit* or *#cancel*. This will allow you to continue interacting with inquirers directly.\n\n
 7. *Open Tickets*
@@ -79,7 +79,7 @@ support_member_help_menu = '''*👨‍💻 SUPPORT MEMBER GUIDE*\n\n
 12. *EXITING*
    \n- If you need to exit any mode, send *#exit* or *#cancel* .\n\n
 13. *USEFUL COMMANDS*
-   \n- reply with #codes or #commands to see a list of these commands
+   \n- reply with #codes or #commands to see a list of these commands\n\n
 *Remember:* Your role is crucial in providing timely and effective support. Keep track of your tickets, prioritize as needed, and don’t hesitate to ask for help when necessary. You can always refer to this by sending word *help*.
 > Also, remember to interact with this bot daily! 🤖🚀
 '''
@@ -90,6 +90,9 @@ COMMANDS ="""
 2. #resume \n- This lists all your tickets that are in the queue\n\n
 3. #assist, #support \n- This will request assistance or help from other support members\n\n
 4. #open \n- this will list all the open tickets that are not being attended to\n\n
-5. #exit \n- This will exit th current mode back to inquirer assistance mode or ticket acceptance mode provided you do not have any in hand.
+5. #exit \n- This will exit th current mode back to inquirer assistance mode or ticket acceptance mode provided you do not have any in hand.\n\n
+6. help \n- This will popup the Support member Guide (Help menu)
+7. #release \n- This will release the pending ticket you're currently providing assistance on back to open state
+8. #hold \n- This will hold the ticket allowing you to attend to other tickets in your queue
 
 """
