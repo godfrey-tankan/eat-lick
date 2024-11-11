@@ -67,6 +67,7 @@
     <div class="btn-container">
         <button onclick="exportToExcel()">Export to Excel</button>
         <button onclick="window.print()">Print Report</button>
+        <button onclick="exportToExcelNew()">Detailed Excel</button>
     </div>
 
     <div id="reportContent">
@@ -229,8 +230,8 @@
         }
     </script>
     
-    {% comment %} <script>
-        function exportToExcel() {
+ <script>
+        function exportToExcelNew() {
             const reportContent = document.getElementById("reportContent").innerHTML;
             const tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
                 <head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
@@ -242,12 +243,12 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = "Feedback_Report.xls";
+            a.download = "Feedback_Report.xlsx";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
         }
-    </script> {% endcomment %}
+    </script> 
 
 
 </body>
