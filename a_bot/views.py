@@ -990,6 +990,7 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                 pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id,ticket_mode='other').first()
                 if not pending_ticket:
                     support_member.user_mode = ACCEPT_TICKET_MODE
+                    support_member.user_status = ACCEPT_TICKET_MODE
                     support_member.save()
                 else:
                     support_member.user_status = NEW_TICKET_ACCEPT_MODE
