@@ -90,6 +90,10 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return hold_ticket(support_member,response)
         if response.lower() in ['#commands','#codes']:
             return COMMANDS
+        if response.lower() in ["#current","#pending"]:
+            current_pending_ticket_ob = Ticket.objects.filter(assigned_to=support_member,status=PENDING_MODE,ticket_mode='other').first()
+            return f"You are currently assisting *{current_pending_ticket_ob.created_by.username.title()}*\nMobile *{current_pending_ticket_ob.created_by.phone_number}*\nticket number *{current_pending_ticket_ob.id}*\nDescription {current_pending_ticket_ob.description}"
+
 
         if '#resume' in response.lower() or '#conti' in response.lower():
             support_member.user_status = RESUME_MODE
@@ -991,6 +995,10 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                 data = get_text_message_input(support_member.phone_number, message, None)
                 send_message(data)
 
+
+# def current_pending_ticket(support_member):
+#     current_pending_ticket_ob = Ticket.objects.filter(assigned_to=support_member,status=PENDING_MODE,ticket_mode='other')
+#     return f"You are currently assisting *{current_pending_ticket_ob.created_by.username.title()}*\nMobile *{current_pending_ticket_ob.created_by.phone_number}*\nticket number *{current_pending_ticket_ob.id}*\nDescription {current_pending_ticket_ob.description}"
 
 @csrf_exempt
 def testing(request):
