@@ -91,7 +91,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return release_ticket(support_member)
         if '#hold' in response.lower():
             return hold_ticket(support_member,response)
-        if ("#take" in response.lower()  and support_member.phone_number =='263772428281') or support_member.user_status == REVOKE_TICKET_MODE:
+        if ("#take" in response.lower() or "#revoke" in response.lower()  and support_member.phone_number =='263772428281') or support_member.user_status == REVOKE_TICKET_MODE:
             support_member.user_status = REVOKE_TICKET_MODE
             support_member.save()   
             return revoke_ticket(support_member,response)
@@ -1033,9 +1033,18 @@ def revoke_ticket(support_member,ticket_id):
     except Exception as e:
         ...
     if ticket:
-        ticket.assigned_to = support_member
-        ticket.save()
-        return f'Ticket number #{ticket_id_ob.id} is now assigned to you'
+        support_member_pending_tickets = Ticket.objects.filter(assigned_to=support_member.id,status=PENDING_MODE,ticket_mode='other').first()
+        if support_member_pending_tickets:
+            ticket.assigned_to = support_member
+            ticket.ticket_mode = QUEUED_MODE
+            ticket.queued_at = timezone.now()
+            ticket.save()
+            return f'You have revoked the ticket number #{ticket_id_ob.id}, it is now in your tickets queue, please continue with your current task first or reply with #resume to take it from the queued list.'
+        else:
+            ticket.assigned_to = support_member
+            ticket.ticket_mode = 'other'
+            ticket.save()
+            return f'You have revoked the ticket number #{ticket_id_ob.id}, it is now assigned to you.'
     return 'Ticket not found please check the ticket id, please use #revoke ticketNo to revoke a ticket e.g #revoke 4'
 
 def accept_ticket(wa_id,name, ticket_id):
