@@ -93,9 +93,9 @@ COMMANDS ="""
 3. #assist, #support \n- This will request assistance or help from other support members\n\n
 4. #open \n- this will list all the open tickets that are not being attended to\n\n
 5. #exit \n- This will exit th current mode back to inquirer assistance mode or ticket acceptance mode provided you do not have any in hand.\n\n
-6. help \n- This will popup the Support member Guide (Help menu)
-7. #release \n- This will release the pending ticket you're currently providing assistance on back to open state
-8. #hold \n- This will hold the ticket allowing you to attend to other tickets in your queue
-9. #pending or #current \n- This will list the details of the current ticket you are providing assistance on.
+6. help \n- This will popup the Support member Guide (Help menu)\n\n
+7. #release \n- This will release the pending ticket you're currently providing assistance on back to open state\n\n
+8. #hold \n- This will hold the ticket allowing you to attend to other tickets in your queue\n\n
+9. #pending or #current \n- This will list the details of the current ticket you are providing assistance on.\n\n
 
 """
