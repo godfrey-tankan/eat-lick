@@ -742,7 +742,7 @@ def handle_inquiry(wa_id, response, name):
             broadcast_messages(name,ticket)
             return new_inquiry_opened_response
 
-    if len(response) < 5:
+    if len(response) < 15:
         return 'Please provide a detailed inquiry'
     if response == 'hello i want help':
         return 'Hello what do you need help with?'
