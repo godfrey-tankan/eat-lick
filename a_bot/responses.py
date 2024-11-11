@@ -50,7 +50,7 @@ support_member_help_menu = '''*👨‍💻 SUPPORT MEMBER GUIDE*\n\n
    \n- When a new ticket is opened, reply with the *provided Ticket ID* to assign it to yourself.
    \n- Once you see a message confirming the assignment, you can immediately start assisting the inquirer by sending a message.\n\n
 2. *HANDLING MULTIPLE TICKETS*
-   \n- If you have pending tickets, you’ll still be prompted to assign any newly opened ticket to yourself.
+   \n- If you have pending tickets, you’ll still be prompted to assign any newly opened ticket to yourself, *PLEASE RESPOND ACCORDINGLY!* ,select *1* to skip or reply with ticket id to accept .
    \n- *Top Priority:* If you choose to take the new ticket, it will be set in queue and the current assigned ticket will be given top priority. The conversation will remain between you and the previous inquirer.
    \n- *Skipping Tickets:* If you decide to skip the new ticket, you can continue working on your current tasks.\n\n
 3. *RESUMING TICKETS*
