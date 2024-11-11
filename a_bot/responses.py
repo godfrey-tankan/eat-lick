@@ -94,5 +94,6 @@ COMMANDS ="""
 6. help \n- This will popup the Support member Guide (Help menu)
 7. #release \n- This will release the pending ticket you're currently providing assistance on back to open state
 8. #hold \n- This will hold the ticket allowing you to attend to other tickets in your queue
+9. #pending or #current \n- This will list the details of the current ticket you are providing assistance on.
 
 """
