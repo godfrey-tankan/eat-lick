@@ -1026,13 +1026,16 @@ def testing(request):
     
 def revoke_ticket(support_member,ticket_id):
     ticket_id_ob = ticket_id.split()[1]
-    ticket = Ticket.objects.filter(id=ticket_id_ob).first()
+    ticket = Ticket.objects.filter(id=ticket_id_ob,status=PENDING_MODE).first()
     try:
         support_member.user_status = HELPING_MODE
         support_member.save()
     except Exception as e:
         ...
     if ticket:
+        message_to_prev_assistor = f"Hello {ticket.assigned_to.username.title()},\nTicket number *{ticket.id}* has been revoked and it is no longer assigned to you, you can now continue with your current task."
+        data = get_text_message_input(ticket.assigned_to.phone_number, message_to_prev_assistor, None)
+        send_message(data)
         support_member_pending_tickets = Ticket.objects.filter(assigned_to=support_member.id,status=PENDING_MODE,ticket_mode='other').first()
         if support_member_pending_tickets:
             ticket.assigned_to = support_member
@@ -1045,7 +1048,7 @@ def revoke_ticket(support_member,ticket_id):
             ticket.ticket_mode = 'other'
             ticket.save()
             return f'You have revoked the ticket number #{ticket_id_ob.id}, it is now assigned to you.'
-    return 'Ticket not found please check the ticket id, please use #revoke ticketNo to revoke a ticket e.g #revoke 4'
+    return 'Ticket not found please check the ticket id, please use #revoke ticketNo to revoke a ticket e.g #revoke 4 and also make sure the ticket is in pending state'
 
 def accept_ticket(wa_id,name, ticket_id):
     try:
