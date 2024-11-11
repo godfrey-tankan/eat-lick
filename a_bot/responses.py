@@ -78,6 +78,8 @@ support_member_help_menu = '''*👨‍💻 SUPPORT MEMBER GUIDE*\n\n
    \n- You will be prompted to provide the necessary details to create a new ticket.\n\n
 12. *EXITING*
    \n- If you need to exit any mode, send *#exit* or *#cancel* .\n\n
+13. *CURRENT TICKET DETAILS*
+   \n- To see the details of the current ticket you're providing details on, send #current or #pending\n\n
 13. *USEFUL COMMANDS*
    \n- reply with #codes or #commands to see a list of these commands\n\n
 *Remember:* Your role is crucial in providing timely and effective support. Keep track of your tickets, prioritize as needed, and don’t hesitate to ask for help when necessary. You can always refer to this by sending word *help*.
