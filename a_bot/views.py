@@ -794,14 +794,14 @@ def handle_help(wa_id, response, name,message_type,message_id):
                 open_inquiries.save()
                 return "You have successfully confirmed the inquiry type, you can now continue assisting the inquirer."
                 
-            try:
-                Message.objects.create(ticket_id=open_inquiries,inquirer=None, support_member=support_member, content=response)
-            except Exception as e:
-                ...
             if response in resolve_ticket_responses:
                 return mark_as_resolved(open_inquiries.id)
             if response in close_ticket_responses:
                 return mark_as_resolved(open_inquiries.id,True)
+            try:
+                Message.objects.create(ticket_id=open_inquiries,inquirer=None, support_member=support_member, content=response)
+            except Exception as e:
+                ...
             data = get_text_message_input(open_inquiries.created_by.phone_number, response, None)
             return send_message(data)
         else:
