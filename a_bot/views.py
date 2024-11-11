@@ -743,7 +743,7 @@ def handle_inquiry(wa_id, response, name):
             return new_inquiry_opened_response
 
     if len(response) < 15:
-        return 'Please provide a detailed inquiry'
+        return 'Please provide a detailed inquiry if you want to open an inquiry, if you do not intent to, please just ignore this message!'
     if response == 'hello i want help':
         return 'Hello what do you need help with?'
     ticket = Ticket.objects.create(
