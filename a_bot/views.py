@@ -1301,11 +1301,11 @@ def mark_as_resolved( ticket_id,is_closed=False):
                 send_message(data)
                 created_time = timezone.localtime(pending_ticket.created_at).strftime('%Y-%m-%d %H:%M')
                 
-                message += (f'{i}. Ticket Number: *#{pending_ticket.id}*'
+                message += (f'{i}. Ticket Number: *{pending_ticket.id}*'
                             f'\n- Opened by *{pending_ticket.created_by.username.title()}* from *{pending_ticket.created_by.branch.upper()}* branch '
                             f'at {created_time}\n- Description: {pending_ticket.description}\n\n')
 
-            message += 'Reply with #ticketNo eg *#4* to resume assisting the inquirer.'
+            message += 'Reply with ticketNo eg *4* to resume assisting the inquirer.'
             support_member.user_status = RESUME_MODE
             support_member.save()
 
@@ -1354,11 +1354,11 @@ def mark_as_resolved( ticket_id,is_closed=False):
             data = get_text_message_input(pending_ticket.created_by.phone_number, alert_message, None)
             send_message(data)
             created_time = timezone.localtime(pending_ticket.created_at).strftime('%Y-%m-%d %H:%M')
-            message += (f'{i}. Ticket Number: *#{pending_ticket.id}*'
+            message += (f'{i}. Ticket Number: *{pending_ticket.id}*'
                         f'\n- Opened by *{pending_ticket.created_by.username.title()}* from *{pending_ticket.created_by.branch.upper()}* branch'
                         f'at {created_time}\n- Description {pending_ticket.description}\n\n')
 
-        message += 'Reply with #ticketNo eg *#4* to resume assisting the inquirer.'
+        message += 'Reply with ticketNo eg *4* to resume assisting the inquirer.'
         support_member.user_status = RESUME_MODE
         support_member.save()
 

@@ -215,7 +215,32 @@
 
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
+        function exportToExcel() {
+            // Get the table content
+            const reportContent = document.getElementById("reportContent");
+            const tableData = [];
+    
+            // Loop through rows and cells to extract data
+            for (let row of reportContent.rows) {
+                const rowData = [];
+                for (let cell of row.cells) {
+                    rowData.push(cell.innerText);
+                }
+                tableData.push(rowData);
+            }
+    
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(tableData);
+    
+            XLSX.utils.book_append_sheet(wb, ws, "Feedback Report");
+    
+            XLSX.writeFile(wb, "Feedback_Report.xlsx");
+        }
+    </script>
+    
+    {% comment %} <script>
         function exportToExcel() {
             const reportContent = document.getElementById("reportContent").innerHTML;
             const tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
@@ -233,7 +258,8 @@
             a.click();
             document.body.removeChild(a);
         }
-    </script>
+    </script> {% endcomment %}
+
 
 </body>
 </html>
