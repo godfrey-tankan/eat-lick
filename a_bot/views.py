@@ -92,7 +92,9 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return COMMANDS
         if response.lower() in ["#current","#pending"]:
             current_pending_ticket_ob = Ticket.objects.filter(assigned_to=support_member,status=PENDING_MODE,ticket_mode='other').first()
-            return f"You are currently assisting *{current_pending_ticket_ob.created_by.username.title()}*\nMobile *{current_pending_ticket_ob.created_by.phone_number}*\nticket number *{current_pending_ticket_ob.id}* \nBranch {current_pending_ticket_ob.branch_opened}\nDescription {current_pending_ticket_ob.description}"
+            if current_pending_ticket_ob:
+                return f"You are currently assisting *{current_pending_ticket_ob.created_by.username.title()}*\nMobile *{current_pending_ticket_ob.created_by.phone_number}*\nticket number *{current_pending_ticket_ob.id}* \nBranch {current_pending_ticket_ob.branch_opened}\nDescription {current_pending_ticket_ob.description}"
+            return "> You are not assisting on any ticket at the moment"
 
 
         if '#resume' in response.lower() or '#conti' in response.lower():
