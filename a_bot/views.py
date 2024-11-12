@@ -95,6 +95,10 @@ def generate_response(response, wa_id, name,message_type,message_id):
             support_member.user_status = REVOKE_TICKET_MODE
             support_member.save()   
             return revoke_ticket(support_member,response)
+        if "#reopen" in response.lower() or "#re-open" in response.lower() or support_member.user_status == REOPENING_TICKET_MODE:
+            support_member.user_status = REOPENING_TICKET_MODE
+            support_member.save()
+            return reopen_ticket(support_member,response)
             
         if response.lower() in ['#commands','#codes']:
             return COMMANDS
@@ -129,11 +133,11 @@ def generate_response(response, wa_id, name,message_type,message_id):
     if check_ticket:
         if inquirer and inquirer.user_mode== CONFIRM_RESPONSE:
             if response == '1' or response == '1.':
-                mark_as_resolved(check_ticket.id)
+                mark_as_resolved(check_ticket.id,False,True)
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 return send_message(data)
             elif response =='2' or response == '2.':
-                mark_as_resolved(check_ticket.id,True)
+                mark_as_resolved(check_ticket.id,True,True)
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 return send_message(data)
             elif response=='3':
@@ -814,7 +818,7 @@ def handle_help(wa_id, response, name,message_type,message_id):
             return send_message(data)
         else:
             if response in resolve_ticket_responses:
-                return mark_as_resolved(open_inquiries.id)
+                return mark_as_resolved(open_inquiries.id,False,True)
             try:
                 inquirer = Inquirer.objects.filter(phone_number=wa_id[0]).first()
                 Message.objects.create(ticket_id=open_inquiries,inquirer=inquirer, support_member=None, content=response)
@@ -1023,6 +1027,66 @@ def testing(request):
     # x=accept_ticket(wa_id,name, ticket_id)
     return JsonResponse({'data':'y'})
     
+def reopen_ticket(support_member,ticket_id):
+    ticket_id_ob = ticket_id.split()[1]
+    ticket = Ticket.objects.filter(id=ticket_id_ob,status=CLOSED_MODE).first()
+    try:
+        support_member.user_status = HELPING_MODE
+        support_member.save()
+    except Exception as e:
+        ...
+    if ticket:
+        if ticket.assigned_to != support_member:
+            message_to_inquirer = f"Hello {ticket.created_by.username.title()},\nyour inquiry: {ticket.description} has been re-opened, please wait for the support person to talk to you!"
+            data_2 = get_text_message_input(ticket.created_by.phone_number,message_to_inquirer,None)
+            send_message(data_2)
+            support_member_pending_tickets = Ticket.objects.filter(assigned_to=ticket.assigned_to,status=PENDING_MODE,ticket_mode='other').first()
+            if support_member_pending_tickets:
+                ticket.status = PENDING_MODE
+                ticket.ticket_mode = QUEUED_MODE
+                ticket.closed_at =None
+                ticket.queued_at = timezone.now()
+                ticket.save()
+                message_to_prev_assistor = f"Hello {ticket.assigned_to.username.title()},\nTicket number *{ticket.id}* \nDescription - {ticket.description} has been re-opened by *{support_member.username.title()}* \nIt is now in your queue, send #resume to switch to it."
+                data = get_text_message_input(ticket.assigned_to.phone_number, message_to_prev_assistor, None)
+                send_message(data)
+                return f'You have re-opened the ticket number #{ticket.id}, it is now in {ticket.assigned_to.username.title()}`s queue.'
+            else:
+                ticket.status = PENDING_MODE
+                ticket.ticket_mode = 'other'
+                ticket.closed_at=None
+                try:
+                    ticket.assigned_to.user_mode=HELPING_MODE
+                    ticket.assigned_to.user_status=HELPING_MODE
+                except:
+                    ...
+                ticket.save()
+                message_to_prev_assistor = f"Hello {ticket.assigned_to.username.title()},\nTicket number *{ticket.id}* \nDescription - {ticket.description} has been re-opened by *{support_member.username.title()}* \nPlease assist the inquirer now or send #release to release it"
+                data = get_text_message_input(ticket.assigned_to.phone_number, message_to_prev_assistor, None)
+                send_message(data)
+                return f'You have re-opened the ticket number #{ticket.id},\n Description {ticket.description}\n *{ticket.assigned_to.username.title()}* will provide assistance to the inquirer or release this ticket'
+        else:
+            support_member_pending_tickets = Ticket.objects.filter(assigned_to=support_member,status=PENDING_MODE,ticket_mode='other').first()
+            if support_member_pending_tickets:
+                ticket.status = PENDING_MODE
+                ticket.ticket_mode = QUEUED_MODE
+                ticket.closed_at =None
+                ticket.queued_at = timezone.now()
+                ticket.save()
+                return f'You have re-opened the ticket number #{ticket.id}, it is now in your queue.'
+            else:
+                ticket.status = PENDING_MODE
+                ticket.ticket_mode = 'other'
+                ticket.closed_at=None
+                ticket.save()
+                message_to_inquirer = f"Hello {ticket.created_by.username.title()}, your inquiry ({ticket.description}) has been re-opened, please wait for support message"
+                data = get_text_message_input(ticket.created_by.phone_number,message_to_inquirer,None)
+                send_message(data)
+                support_member.user_mode = HELPING_MODE
+                support_member.save()
+                return f"You have re-opened ticket number {ticket.id}\n Opened by {ticket.created_by.username.title()} from {ticket.branch_opened.upper()} branch\nDescription ({ticket.description}) which was assigned to you, please start assisting the inquirer now or release it by sending #release"
+    return '> Ticket not found please check the ticket id, please make sure the ticket is in closed state'
+
     
 def revoke_ticket(support_member,ticket_id):
     ticket_id_ob = ticket_id.split()[1]
@@ -1032,8 +1096,10 @@ def revoke_ticket(support_member,ticket_id):
         support_member.save()
     except Exception as e:
         ...
-    if ticket:
-        message_to_prev_assistor = f"Hello {ticket.assigned_to.username.title()},\nTicket number *{ticket.id}* has been revoked and it is no longer assigned to you, you can now continue with your current task."
+    if ticket :
+        if ticket.assigned_to == support_member:
+            return "> You are trying to take a ticket that is already assigned to you!"
+        message_to_prev_assistor = f"Hello {ticket.assigned_to.username.title()},\nTicket number *{ticket.id}* has been escalated from you and it is no longer assigned to you, you can now continue with your current task."
         data = get_text_message_input(ticket.assigned_to.phone_number, message_to_prev_assistor, None)
         send_message(data)
         support_member_pending_tickets = Ticket.objects.filter(assigned_to=support_member.id,status=PENDING_MODE,ticket_mode='other').first()
@@ -1042,12 +1108,12 @@ def revoke_ticket(support_member,ticket_id):
             ticket.ticket_mode = QUEUED_MODE
             ticket.queued_at = timezone.now()
             ticket.save()
-            return f'You have revoked the ticket number #{ticket_id_ob.id}, it is now in your tickets queue, please continue with your current task first or reply with #resume to take it from the queued list.'
+            return f'You have revoked the ticket number #{ticket.id}, it is now in your tickets queue, please continue with your current task first or reply with #resume to take it from the queued list.'
         else:
             ticket.assigned_to = support_member
             ticket.ticket_mode = 'other'
             ticket.save()
-            return f'You have revoked the ticket number #{ticket_id_ob.id}, it is now assigned to you.'
+            return f'You have revoked the ticket number #{ticket.id}, it is now assigned to you.'
     return 'Ticket not found please check the ticket id, please use #revoke ticketNo to revoke a ticket e.g #revoke 4 and also make sure the ticket is in pending state'
 
 def accept_ticket(wa_id,name, ticket_id):
@@ -1292,7 +1358,7 @@ def get_video_message(recipient, video_id):
         }
     )
 
-def mark_as_resolved( ticket_id,is_closed=False):
+def mark_as_resolved( ticket_id,is_closed=False,by_inquirer=False):
     if is_closed:
         ticket = Ticket.objects.get(id=ticket_id)
         ticket.status = CLOSED_MODE
@@ -1342,7 +1408,11 @@ def mark_as_resolved( ticket_id,is_closed=False):
 
             data = get_text_message_input(support_member.phone_number, message, None)
             send_message(data)
-        message=f"ticket *#{ticket.id}* has been closed ❌."
+        if by_inquirer:
+            ticket_closer = ticket.created_by.username.title()
+        else:
+            ticket_closer = ticket.assigned_to.username.title()
+        message=f"ticket *#{ticket.id}* has been closed ❌ by {ticket_closer} "
         reply = f'Your inquiry has been closed.'
         data = get_text_message_input(ticket.created_by.phone_number, reply, None)
         send_message(data)
@@ -1395,8 +1465,10 @@ def mark_as_resolved( ticket_id,is_closed=False):
 
         data = get_text_message_input(support_member.phone_number, message, None)
         send_message(data)
-    
-    message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."
+    if by_inquirer:
+        message =f"{ticket.created_by.username.title()} has marked ticket *{ticket.id}* as resolved ✅"
+    else:
+        message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."
     ticket_description = ticket.description.split('Web:')[1] if 'Web:' in ticket.description else ticket.description
     reply = f'Your inquiry (*{ticket_description}*) has been marked as resolved'
     data = get_text_message_input(ticket.created_by.phone_number, reply, None)

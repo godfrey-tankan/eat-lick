@@ -18,6 +18,7 @@ INQUIRY_MODE = "inquiry"
 RESOLVED_MODE = "resolved"
 PENDING_MODE = "pending"
 REVOKE_TICKET_MODE = "revoke_ticket"
+REOPENING_TICKET_MODE="reopening_ticket"
 CLOSED_MODE = "closed"
 NEW_TICKET_MODE = "new_ticket"
 MAIN_MENU_MODE='main-menu'
