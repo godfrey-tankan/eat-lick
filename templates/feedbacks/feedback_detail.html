@@ -55,13 +55,13 @@
         }
 
         .report {
-            display: none; /* Hide the report by default */
+            display: none;
             padding: 20px;
             background-color: #fff;
             border-radius: 8px;
             margin: 20px auto;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            max-width: 800px; /* Center the report */
+            max-width: 800px;
         }
 
         .popup {
@@ -195,11 +195,7 @@
                 max-width: 90%;
             }
         }
-      
-            
-
 </style>
-
 </head>
 <body>
     <h2>All User Feedbacks</h2>
@@ -268,180 +264,205 @@
     </div>
 
     <script>
-     // Function to display the report popup and fetch the report data from the backend
-function showReportPopup() {
-    console.log('hit..')
-    const reportType = document.getElementById('reportType').value;  // Get selected report type
+     function showReportPopup() {
+        console.log('hit..')
+        const reportType = document.getElementById('reportType').value;
 
-    // Post the selected report type and date range to the backend
-    fetch('smedco/generate-full-report/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()  // Include CSRF token for Django
-        },
-        body: JSON.stringify({
-            report_type: reportType,
+        fetch('smedco/generate-full-report/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                report_type: reportType,
+            })
         })
-    })
-    .then(response => response.json())  // Parse the JSON response
-    .then(reportData => {
-        // Once the data is received, show the report
-        const reportDiv = document.getElementById('report');
-        const reportContentDiv = document.getElementById('reportContent');
-
-        let reportHTML = '<h4>Feedback by Department</h4><ul>';
-        reportData.feedback_by_department.forEach(item => {
-            reportHTML += `<li>${item.department}: ${item.total_responses} responses</li>`;
-        });
-        reportHTML += '</ul>';
-
-        reportHTML += '<h4>Feedback by Qualification</h4><ul>';
-        reportData.feedback_by_qualification.forEach(item => {
-            reportHTML += `<li>${item.highest_qualification}: ${item.total_responses} responses</li>`;
-        });
-        reportHTML += '</ul>';
-
-        reportHTML += '<h4>Feedback by Age Group</h4><ul>';
-        reportData.feedback_by_age_group.forEach(item => {
-            reportHTML += `<li>${item.age_group}: ${item.total_responses} responses</li>`;
-        });
-        reportHTML += '</ul>';
-
-        reportHTML += '<h4>Feedback by Designation</h4><ul>';
-        reportData.feedback_by_designation.forEach(item => {
-            reportHTML += `<li>${item.designation}: ${item.total_responses} responses</li>`;
-        });
-        reportHTML += '</ul>';
-
-        reportHTML += '<h4>Feedback by Question</h4><ul>';
-        reportData.feedback_by_question.forEach(item => {
-            reportHTML += `<li>${item.question_text}: ${item.avg_response} (Responses: ${item.response_counts})</li>`;
-        });
-        reportHTML += '</ul>';
-
-        reportContentDiv.innerHTML = reportHTML;
-
-        // Show only the report
-        reportDiv.style.display = 'block';
-        document.getElementById('feedbackList').style.display = 'none';  // Hide feedback list
-    })
-    .catch(error => {
-        console.error('Error fetching report data:', error);
-    });
-}
-
-// Helper function to get CSRF token (Django)
-function getCSRFToken() {
-    return document.querySelector('[name=csrfmiddlewaretoken]').value;
-}
-
-
-        function closeReport() {
+        .then(response => response.json())
+        .then(reportData => {
             const reportDiv = document.getElementById('report');
-            reportDiv.style.display = 'none'; // Hide report
-            document.getElementById('feedbackList').style.display = 'grid'; // Show feedback list
-        }
+            const reportContentDiv = document.getElementById('reportContent');
 
-        function closePopup(event) {
+            let reportHTML = '<h4>Feedback by Department</h4><ul>';
+            reportData.feedback_by_department.forEach(item => {
+                reportHTML += `<li>${item.department}: ${item.total_responses} responses</li>`;
+            });
+            reportHTML += '</ul>';
+
+            reportHTML += '<h4>Feedback by Qualification</h4><ul>';
+            reportData.feedback_by_qualification.forEach(item => {
+                reportHTML += `<li>${item.highest_qualification}: ${item.total_responses} responses</li>`;
+            });
+            reportHTML += '</ul>';
+            
+            reportHTML += '<h4>Feedback by Age Group</h4><ul>';
+            reportData.feedback_by_age_group.forEach(item => {
+                reportHTML += `<li>${item.age_group}: ${item.total_responses} responses</li>`;
+            });
+            reportHTML += '</ul>';
+
+            reportHTML += '<h4>Feedback by Designation</h4><ul>';
+            reportData.feedback_by_designation.forEach(item => {
+                reportHTML += `<li>${item.designation}: ${item.total_responses} responses</li>`;
+            });
+            reportHTML += '</ul>';
+            reportHTML += '<h4>Feedback by Question</h4><ul>';
+            reportData.feedback_by_question.forEach(item => {
+                reportHTML += `<li>${item.question_text}: ${item.avg_response} (Responses: ${item.response_counts})</li>`;
+            });
+            reportHTML += '</ul>';
+
+            reportContentDiv.innerHTML = reportHTML;
+            reportDiv.style.display = 'block';
+            document.getElementById('feedbackList').style.display = 'none';
+        })
+        .catch(error => {
+            console.error('Error fetching report data:', error);
+        });
+    }
+
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+
+    function closeReport() {
+        const reportDiv = document.getElementById('report');
+        reportDiv.style.display = 'none';
+        document.getElementById('feedbackList').style.display = 'grid';
+    }
+
+    function closePopup(event) {
+        const popup = document.getElementById('popup');
+        popup.style.display = 'none';
+    }
+
+  function showPopup(userId) {
+    fetch(`/smedco/feedback/${userId}/details/`)
+        .then(response => response.text())
+        .then(text => {
+            const data = JSON.parse(text);
+            // Check if email exists in the data object before creating the header
+            const emailHeader = data.email ? 
+                `<div style="margin-bottom: 20px;"><strong>User:</strong> Annonymous user</div>` : 
+                '<div style="margin-bottom: 20px;"><strong>User:</strong> Annonymous user</div>';
+            
+            const details = data.feedbacks.map((feedback, index) => {
+                const response = feedback.response;
+                const responseColor = getColor(response);
+                return `
+                    <strong>${index + 1}. ${feedback.question}</strong><br>
+                    <div class='popup-qes' style="margin-bottom: 10px; border-bottom: 1px solid #c2c2c2; padding: 10px; border-radius: 5px;">
+                        | ${response} <span style='color: ${responseColor};font-size:5px;'>${getIcon(response)}</span><br/> <br/>
+                    </div>
+                `;
+            }).join('');
+            
+            const popupDetails = document.getElementById('popup-details');
+            popupDetails.innerHTML = emailHeader + details;
+
             const popup = document.getElementById('popup');
-            popup.style.display = 'none';
+            popup.style.display = 'flex';
+        })
+        .catch(error => {
+            console.error('Error fetching feedback details:', error);
+            // Show error message in popup
+            const popupDetails = document.getElementById('popup-details');
+            popupDetails.innerHTML = '<div style="color: red;">Error loading feedback details</div>';
+            const popup = document.getElementById('popup');
+            popup.style.display = 'flex';
+        });
+}
+
+    function getColor(response) {
+        switch (response) {
+            case 'Disagree very much': return '#dc2626';
+            case 'Disagree moderately': return '#dc2626';
+            case 'Disagree slightly': return '#ef4444';
+            case 'Agree slightly': return '#86efac';
+            case 'Agree moderately': return '#4ade80';
+            case 'Agree very much': return '#14532d';
+            default: return 'black';
         }
+    }
 
-        function showPopup(userId) {
-            fetch(`/smedco/feedback/${userId}/details/`)
-                .then(response => response.text())
-                .then(text => {
-                    const data = JSON.parse(text);
-                    const details = data.feedbacks.map((feedback, index) => {
-                        const response = feedback.response;
-                        const responseColor = getColor(response);
-                        return `
-                            <strong>${index + 1}. ${feedback.question}</strong><br>
-                            <div class='popup-qes' style="margin-bottom: 10px; border-bottom: 1px solid #c2c2c2; padding: 10px; border-radius: 5px;">
-                                | ${response} <span style='color: ${responseColor};font-size:5px;'>${getIcon(response)}</span><br/> <br/>
-                            </div>
-                            
-                        `;
-                    }).join('');
-                    
-
-                    const popupDetails = document.getElementById('popup-details');
-                    popupDetails.innerHTML = details;
-
-                    const popup = document.getElementById('popup');
-                    popup.style.display = 'flex';
-                })
-                .catch(error => console.error('Error fetching feedback details:', error));
+    function getIcon(response) {
+        switch (response) {
+            case 'Disagree very much': return '❌';
+            case 'Disagree moderately': return '❌';
+            case 'Disagree slightly': return '❌';
+            case 'Agree slightly': return '✔️';
+            case 'Agree moderately': return '✔️';
+            case 'Agree very much': return '✔️';
+            default: return '➡';
         }
+    }
 
-        function getColor(response) {
-            switch (response) {
-                case 'Disagree very much': return '#dc2626';
-                case 'Disagree moderately': return '#dc2626';
-                case 'Disagree slightly': return '#ef4444';
-                case 'Agree slightly': return '#86efac';
-                case 'Agree moderately': return '#4ade80';
-                case 'Agree very much': return '#14532d';
-                default: return 'black';
-            }
-        }
-        function getIcon(response) {
-            switch (response) {
-                case 'Disagree very much': return '❌';
-                case 'Disagree moderately': return '❌';
-                case 'Disagree slightly': return '❌';
-                case 'Agree slightly': return '✔️';
-                case 'Agree moderately': return '✔️';
-                case 'Agree very much': return '✔️';
-                default: return '➡';
-            }
-        }
-
-        function exportToPDF() {
-            // Get the content of the popup-details
-            let popupDetails = document.getElementById('popup-details').innerHTML;
+    function exportToPDF() {
+        let popupDetails = document.getElementById('popup-details').innerHTML;
+        let printWindow = window.open('', '_blank');
         
-            // Create a new window for printing
-            let printWindow = window.open('', '_blank');
-        
-            // Create the HTML structure for the new window
-            printWindow.document.write(`
-                <html>
-                    <head>
-                        <title>Print Report</title>
-                        <style>
-                            /* Add any styles you want to apply to the print content */
-                            body {
-                                font-family: Arial, sans-serif;
-                            }
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Print Report</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                        }
+                        .content {
+                            margin: 20px;
+                        }
+                        @media print {
                             .content {
-                                margin: 20px;
+                                page-break-after: always;
                             }
-                            /* Optionally add styles for page breaks */
-                            @media print {
-                                .content {
-                                    page-break-after: always; /* Forces a page break after each section */
-                                }
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="content">${popupDetails}</div>
-                    </body>
-                </html>
-            `);
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="content">${popupDetails}</div>
+                </body>
+            </html>
+        `);
         
-            // Wait for the content to load and then print
-            printWindow.document.close(); // Close the document to trigger rendering
-            printWindow.onload = function() {
-                printWindow.print(); // Trigger the print dialog
-            };
-        }
+        printWindow.document.close();
+        printWindow.onload = function() {
+            printWindow.print();
+        };
+    }
 
-        function exportToExcel() {
-            alert('Exporting to Excel...');
-        }
+    function exportToExcel() {
+        const popupDetails = document.getElementById('popup-details');
+        const rows = [];
+        
+        rows.push(['Question', 'Response']);
+        
+        const questions = popupDetails.querySelectorAll('strong');
+        const responses = popupDetails.querySelectorAll('.popup-qes');
+        
+        questions.forEach((question, index) => {
+            if (responses[index]) {
+                const questionText = question.textContent.replace(/^\d+\.\s*/, '');
+                const responseText = responses[index].textContent.trim().replace(/^\|/, '').trim().split('\n')[0];
+                rows.push([questionText, responseText]);
+            }
+        });
+        
+        let csvContent = "data:text/csv;charset=utf-8,";
+        
+        rows.forEach(row => {
+            csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+        });
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "feedback_report.csv");
+        document.body.appendChild(link);
+        
+        link.click();
+        document.body.removeChild(link);
+    }
     </script>
     <script>
         function showReportPopup() {
@@ -463,12 +484,11 @@ function getCSRFToken() {
         }
     
         function submitReportForm(event) {
-            event.preventDefault();  // Prevent the default form submission
+            event.preventDefault();
         
             const reportType = document.getElementById('reportType').value;
             const department = document.getElementById('department').value;
         
-            // Set the URL based on the selected report type
             let url = '';
             switch (reportType) {
                 case 'Department':
@@ -483,15 +503,12 @@ function getCSRFToken() {
                     return;
             }
         
-            // Prepare the request data
             const requestData = new URLSearchParams();
             requestData.append('reportType', reportType);
             requestData.append('department', department);
         
-            // Fetch the CSRF token from the form
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         
-            // Make the fetch request
             fetch(url, {
                 method: 'POST',
                 body: requestData,
