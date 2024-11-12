@@ -84,6 +84,8 @@ support_member_help_menu = '''*👨‍💻 SUPPORT MEMBER GUIDE*\n\n
    \n- To see the details of the current ticket you're providing details on, send #current or #pending\n\n
 13. *USEFUL COMMANDS*
    \n- reply with #codes or #commands to see a list of these commands\n\n
+14. *RE-OPENING A CLOSED TICKET*
+   \n- send #reopen ticketno e.g #reopen 23 will reopen that closed ticket #23\n\n
 *Remember:* Your role is crucial in providing timely and effective support. Keep track of your tickets, prioritize as needed, and don’t hesitate to ask for help when necessary. You can always refer to this by sending word *help*.
 > Also, remember to interact with this bot daily! 🤖🚀
 '''
@@ -99,5 +101,6 @@ COMMANDS ="""
 7. #release \n- This will release the pending ticket you're currently providing assistance on back to open state\n\n
 8. #hold \n- This will hold the ticket allowing you to attend to other tickets in your queue\n\n
 9. #pending or #current \n- This will list the details of the current ticket you are providing assistance on.\n\n
+10. #reopen + ticketNo\n- This will reopen a closed ticket with the ticketNo provided e.g #reopen 10 will reopen ticket number 10\n\n
 
 """
