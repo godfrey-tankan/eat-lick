@@ -1130,9 +1130,9 @@ def resolved_tickets(support_member, response):
         truncated_description = (ticket.description[:10] + '...') if ticket.description and len(ticket.description) > 10 else ticket.description
         time_to_resolve = ticket.get_time_to_resolve()
         ticket_summaries += (
-            f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> {ticket.assigned_to.username.title()} \n"
+            f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n"
             f"- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n"
-            f"- Time taken to Resolve: *{time_to_resolve}* - resolved by *{ticket.assigned_to.username.title()}*\n\n"
+            f"- Time taken to Resolve: *{time_to_resolve}*\n\n"
         )
     ticket_summaries += "> Reply with #exit to exit or enter a page number to navigate."
     
