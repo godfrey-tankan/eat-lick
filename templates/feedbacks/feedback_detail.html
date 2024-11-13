@@ -342,9 +342,9 @@
         .then(text => {
             const data = JSON.parse(text);
             // Check if email exists in the data object before creating the header
-            const emailHeader = data.email ? 
-                `<div style="margin-bottom: 20px;"><strong>User:</strong> Annonymous user</div>` : 
-                '<div style="margin-bottom: 20px;"><strong>User:</strong> Annonymous user</div>';
+            //const emailHeader = data.email ? 
+                //`<div style="margin-bottom: 20px;"><strong>User:</strong> </div>` : 
+                //'<div style="margin-bottom: 20px;"><strong>User:</strong> Annonymous user</div>';
             
             const details = data.feedbacks.map((feedback, index) => {
                 const response = feedback.response;
