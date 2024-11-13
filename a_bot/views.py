@@ -1105,41 +1105,6 @@ def reopen_ticket(support_member,ticket_id):
                 return f"You have re-opened ticket number {ticket.id}\n Opened by {ticket.created_by.username.title()} from {ticket.branch_opened.upper()} branch\nDescription ({ticket.description}) which was assigned to you, please start assisting the inquirer now or release it by sending #release"
     return '> Ticket not found please check the ticket id, please make sure the ticket is in closed state'
 
-# def resolved_tickets(support_member, response):
-#     if "#exit" in response.lower():
-#         support_member.user_mode = HELPING_MODE
-#         support_member.user_status = HELPING_MODE
-#         support_member.save()
-#         return "> You have exited the resolved tickets view."
-    
-#     seven_days_ago = timezone.now() - timedelta(days=7)
-#     all_resolved_tickets = Ticket.objects.filter(
-#         status=RESOLVED_MODE,
-#         resolved_at__gte=seven_days_ago
-#     ).order_by('-resolved_at')
-#     paginator = Paginator(all_resolved_tickets, 20)
-#     try:
-#         page_number = int(response)
-#     except ValueError:
-#         page_number = 1  
-#     try:
-#         page_obj = paginator.get_page(page_number)
-#     except EmptyPage:
-#         return "> No more tickets found."
-
-#     ticket_summaries = "> ✅ Weekly Resolved Tickets\n\n"
-#     for i, ticket in enumerate(page_obj, start=1):
-#         truncated_description = (ticket.description[:20] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
-#         time_to_resolve = ticket.get_time_to_resolve()
-#         if ticket.created_by and ticket.assigned_to:
-#             ticket_summaries += (
-#                 f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n"
-#                 f"- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n"
-#                 f"- Time taken to Resolve: *{time_to_resolve}*\n\n"
-#             )
-#     ticket_summaries += "> Reply with #exit to exit or enter a page number to navigate."
-    
-#     return ticket_summaries if page_obj else "> No resolved tickets found within the last week."
 def resolved_tickets(support_member, response):
     if "#exit" in response.lower():
         support_member.user_mode = HELPING_MODE
@@ -1150,21 +1115,22 @@ def resolved_tickets(support_member, response):
     now = timezone.now()
     
     seven_days_ago = now - timedelta(days=7)
+    
     all_resolved_tickets = Ticket.objects.filter(
         status=RESOLVED_MODE,
         resolved_at__gte=seven_days_ago
     ).order_by('-resolved_at')
-
+    
     resolved_counts = (
         all_resolved_tickets
         .annotate(weekday=ExtractWeekDay('resolved_at'))
         .values('weekday')
         .annotate(count=Count('id'))
-        .filter(weekday__gte=1, weekday__lte=5) 
+        .filter(weekday__gte=1, weekday__lte=5)  # Weekdays: Mon=1, ..., Fri=5
     )
-    weekday_counts = {2: "Mon", 3: "Tue", 4: "Wed", 5: "Thu", 6: "Fri"}
+    weekday_counts = {1: "Mon", 2: "Tue", 3: "Wed", 4: "Thu", 5: "Fri"}
     weekday_summary = ""
-    for day in range(2, 7):
+    for day in range(1, 6): 
         day_name = weekday_counts[day]
         day_count = next((item['count'] for item in resolved_counts if item['weekday'] == day), 0)
         weekday_summary += f"`{day_name}: {day_count}` |\t"
@@ -1178,7 +1144,6 @@ def resolved_tickets(support_member, response):
         page_obj = paginator.get_page(page_number)
     except EmptyPage:
         return "> No more tickets found."
-    
     ticket_summaries = "> ✅ Weekly Resolved Tickets\n\n" + weekday_summary + "\n"
 
     for i, ticket in enumerate(page_obj, start=1):
@@ -1190,7 +1155,6 @@ def resolved_tickets(support_member, response):
                 f"- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n"
                 f"- Time taken to Resolve: *{time_to_resolve}*\n\n"
             )
-    
     ticket_summaries += "> Reply with #exit to exit or enter a page number to navigate."
     return ticket_summaries if page_obj else "> No resolved tickets found within the last week."
 
