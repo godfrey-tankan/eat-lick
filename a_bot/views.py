@@ -772,7 +772,7 @@ def handle_inquiry(wa_id, response, name):
             broadcast_messages(name,ticket)
             return new_inquiry_opened_response
 
-    if len(response) < 15:
+    if len(response) < 20:
         return 'Please provide a detailed inquiry if you want to open an inquiry, if you do not intent to, please just ignore this message!'
     if response == 'hello i want help':
         return 'Hello what do you need help with?'
