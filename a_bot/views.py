@@ -1114,36 +1114,35 @@ def resolved_tickets(support_member, response):
     
     now = timezone.now()
     
-    # Get resolved tickets from the last 7 days
-    seven_days_ago = now - timedelta(days=7)
+    # Get the start of the week (Monday)
+    start_of_week = now - timedelta(days=now.weekday())
+    last_seven_days = [start_of_week + timedelta(days=i) for i in range(7)]
     
-    # Filter tickets by status 'resolved' and 'resolved_at' within the last 7 days
-    all_resolved_tickets = Ticket.objects.filter(
-        status=RESOLVED_MODE,
-        resolved_at__gte=seven_days_ago
-    ).order_by('-resolved_at')
+    resolved_counts_weekly = []
     
-    # Annotate tickets with the weekday they were resolved (Mon=1, ..., Sun=7)
-    resolved_counts = (
-        all_resolved_tickets
-        .annotate(weekday=ExtractWeekDay('resolved_at'))
-        .values('weekday')
-        .annotate(count=Count('id'))
-        .filter(weekday__gte=1, weekday__lte=5)  # Filter for weekdays only (Mon-Fri)
-    )
+    # Get the resolved ticket counts for each of the last 7 days
+    for day in last_seven_days:
+        day_start = timezone.make_aware(datetime.combine(day, datetime.min.time()))
+        day_end = day_start + timedelta(days=1) 
+        
+        resolved_counts_weekly.append(
+            Ticket.objects.filter(
+                status=RESOLVED_MODE,
+                resolved_at__range=(day_start, day_end)
+            ).count()
+        )
     
-    # Map weekdays to names
-    weekday_counts = {1: "Mon", 2: "Tue", 3: "Wed", 4: "Thu", 5: "Fri"}
+    # Create labels for weekdays (Mon-Sun)
+    weekday_labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     
     # Prepare the weekday summary for display
     weekday_summary = ""
-    for day in range(1, 6):  # Loop through Monday to Friday
-        day_name = weekday_counts[day]
-        day_count = next((item['count'] for item in resolved_counts if item['weekday'] == day), 0)
-        weekday_summary += f"`{day_name}: {day_count}` |\t"
+    for i, day in enumerate(last_seven_days):
+        weekday_name = weekday_labels[i]
+        day_count = resolved_counts_weekly[i]
+        weekday_summary += f"`{weekday_name}: {day_count}` |\t"
     
-    # Paginator setup
-    paginator = Paginator(all_resolved_tickets, 20)
+    paginator = Paginator(resolved_counts_weekly, 20)
     try:
         page_number = int(response)
     except ValueError:
@@ -1153,24 +1152,34 @@ def resolved_tickets(support_member, response):
     except EmptyPage:
         return "> No more tickets found."  # If the page number is out of range
     
-    # Build the summary for tickets
+    # Build the summary for resolved tickets
     ticket_summaries = "> ✅ Weekly Resolved Tickets\n\n" + weekday_summary + "\n"
     
     # Add ticket details to the summary
-    for i, ticket in enumerate(page_obj, start=1):
-        truncated_description = (ticket.description[:20] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
-        time_to_resolve = ticket.get_time_to_resolve()  # Assumes get_time_to_resolve is a method in your Ticket model
-        if ticket.created_by and ticket.assigned_to:
-            ticket_summaries += (
-                f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n"
-                f"- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n"
-                f"- Time taken to Resolve: *{time_to_resolve}*\n\n"
-            )
+    for i, count in enumerate(page_obj, start=1):
+        day = last_seven_days[i - 1]
+        day_start = timezone.make_aware(datetime.combine(day, datetime.min.time()))
+        day_end = day_start + timedelta(days=1) 
+        tickets = Ticket.objects.filter(
+            status=RESOLVED_MODE,
+            resolved_at__range=(day_start, day_end)
+        )
+        
+        for ticket in tickets:
+            truncated_description = (ticket.description[:20] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
+            time_to_resolve = ticket.get_time_to_resolve()  # Assumes get_time_to_resolve is a method in your Ticket model
+            if ticket.created_by and ticket.assigned_to:
+                ticket_summaries += (
+                    f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n"
+                    f"- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n"
+                    f"- Time taken to Resolve: *{time_to_resolve}*\n\n"
+                )
     
     # Add pagination instructions
     ticket_summaries += "> Reply with #exit to exit or enter a page number to navigate."
     
     return ticket_summaries if page_obj else "> No resolved tickets found within the last week."
+
 def closed_tickets(support_member,response):
     if "#exit" in response.lower():
         support_member.user_mode = HELPING_MODE
