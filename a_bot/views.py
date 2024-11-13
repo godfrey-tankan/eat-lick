@@ -1,6 +1,6 @@
 from django.shortcuts import render
 import logging
-from datetime import datetime
+from datetime import datetime,timedelta
 import json
 import time
 import random
@@ -15,6 +15,8 @@ from django.db.models import OuterRef, Subquery
 from django.core.files.base import ContentFile
 from django.utils import timezone
 import re
+from django.core.paginator import Paginator
+
 
 def get_greeting():
     current_hour = datetime.now().hour
@@ -91,6 +93,20 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return release_ticket(support_member)
         if '#hold' in response.lower():
             return hold_ticket(support_member,response)
+        if response.lower() in ["#completed","#get resolved","#green"] or support_member.user_status == GET_RESOLVED_MODE:
+            if support_member.user_status==GET_RESOLVED_MODE:
+                return resolved_tickets(support_member,response)
+            else:
+                support_member.user_status = GET_RESOLVED_MODE
+                support_member.save()
+                return resolved_tickets(support_member,response)
+        if response.lower() in ["#get closed","#red"] or support_member.user_status == GET_CLOSED_MODE:
+            if support_member.user_status == GET_CLOSED_MODE:
+                return closed_tickets(support_member,response)
+            else:
+                support_member.user_status = GET_CLOSED_MODE
+                support_member.save()
+                return closed_tickets(support_member,response)
         if ("#take" in response.lower() or "#revoke" in response.lower()  and support_member.phone_number =='263772428281') or support_member.user_status == REVOKE_TICKET_MODE:
             support_member.user_status = REVOKE_TICKET_MODE
             support_member.save()   
@@ -1087,6 +1103,56 @@ def reopen_ticket(support_member,ticket_id):
                 return f"You have re-opened ticket number {ticket.id}\n Opened by {ticket.created_by.username.title()} from {ticket.branch_opened.upper()} branch\nDescription ({ticket.description}) which was assigned to you, please start assisting the inquirer now or release it by sending #release"
     return '> Ticket not found please check the ticket id, please make sure the ticket is in closed state'
 
+def resolved_tickets(support_member,response):
+    if "#exit" in response.lower():
+        support_member.user_mode = HELPING_MODE
+        support_member.user_status = HELPING_MODE
+        support_member.save()
+        return "> you have exited the resolved tickets view "
+    seven_days_ago = timezone.now() - timedelta(days=7)
+    all_resolved_tickets = Ticket.objects.filter(
+        status=RESOLVED_MODE,
+        resolved_at__gte=seven_days_ago,
+    ).order_by('-resolved_at')
+
+    paginator = Paginator(all_resolved_tickets, 20)  
+    page_number = response if int(response) else 1
+    page_obj = paginator.get_page(page_number)
+
+    ticket_summaries = "> ✅ Weekly Resolved Tickets\n\n"
+    if page_obj:
+        for i, ticket in enumerate(page_obj,start=1):
+            truncated_description = (ticket.description[:10] + '...') if ticket.description and len(ticket.description) > 10 else ticket.description
+            time_to_resolve = ticket.get_time_to_resolve()
+            ticket_summaries +=f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> {ticket.assigned_to.username.title()} \n- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n- Time taken to Resolve: *{time_to_resolve}* - resolved by *{ticket.assigned_to.username.title()}*\n\n"
+        ticket_summaries += "> reply with #exit to exit or 1,2,3 or 4 to go to next pages"
+        return ticket_summaries
+    return '> No more resolved tickets found within last week.'
+
+def closed_tickets(support_member,response):
+    if "#exit" in response.lower():
+        support_member.user_mode = HELPING_MODE
+        support_member.user_status = HELPING_MODE
+        support_member.save()
+        return "> you have exited the closed tickets view "
+    seven_days_ago = timezone.now() - timedelta(days=7)
+    all_closed_tickets = Ticket.objects.filter(
+        status=CLOSED_MODE, 
+    ).order_by('-closed_at')
+
+    paginator = Paginator(all_closed_tickets, 20)  
+    page_number = response if int(response) else 1
+    page_obj = paginator.get_page(page_number)
+    # Create the string summaries
+    ticket_summaries = "> CLOSED TICKETS\n\n"
+    if page_obj:
+        for i, ticket in enumerate(page_obj,start=1):
+            truncated_description = (ticket.description[:10] + '...') if ticket.description and len(ticket.description) > 10 else ticket.description
+            ticket_summaries +=f"{i}. Ticket *#{ticket.id}* - *{ticket.branch_opened}* branch\n>type {ticket.inquiry_type}\n- Opened by: {ticket.created_by.username.title()} \n- Description: {truncated_description}\n- closed at: *{ticket.closed_at}*\n- assigned to *{ticket.assigned_to.username.title()}* \n\n"
+        ticket_summaries += "> reply with #exit to exit or 1,2,3 or 4 to go to next pages"
+        return ticket_summaries
+    return '> No more closed tickets found.'
+    
     
 def revoke_ticket(support_member,ticket_id):
     ticket_id_ob = ticket_id.split()[1]
