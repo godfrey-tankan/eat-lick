@@ -1154,16 +1154,14 @@ def resolved_tickets(support_member, response):
         status=RESOLVED_MODE,
         resolved_at__gte=seven_days_ago
     ).order_by('-resolved_at')
-    
+
     resolved_counts = (
         all_resolved_tickets
         .annotate(weekday=ExtractWeekDay('resolved_at'))
         .values('weekday')
         .annotate(count=Count('id'))
-        .filter(weekday__range=(2, 6))  # Monday=2, ..., Friday=6
+        .filter(weekday__gte=1, weekday__lte=5) 
     )
-    data = f'values {resolved_counts}'
-    return data
     weekday_counts = {2: "Mon", 3: "Tue", 4: "Wed", 5: "Thu", 6: "Fri"}
     weekday_summary = ""
     for day in range(2, 7):
