@@ -1159,6 +1159,8 @@ def resolved_tickets(support_member, response):
     for i, count in enumerate(page_obj, start=1):
         day = last_seven_days[i - 1]
         day_start = timezone.make_aware(datetime.combine(day, datetime.min.time()))
+        # day_resolved = ticket.resolved_at.strftime("%A ") if ticket.resolved_at else "Day.."
+        ticket_summaries += f"\n*{day.strftime('%A')}*\n"
         day_end = day_start + timedelta(days=1) 
         tickets = Ticket.objects.filter(
             status=RESOLVED_MODE,
@@ -1166,12 +1168,11 @@ def resolved_tickets(support_member, response):
         )
         
         for i,ticket in enumerate(tickets,start=1):
-            day_resolved = ticket.resolved_at.strftime("%A ") if ticket.resolved_at else "Day.."
             truncated_description = (ticket.description[:20] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
             time_to_resolve = ticket.get_time_to_resolve()  
             if ticket.created_by and ticket.assigned_to:
                 ticket_summaries += (
-                    f"{day_resolved}\n\n {i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n- Time taken to Resolve: *{time_to_resolve}*\n\n"
+                    f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n- Time taken to Resolve: *{time_to_resolve}*\n\n"
                 )
     
     ticket_summaries += "> Reply with #exit to exit or enter a page number to navigate."
