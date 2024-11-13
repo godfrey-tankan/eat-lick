@@ -1140,7 +1140,6 @@ def reopen_ticket(support_member,ticket_id):
 #     ticket_summaries += "> Reply with #exit to exit or enter a page number to navigate."
     
 #     return ticket_summaries if page_obj else "> No resolved tickets found within the last week."
-
 def resolved_tickets(support_member, response):
     if "#exit" in response.lower():
         support_member.user_mode = HELPING_MODE
@@ -1148,28 +1147,29 @@ def resolved_tickets(support_member, response):
         support_member.save()
         return "> You have exited the resolved tickets view."
     
-    seven_days_ago = timezone.now() - timedelta(days=7)
+    now = timezone.now()
     
-    # Get all resolved tickets from the last 7 days
+    seven_days_ago = now - timedelta(days=7)
     all_resolved_tickets = Ticket.objects.filter(
         status=RESOLVED_MODE,
         resolved_at__gte=seven_days_ago
     ).order_by('-resolved_at')
     
-    # Count resolved tickets from Monday (2) to Friday (6)
     resolved_counts = (
         all_resolved_tickets
         .annotate(weekday=ExtractWeekDay('resolved_at'))
         .values('weekday')
         .annotate(count=Count('id'))
-        .filter(weekday__range=(2, 6))  
+        .filter(weekday__range=(2, 6))  # Monday=2, ..., Friday=6
     )
-    weekday_summary =''
-    weekday_counts = {2: "Monday", 3: "Tuesday", 4: "Wednesday", 5: "Thursday", 6: "Friday"}
+
+    weekday_counts = {2: "Mon", 3: "Tue", 4: "Wed", 5: "Thu", 6: "Fri"}
+    weekday_summary = ""
     for day in range(2, 7):
         day_name = weekday_counts[day]
         day_count = next((item['count'] for item in resolved_counts if item['weekday'] == day), 0)
-        weekday_summary += f"- {day_name}: {day_count}\n"
+        weekday_summary += f"`{day_name}: {day_count}` |\t"
+    
     paginator = Paginator(all_resolved_tickets, 20)
     try:
         page_number = int(response)
@@ -1179,6 +1179,7 @@ def resolved_tickets(support_member, response):
         page_obj = paginator.get_page(page_number)
     except EmptyPage:
         return "> No more tickets found."
+    
     ticket_summaries = "> ✅ Weekly Resolved Tickets\n\n" + weekday_summary + "\n"
 
     for i, ticket in enumerate(page_obj, start=1):
@@ -1190,6 +1191,7 @@ def resolved_tickets(support_member, response):
                 f"- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n"
                 f"- Time taken to Resolve: *{time_to_resolve}*\n\n"
             )
+    
     ticket_summaries += "> Reply with #exit to exit or enter a page number to navigate."
     return ticket_summaries if page_obj else "> No resolved tickets found within the last week."
 
