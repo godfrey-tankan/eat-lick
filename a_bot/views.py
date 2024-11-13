@@ -119,10 +119,10 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return reopen_ticket(support_member,response)
         if response.lowe() in ["#summary","#dasshboard"] or support_member.user_status == DASHBOARD_MODE:
             if support_member.user_status in [DASHBOARD_MODE,DETAILED_TICKET_MODE,DETAILED_VIEW_MODE]:
-                return get_dashboard(support_member)
+                return get_dashboard(support_member,response)
             support_member.user_status = DASHBOARD_MODE
             support_member.save()
-            return get_dashboard(support_member)
+            return get_dashboard(support_member,response)
             
         if response.lower() in ['#commands','#codes']:
             return COMMANDS
