@@ -1175,7 +1175,7 @@ def resolved_tickets(support_member, response):
                     f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n- \tOpened by: {ticket.created_by.username.title()} - ({truncated_description})\n- \tTime taken to Resolve: *{time_to_resolve}*\n\n"
                 )
     
-    ticket_summaries += "> Reply with #exit to exit or enter a page number to navigate."
+    ticket_summaries += "> #exit to exit or 1,2,3 or 4 for more."
     
     return ticket_summaries if page_obj else "> No resolved tickets found within the last week."
 
