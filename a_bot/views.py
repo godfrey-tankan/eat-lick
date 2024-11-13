@@ -1165,17 +1165,15 @@ def resolved_tickets(support_member, response):
             resolved_at__range=(day_start, day_end)
         )
         
-        for ticket in tickets:
+        for i,ticket in enumerate(tickets,start=1):
+            day_resolved = ticket.resolved_at.strftime("%B ") if ticket.resolved_at else "Day.."
             truncated_description = (ticket.description[:20] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
-            time_to_resolve = ticket.get_time_to_resolve()  # Assumes get_time_to_resolve is a method in your Ticket model
+            time_to_resolve = ticket.get_time_to_resolve()  
             if ticket.created_by and ticket.assigned_to:
                 ticket_summaries += (
-                    f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n"
-                    f"- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n"
-                    f"- Time taken to Resolve: *{time_to_resolve}*\n\n"
+                    f"`{day_resolved}`\n\n {i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n- Time taken to Resolve: *{time_to_resolve}*\n\n"
                 )
     
-    # Add pagination instructions
     ticket_summaries += "> Reply with #exit to exit or enter a page number to navigate."
     
     return ticket_summaries if page_obj else "> No resolved tickets found within the last week."
