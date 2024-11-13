@@ -1129,11 +1129,12 @@ def resolved_tickets(support_member, response):
     for i, ticket in enumerate(page_obj, start=1):
         truncated_description = (ticket.description[:20] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
         time_to_resolve = ticket.get_time_to_resolve()
-        ticket_summaries += (
-            f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n"
-            f"- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n"
-            f"- Time taken to Resolve: *{time_to_resolve}*\n\n"
-        )
+        if ticket.created_by and ticket.assigned_to:
+            ticket_summaries += (
+                f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n"
+                f"- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n"
+                f"- Time taken to Resolve: *{time_to_resolve}*\n\n"
+            )
     ticket_summaries += "> Reply with #exit to exit or enter a page number to navigate."
     
     return ticket_summaries if page_obj else "> No resolved tickets found within the last week."
@@ -1165,7 +1166,8 @@ def closed_tickets(support_member,response):
             for i, ticket in enumerate(page_obj,start=1):
                 closed_at_formatted = ticket.closed_at.strftime("%B %d, %Y %H:%M") if ticket.closed_at else "N/A"
                 truncated_description = (ticket.description[:10] + '...') if ticket.description and len(ticket.description) > 10 else ticket.description
-                ticket_summaries +=f"{i}. Ticket *#{ticket.id}* - *{ticket.branch_opened}* branch\n`type` : {ticket.inquiry_type}\n- Opened by: {ticket.created_by.username.title()} \n- Description: {truncated_description}\n- closed at: *{closed_at_formatted}*\n- assigned to *{ticket.assigned_to.username.title()}* \n\n"
+                if ticket.created_by and ticket.assigned_to:
+                    ticket_summaries +=f"{i}. Ticket *#{ticket.id}* - *{ticket.branch_opened}* branch\n`type` : {ticket.inquiry_type}\n- Opened by: {ticket.created_by.username.title()} \n- Description: {truncated_description}\n- closed at: *{closed_at_formatted}*\n- assigned to *{ticket.assigned_to.username.title()}* \n\n"
             ticket_summaries += "> reply with #exit to exit or 1,2,3 or 4 to go to next pages"
             return ticket_summaries
         return '> No more closed tickets found.'
