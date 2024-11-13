@@ -44,7 +44,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
     if inquirer:
         name = inquirer.username.split()[0]
         check_ticket = Ticket.objects.filter(created_by=inquirer.id,status=PENDING_MODE,ticket_mode='other').first()
-        if inquirer.user_status == NEW_TICKET_MODE:
+        if inquirer.user_status in [NEW_TICKET_MODE,INQUIRY_MODE]:
             return handle_inquiry(wa_id, response, name)
     else:
         check_ticket = None
@@ -117,8 +117,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
             support_member.user_status = REOPENING_TICKET_MODE
             support_member.save()
             return reopen_ticket(support_member,response)
-        if response.lowe() in ["#summary","#dasshboard"] or support_member.user_status == DASHBOARD_MODE:
-            if support_member.user_status in [DASHBOARD_MODE,DETAILED_TICKET_MODE,DETAILED_VIEW_MODE]:
+        if response.lower() in ["#summary","#dasshboard"] or support_member.user_status in [DASHBOARD_MODE,DETAILED_TICKET_MODE,DETAILED_VIEW_MODE]:
+            if not "#" in response:
                 return get_dashboard(support_member,response)
             support_member.user_status = DASHBOARD_MODE
             support_member.save()
