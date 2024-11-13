@@ -1175,7 +1175,7 @@ def resolved_tickets(support_member, response):
                     f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n- \tOpened by: {ticket.created_by.username.title()} - ({truncated_description})\n- \tTime taken to Resolve: *{time_to_resolve}*\n\n"
                 )
     
-    ticket_summaries += "> #exit to exit or 1,2,3 or 4 for more."
+    ticket_summaries += "\n> reply #exit to exit or 1,2,3 or 4 for more."
     
     return ticket_summaries if page_obj else "> No resolved tickets found within the last week."
 
@@ -1208,7 +1208,7 @@ def closed_tickets(support_member,response):
                 truncated_description = (ticket.description[:10] + '...') if ticket.description and len(ticket.description) > 10 else ticket.description
                 if ticket.created_by and ticket.assigned_to:
                     ticket_summaries +=f"{i}. Ticket *#{ticket.id}* - *{ticket.branch_opened}* branch\n`type` : {ticket.inquiry_type}\n- Opened by: {ticket.created_by.username.title()} \n- Description: {truncated_description}\n- closed at: *{closed_at_formatted}*\n- assigned to *{ticket.assigned_to.username.title()}* \n\n"
-            ticket_summaries += "> reply with #exit to exit or 1,2,3 or 4 to go to next pages"
+            ticket_summaries += "\n> reply with #exit to exit or 1,2,3 or 4 to go to next pages"
             return ticket_summaries
         return '> No more closed tickets found.'
     
