@@ -1127,7 +1127,7 @@ def resolved_tickets(support_member, response):
 
     ticket_summaries = "> ✅ Weekly Resolved Tickets\n\n"
     for i, ticket in enumerate(page_obj, start=1):
-        truncated_description = (ticket.description[:10] + '...') if ticket.description and len(ticket.description) > 10 else ticket.description
+        truncated_description = (ticket.description[:20] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
         time_to_resolve = ticket.get_time_to_resolve()
         ticket_summaries += (
             f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n"
