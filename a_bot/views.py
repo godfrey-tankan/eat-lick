@@ -1162,8 +1162,8 @@ def resolved_tickets(support_member, response):
         .annotate(count=Count('id'))
         .filter(weekday__range=(2, 6))  # Monday=2, ..., Friday=6
     )
-    return resolved_counts
-
+    data = f'values {resolved_counts}'
+    return data
     weekday_counts = {2: "Mon", 3: "Tue", 4: "Wed", 5: "Thu", 6: "Fri"}
     weekday_summary = ""
     for day in range(2, 7):
