@@ -1172,7 +1172,7 @@ def resolved_tickets(support_member, response):
             time_to_resolve = ticket.get_time_to_resolve()  
             if ticket.created_by and ticket.assigned_to:
                 ticket_summaries += (
-                    f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n- Time taken to Resolve: *{time_to_resolve}*\n\n"
+                    f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n- \tOpened by: {ticket.created_by.username.title()} - ({truncated_description})\n- \tTime taken to Resolve: *{time_to_resolve}*\n\n"
                 )
     
     ticket_summaries += "> Reply with #exit to exit or enter a page number to navigate."
