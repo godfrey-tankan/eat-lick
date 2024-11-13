@@ -1160,7 +1160,7 @@ def resolved_tickets(support_member, response):
         day = last_seven_days[i - 1]
         day_start = timezone.make_aware(datetime.combine(day, datetime.min.time()))
         # day_resolved = ticket.resolved_at.strftime("%A ") if ticket.resolved_at else "Day.."
-        ticket_summaries += f"\n`*{day_start.strftime('%A')}*`\n"
+        ticket_summaries += f"\n`{day_start.strftime('%A')}`\n"
         day_end = day_start + timedelta(days=1) 
         tickets = Ticket.objects.filter(
             status=RESOLVED_MODE,
