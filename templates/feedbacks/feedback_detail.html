@@ -343,13 +343,16 @@
             const data = JSON.parse(text);
             // Check if email exists in the data object before creating the header
             const emailHeader = data.email ? 
+                `<div style="margin-bottom: 20px;"><strong>User:</strong> Annonymous user</div>` : 
+                '<div style="margin-bottom: 20px;"><strong>User:</strong> Annonymous user</div>';
             
             const details = data.feedbacks.map((feedback, index) => {
                 const response = feedback.response;
+                const responseColor = getColor(response);
                 return `
                     <strong>${index + 1}. ${feedback.question}</strong><br>
                     <div class='popup-qes' style="margin-bottom: 10px; border-bottom: 1px solid #c2c2c2; padding: 10px; border-radius: 5px;">
-                        | ${response}
+                        | ${response}<br/> <br/>
                     </div>
                 `;
             }).join('');
@@ -369,6 +372,30 @@
             popup.style.display = 'flex';
         });
 }
+
+    function getColor(response) {
+        switch (response) {
+            case 'Disagree very much': return '#dc2626';
+            case 'Disagree moderately': return '#dc2626';
+            case 'Disagree slightly': return '#ef4444';
+            case 'Agree slightly': return '#86efac';
+            case 'Agree moderately': return '#4ade80';
+            case 'Agree very much': return '#14532d';
+            default: return 'black';
+        }
+    }
+
+    function getIcon(response) {
+        switch (response) {
+            case 'Disagree very much': return '❌';
+            case 'Disagree moderately': return '❌';
+            case 'Disagree slightly': return '❌';
+            case 'Agree slightly': return '✔️';
+            case 'Agree moderately': return '✔️';
+            case 'Agree very much': return '✔️';
+            default: return '➡';
+        }
+    }
 
     function exportToPDF() {
         let popupDetails = document.getElementById('popup-details').innerHTML;
