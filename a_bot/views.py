@@ -1153,7 +1153,7 @@ def resolved_tickets(support_member, response):
         return "> No more tickets found."  # If the page number is out of range
     
     # Build the summary for resolved tickets
-    ticket_summaries = "> ✅ Weekly Resolved Tickets\n\n" + weekday_summary + "\n"
+    ticket_summaries = f"> ✅ Weekly Resolved Tickets - {page_obj.count()}\n\n" + weekday_summary + "\n"
     
     # Add ticket details to the summary
     for i, count in enumerate(page_obj, start=1):
@@ -1201,7 +1201,7 @@ def closed_tickets(support_member,response):
         except EmptyPage:
             return "> No more pages available."
 
-        ticket_summaries = "> ❌ CLOSED TICKETS\n\n"
+        ticket_summaries = f"> ❌ CLOSED TICKETS - {page_obj.count()}\n\n"
         if page_obj:
             for i, ticket in enumerate(page_obj,start=1):
                 closed_at_formatted = ticket.closed_at.strftime("%B %d %Y %H:%M") if ticket.closed_at else "N/A"
