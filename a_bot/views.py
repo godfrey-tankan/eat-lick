@@ -1114,50 +1114,63 @@ def resolved_tickets(support_member, response):
     
     now = timezone.now()
     
+    # Get resolved tickets from the last 7 days
     seven_days_ago = now - timedelta(days=7)
     
+    # Filter tickets by status 'resolved' and 'resolved_at' within the last 7 days
     all_resolved_tickets = Ticket.objects.filter(
         status=RESOLVED_MODE,
         resolved_at__gte=seven_days_ago
     ).order_by('-resolved_at')
     
+    # Annotate tickets with the weekday they were resolved (Mon=1, ..., Sun=7)
     resolved_counts = (
         all_resolved_tickets
         .annotate(weekday=ExtractWeekDay('resolved_at'))
         .values('weekday')
         .annotate(count=Count('id'))
-        .filter(weekday__gte=1, weekday__lte=5)  # Weekdays: Mon=1, ..., Fri=5
+        .filter(weekday__gte=1, weekday__lte=5)  # Filter for weekdays only (Mon-Fri)
     )
+    
+    # Map weekdays to names
     weekday_counts = {1: "Mon", 2: "Tue", 3: "Wed", 4: "Thu", 5: "Fri"}
+    
+    # Prepare the weekday summary for display
     weekday_summary = ""
-    for day in range(1, 6): 
+    for day in range(1, 6):  # Loop through Monday to Friday
         day_name = weekday_counts[day]
         day_count = next((item['count'] for item in resolved_counts if item['weekday'] == day), 0)
         weekday_summary += f"`{day_name}: {day_count}` |\t"
     
+    # Paginator setup
     paginator = Paginator(all_resolved_tickets, 20)
     try:
         page_number = int(response)
     except ValueError:
-        page_number = 1  
+        page_number = 1  # Default to first page if input is not a valid integer
     try:
         page_obj = paginator.get_page(page_number)
     except EmptyPage:
-        return "> No more tickets found."
+        return "> No more tickets found."  # If the page number is out of range
+    
+    # Build the summary for tickets
     ticket_summaries = "> ✅ Weekly Resolved Tickets\n\n" + weekday_summary + "\n"
-
+    
+    # Add ticket details to the summary
     for i, ticket in enumerate(page_obj, start=1):
         truncated_description = (ticket.description[:20] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
-        time_to_resolve = ticket.get_time_to_resolve()
+        time_to_resolve = ticket.get_time_to_resolve()  # Assumes get_time_to_resolve is a method in your Ticket model
         if ticket.created_by and ticket.assigned_to:
             ticket_summaries += (
                 f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n"
                 f"- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n"
                 f"- Time taken to Resolve: *{time_to_resolve}*\n\n"
             )
+    
+    # Add pagination instructions
     ticket_summaries += "> Reply with #exit to exit or enter a page number to navigate."
+    
     return ticket_summaries if page_obj else "> No resolved tickets found within the last week."
-
 def closed_tickets(support_member,response):
     if "#exit" in response.lower():
         support_member.user_mode = HELPING_MODE
