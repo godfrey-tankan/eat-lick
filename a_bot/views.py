@@ -1201,7 +1201,7 @@ def closed_tickets(support_member,response):
         except EmptyPage:
             return "> No more pages available."
 
-        ticket_summaries = "> CLOSED TICKETS\n\n"
+        ticket_summaries = "> ❌ CLOSED TICKETS\n\n"
         if page_obj:
             for i, ticket in enumerate(page_obj,start=1):
                 closed_at_formatted = ticket.closed_at.strftime("%B %d %Y %H:%M") if ticket.closed_at else "N/A"
