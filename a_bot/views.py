@@ -1109,25 +1109,28 @@ def resolved_tickets(support_member,response):
         support_member.user_status = HELPING_MODE
         support_member.save()
         return "> you have exited the resolved tickets view "
-    seven_days_ago = timezone.now() - timedelta(days=7)
-    all_resolved_tickets = Ticket.objects.filter(
-        status=RESOLVED_MODE,
-        resolved_at__gte=seven_days_ago,
-    ).order_by('-resolved_at')
+    else:
+        seven_days_ago = timezone.now() - timedelta(days=7)
+        all_resolved_tickets = Ticket.objects.filter(
+            status=RESOLVED_MODE,
+            resolved_at__gte=seven_days_ago,
+        ).order_by('-resolved_at')
 
-    paginator = Paginator(all_resolved_tickets, 20)  
-    page_number = response if int(response) else 1
-    page_obj = paginator.get_page(page_number)
-
-    ticket_summaries = "> ✅ Weekly Resolved Tickets\n\n"
-    if page_obj:
-        for i, ticket in enumerate(page_obj,start=1):
-            truncated_description = (ticket.description[:10] + '...') if ticket.description and len(ticket.description) > 10 else ticket.description
-            time_to_resolve = ticket.get_time_to_resolve()
-            ticket_summaries +=f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> {ticket.assigned_to.username.title()} \n- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n- Time taken to Resolve: *{time_to_resolve}* - resolved by *{ticket.assigned_to.username.title()}*\n\n"
-        ticket_summaries += "> reply with #exit to exit or 1,2,3 or 4 to go to next pages"
-        return ticket_summaries
-    return '> No more resolved tickets found within last week.'
+        paginator = Paginator(all_resolved_tickets, 20)  
+        try:
+            page_number = int(response)
+        except Exception as e:
+            page_number =1
+        page_obj = paginator.get_page(page_number)
+        ticket_summaries = "> ✅ Weekly Resolved Tickets\n\n"
+        if page_obj:
+            for i, ticket in enumerate(page_obj,start=1):
+                truncated_description = (ticket.description[:10] + '...') if ticket.description and len(ticket.description) > 10 else ticket.description
+                time_to_resolve = ticket.get_time_to_resolve()
+                ticket_summaries +=f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> {ticket.assigned_to.username.title()} \n- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n- Time taken to Resolve: *{time_to_resolve}* - resolved by *{ticket.assigned_to.username.title()}*\n\n"
+            ticket_summaries += "> reply with #exit to exit or 1,2,3 or 4 to go to next pages"
+            return ticket_summaries
+        return '> No more resolved tickets found within last week.'
 
 def closed_tickets(support_member,response):
     if "#exit" in response.lower():
@@ -1135,28 +1138,29 @@ def closed_tickets(support_member,response):
         support_member.user_status = HELPING_MODE
         support_member.save()
         return "> you have exited the closed tickets view "
-    seven_days_ago = timezone.now() - timedelta(days=7)
-    all_closed_tickets = Ticket.objects.filter(
-        status=CLOSED_MODE, 
-    ).order_by('-closed_at')
+    else:
+        seven_days_ago = timezone.now() - timedelta(days=7)
+        all_closed_tickets = Ticket.objects.filter(
+            status=CLOSED_MODE, 
+        ).order_by('-closed_at')
 
-    paginator = Paginator(all_closed_tickets, 20)  
-    try:
-        page_number = int(response)
-    except Exception as e:
-        page_number = 1
+        paginator = Paginator(all_closed_tickets, 20)  
+        try:
+            page_number = int(response)
+        except Exception as e:
+            page_number = 1
 
-    page_obj = paginator.get_page(page_number)
-    # Create the string summaries
-    ticket_summaries = "> CLOSED TICKETS\n\n"
-    if page_obj:
-        for i, ticket in enumerate(page_obj,start=1):
-            closed_at_formatted = ticket.closed_at.strftime("%B %d, %Y %H:%M") if ticket.closed_at else "N/A"
-            truncated_description = (ticket.description[:10] + '...') if ticket.description and len(ticket.description) > 10 else ticket.description
-            ticket_summaries +=f"{i}. Ticket *#{ticket.id}* - *{ticket.branch_opened}* branch\n`type` : {ticket.inquiry_type}\n- Opened by: {ticket.created_by.username.title()} \n- Description: {truncated_description}\n- closed at: *{closed_at_formatted}*\n- assigned to *{ticket.assigned_to.username.title()}* \n\n"
-        ticket_summaries += "> reply with #exit to exit or 1,2,3 or 4 to go to next pages"
-        return ticket_summaries
-    return '> No more closed tickets found.'
+        page_obj = paginator.get_page(page_number)
+        # Create the string summaries
+        ticket_summaries = "> CLOSED TICKETS\n\n"
+        if page_obj:
+            for i, ticket in enumerate(page_obj,start=1):
+                closed_at_formatted = ticket.closed_at.strftime("%B %d, %Y %H:%M") if ticket.closed_at else "N/A"
+                truncated_description = (ticket.description[:10] + '...') if ticket.description and len(ticket.description) > 10 else ticket.description
+                ticket_summaries +=f"{i}. Ticket *#{ticket.id}* - *{ticket.branch_opened}* branch\n`type` : {ticket.inquiry_type}\n- Opened by: {ticket.created_by.username.title()} \n- Description: {truncated_description}\n- closed at: *{closed_at_formatted}*\n- assigned to *{ticket.assigned_to.username.title()}* \n\n"
+            ticket_summaries += "> reply with #exit to exit or 1,2,3 or 4 to go to next pages"
+            return ticket_summaries
+        return '> No more closed tickets found.'
     
     
 def revoke_ticket(support_member,ticket_id):
