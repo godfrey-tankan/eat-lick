@@ -1047,6 +1047,10 @@ def get_dashboard(support_member,response):
     except ValueError:
         member_id = None
     if not member_id:
+        if "#exit" in response.lower() or "#cancel" in response.lower():
+            support_member.user_status = HELPING_MODE
+            support_member.save()
+            return "> You are now back to main home mode"
         support_member.user_status = DETAILED_VIEW_MODE
         support_member.save()
         summary_data = "> Support Members Summary\n\n"
@@ -1056,10 +1060,6 @@ def get_dashboard(support_member,response):
         return summary_data
 
     if member_id and support_member.user_status == DETAILED_VIEW_MODE:
-        if "#exit" in response.lower() or "#cancel" in response.lower():
-            support_member.user_status = HELPING_MODE
-            support_member.save()
-            return "> You are now back to main home mode"
         support_member.user_status = DETAILED_TICKET_MODE
         support_member.save()
         try:
