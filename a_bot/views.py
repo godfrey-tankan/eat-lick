@@ -1191,66 +1191,67 @@ def resolved_tickets(support_member, response):
     last_seven_days = [start_of_week + timedelta(days=i) for i in range(7)]
     
     resolved_counts_weekly = []
-    
-    # Get the resolved ticket counts for each of the last 7 days
-    for day in last_seven_days:
-        day_start = timezone.make_aware(datetime.combine(day, datetime.min.time()))
-        day_end = day_start + timedelta(days=1) 
+    try:
+        # Get the resolved ticket counts for each of the last 7 days
+        for day in last_seven_days:
+            day_start = timezone.make_aware(datetime.combine(day, datetime.min.time()))
+            day_end = day_start + timedelta(days=1) 
+            
+            resolved_counts_weekly.append(
+                Ticket.objects.filter(
+                    status=RESOLVED_MODE,
+                    resolved_at__range=(day_start, day_end)
+                ).count()
+            )
         
-        resolved_counts_weekly.append(
-            Ticket.objects.filter(
+        # Create labels for weekdays (Mon-Sun)
+        weekday_labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        
+        # Prepare the weekday summary for display
+        weekday_summary = ""
+        for i, day in enumerate(last_seven_days):
+            weekday_name = weekday_labels[i]
+            day_count = resolved_counts_weekly[i]
+            weekday_summary += f"`{weekday_name}: {day_count}` |\t"
+        
+        paginator = Paginator(resolved_counts_weekly, 20)
+        try:
+            page_number = int(response)
+        except ValueError:
+            page_number = 1  # Default to first page if input is not a valid integer
+        try:
+            page_obj = paginator.get_page(page_number)
+        except EmptyPage:
+            return "> No more tickets found."  # If the page number is out of range
+        
+        # Build the summary for resolved tickets
+        total = sum(resolved_counts_weekly)
+        ticket_summaries = f"> ✅ Weekly Resolved Tickets - {total}\n\n" + weekday_summary + "\n"
+        
+        # Add ticket details to the summary
+        for i, count in enumerate(page_obj, start=1):
+            day = last_seven_days[i - 1]
+            day_start = timezone.make_aware(datetime.combine(day, datetime.min.time()))
+            # day_resolved = ticket.resolved_at.strftime("%A ") if ticket.resolved_at else "Day.."
+            ticket_summaries += f"\n`{day_start.strftime('%A')}`\n"
+            day_end = day_start + timedelta(days=1) 
+            tickets = Ticket.objects.filter(
                 status=RESOLVED_MODE,
                 resolved_at__range=(day_start, day_end)
-            ).count()
-        )
-    
-    # Create labels for weekdays (Mon-Sun)
-    weekday_labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    
-    # Prepare the weekday summary for display
-    weekday_summary = ""
-    for i, day in enumerate(last_seven_days):
-        weekday_name = weekday_labels[i]
-        day_count = resolved_counts_weekly[i]
-        weekday_summary += f"`{weekday_name}: {day_count}` |\t"
-    
-    paginator = Paginator(resolved_counts_weekly, 20)
-    try:
-        page_number = int(response)
-    except ValueError:
-        page_number = 1  # Default to first page if input is not a valid integer
-    try:
-        page_obj = paginator.get_page(page_number)
-    except EmptyPage:
-        return "> No more tickets found."  # If the page number is out of range
-    
-    # Build the summary for resolved tickets
-    total = sum(resolved_counts_weekly)
-    ticket_summaries = f"> ✅ Weekly Resolved Tickets - {total}\n\n" + weekday_summary + "\n"
-    
-    # Add ticket details to the summary
-    for i, count in enumerate(page_obj, start=1):
-        day = last_seven_days[i - 1]
-        day_start = timezone.make_aware(datetime.combine(day, datetime.min.time()))
-        # day_resolved = ticket.resolved_at.strftime("%A ") if ticket.resolved_at else "Day.."
-        ticket_summaries += f"\n`{day_start.strftime('%A')}`\n"
-        day_end = day_start + timedelta(days=1) 
-        tickets = Ticket.objects.filter(
-            status=RESOLVED_MODE,
-            resolved_at__range=(day_start, day_end)
-        )
+            )
+            
+            for i,ticket in enumerate(tickets,start=1):
+                truncated_description = (ticket.description[:20] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
+                time_to_resolve = ticket.get_time_to_resolve()  
+                if ticket.created_by and ticket.assigned_to:
+                    ticket_summaries += (
+                        f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n- \tOpened by: {ticket.created_by.username.title()} - ({truncated_description})\n- \tTime taken to Resolve: *{time_to_resolve}*\n\n"
+                    )
+            ticket_summaries += "\n> reply #exit to exit or 1,2,3 or 4 for more."
         
-        for i,ticket in enumerate(tickets,start=1):
-            truncated_description = (ticket.description[:20] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
-            time_to_resolve = ticket.get_time_to_resolve()  
-            if ticket.created_by and ticket.assigned_to:
-                ticket_summaries += (
-                    f"{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> *{ticket.assigned_to.username.title()}* \n- \tOpened by: {ticket.created_by.username.title()} - ({truncated_description})\n- \tTime taken to Resolve: *{time_to_resolve}*\n\n"
-                )
-    
-    ticket_summaries += "\n> reply #exit to exit or 1,2,3 or 4 for more."
-    
-    return ticket_summaries if page_obj else "> No resolved tickets found within the last week."
+        return ticket_summaries if page_obj else "> No resolved tickets found within the last week."
+    except Exception as e:
+        return f"something went wrong..: {e}"
 
 def closed_tickets(support_member,response):
     if "#exit" in response.lower():
