@@ -1206,12 +1206,15 @@ def resolved_tickets(support_member, response):
                     resolved_at__range=(day_start, day_end)
                 ).count()
             )
-        
+    except Exception as e:
+        return f"something wrong..: {e}"
+    try:
         # Create labels for weekdays (Mon-Sun)
         weekday_labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         
         # Prepare the weekday summary for display
         weekday_summary = ""
+    
         for i, day in enumerate(last_seven_days):
             weekday_name = weekday_labels[i]
             day_count = resolved_counts_weekly[i]
