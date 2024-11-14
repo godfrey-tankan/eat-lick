@@ -1084,7 +1084,7 @@ def get_dashboard(support_member,response):
                 else:
                     detailed_info += f"Branch: {ticket.branch_opened.title()}\n- Ticket ID: *{ticket.id}* - {inquiry_type}\n- Opened by: *{ticket.created_by.username.title()}* \n- Description: {ticket.description}\n- Date Opened: *{opened_at}* \n- Time attended: *{attended_at}* \n- Time taken to resolve: *{ticket.get_time_to_resolve()}*\n- Messages count: *{messages_count}*\n\n"
             detailed_info += "\n\nReply with #exit to exit or ticket ID for detailed view."
-
+            return detailed_info
         except SupportMember.DoesNotExist:
             return "Support member not found."
     if support_member.user_status == DETAILED_TICKET_MODE:
