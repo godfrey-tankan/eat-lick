@@ -1051,7 +1051,7 @@ def get_dashboard(support_member,response):
         support_member.save()
         summary_data = "> Support Members Summary\n\n"
         for sm in support_member_summaries:
-            summary_data += f"Support ID: {sm.id} - *{sm.username.title()}* - {sm.total_tickets_count}\n\n- Resolved: *{sm.resolved_tickets_count}*\n- Pending: *{sm.pending_tickets_count}*\n- Closed : *{sm.closed_tickets_count}*\n\n"
+            summary_data += f"Support ID: {sm.id}\n Name: *{sm.username.title()}* -> {sm.total_tickets_count} tickets\n\n- Resolved: *{sm.resolved_tickets_count}*\n- Pending: *{sm.pending_tickets_count}*\n- Closed : *{sm.closed_tickets_count}*\n\n"
         summary_data += '\n> Reply with the support member number to view detailed information.'
         return summary_data
 
@@ -1065,15 +1065,18 @@ def get_dashboard(support_member,response):
         try:
             support_member_ob = SupportMember.objects.get(id=member_id, is_deleted=False)
             assigned_tickets = Ticket.objects.filter(assigned_to=support_member_ob).order_by('-created_at')[:20]
-            
+            attended_at =""
             detailed_info = f"username: {support_member_ob.username.title()}\n- phone_number: {support_member_ob.phone_number}\n\n"
             for i, ticket in enumerate(assigned_tickets, start=1):
                 opened_at = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
                 closed_at = timezone.localtime(ticket.closed_at).strftime('%Y-%m-%d %H:%M') if ticket.closed_at else 'Not closed yet'
-                attended_at_ob = TicketLog.objects.filter(ticket=ticket, status__icontains='pending').first()
-                attended_at=timezone.localtime(attended_at_ob.timestamp).strftime('%Y-%m-%d %H:%M') if attended_at_ob else 'Not attended yet'
+                try:
+                    attended_at_ob = TicketLog.objects.filter(ticket=ticket, status__icontains='pending').first()
+                    attended_at=timezone.localtime(attended_at_ob.timestamp).strftime('%Y-%m-%d %H:%M') if attended_at_ob else 'Not attended yet'
+                except Exception as e:
+                    ...
                 inquiry_type = ticket.inquiry_type if ticket.inquiry_type else 'N/A'
-                messages_count = Message.objects.filter(ticket_id=ticket).count()
+                messages_count = Message.objects.filter(ticket_id=ticket).all().count()
                 if ticket.status == 'closed':
                     detailed_info += f"{i}. Branch: {ticket.branch_opened.title()} - {inquiry_type}\n- Ticket ID: *{ticket.id}*\n- Opened by: *{ticket.created_by.username.title()}* \n- Description: {ticket.description}\n- Date Opened: *{opened_at}*\n- Time attended: *{attended_at} \n- Time closed: *{closed_at}*\n- Messages count: *{messages_count}*\n\n"
                 elif ticket.status == 'pending':
