@@ -78,10 +78,11 @@ def generate_response(response, wa_id, name,message_type,message_id):
             if response.lower() in ["skip", "cancel","#skip","#cancel"]:
                 support_member.user_status = HELPING_MODE
                 support_member.save()
+                return "> new ticket accepting skipped, you can now continue with your current task."
             if response == '1' or response == '1.':
                 support_member.user_status = HELPING_MODE
                 support_member.save()
-                return 'You have skipped the ticket, you can now continue with your current task.'
+                return '> ticket skipped, you can now continue with your current task.'
             return accept_ticket(wa_id,name, response)
         
         if support_member.user_status == RESUME_MODE:
@@ -720,7 +721,9 @@ def handle_inquiry(wa_id, response, name):
         
         for no_response in deny_open_new_ticket:
             if no_response == response.lower():
-                return 'Your inquiry is still being attended to.Please wait for a response.'
+                inquirer_obj.user_status = INQUIRY_MODE
+                inquirer_obj.save()
+                return 'Please wait for a message from the support team, you will be notified when someone is attending to your inquiry\n> please do not reply to this message.'
         # return "You have an open inquiry, Do you want to open a new inquiry?"
         if not inquirer_obj.user_status == NEW_TICKET_MODE:
             for yes_response in confirm_open_new_ticket:
@@ -1028,10 +1031,9 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                 else:
                     support_member.user_status = NEW_TICKET_ACCEPT_MODE
                     support_member.save()
-                    message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.'
+                    message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.\n> 🚨please choose an option.'
                 data = get_text_message_input(support_member.phone_number, message, None)
                 send_message(data)
-
 
 def get_dashboard(support_member,response):
     support_member_summaries = SupportMember.objects.filter(is_deleted=False).annotate(
@@ -1049,11 +1051,11 @@ def get_dashboard(support_member,response):
         support_member.save()
         summary_data = "> Support Members Summary\n\n"
         for sm in support_member_summaries:
-            summary_data += f"Support ID: {sm.id} - *{sm.username.title()}* - {sm.total_tickets_count}\n- | `Resolved: {sm.resolved_tickets_count}` - | `Pending: {sm.pending_tickets_count}` | `Closed : {sm.closed_tickets_count}` |\n\n"
+            summary_data += f"Support ID: {sm.id} - *{sm.username.title()}* - {sm.total_tickets_count}\n\n- Resolved: *{sm.resolved_tickets_count}*\n- Pending: *{sm.pending_tickets_count}*\n- Closed : *{sm.closed_tickets_count}*\n\n"
         summary_data += '\n> Reply with the support member number to view detailed information.'
         return summary_data
 
-    if member_id and member_id.user_status == DETAILED_VIEW_MODE:
+    if member_id and support_member.user_status == DETAILED_VIEW_MODE:
         if "#exit" in response.lower() or "#cancel" in response.lower():
             support_member.user_status = HELPING_MODE
             support_member.save()
@@ -1101,7 +1103,6 @@ def get_dashboard(support_member,response):
         return messages_list
     return "Summary view."
         
-
 @csrf_exempt
 def testing(request):
     name ='tankan'
