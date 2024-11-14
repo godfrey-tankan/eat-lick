@@ -25,12 +25,13 @@ from home.report import *
 from home.global_search import global_search
 from home.escalate_ticket import escalate_ticket, send_message
 from home.fetch_messages import fetch_messages
-from a_bot.views import forward_message, testing
+from a_bot.views import forward_message, testing, resolved_tickets
 from home.web_support import web_support
 from home.web_reports import *
 
 urlpatterns = [
     path('', include('home.urls')),
+    path('resolved/', resolved_tickets,name='resolved_tickets'),
     path('admins/logout/', logout_view),
     path('tables/', support_users_list, name='support_users_list'),
      path('smedco/', include('a_home.urls')),
