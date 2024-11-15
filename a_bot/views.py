@@ -725,20 +725,6 @@ def handle_inquiry(wa_id, response, name):
     except Ticket.DoesNotExist:
         ...
     if inquirer_obj.user_status == NEW_TICKET_MODE:
-        
-        # return "You have an open inquiry, Do you want to open a new inquiry?"
-        # if not inquirer_obj.user_status == NEW_TICKET_MODE:
-        #     for yes_response in confirm_open_new_ticket:
-        #         if yes_response in response.lower():
-        #             inquirer_obj.user_status = NEW_TICKET_MODE
-        #             inquirer_obj.save()
-        #             # open_inquiries.ticket_mode = QUEUED_MODE
-        #             # open_inquiries.save()
-        #             # new_message = f"Hi {open_inquiries.assigned_to.username.split()[0].title()}, {inquirer_obj.username} has opened a new inquiry,Your pending ticket (#{open_inquiries.id})  with them have now been queued.You can resume assisting them anytime by replying with #resume or #continue."
-        #             # data = get_text_message_input(open_inquiries.assigned_to.phone_number,new_message ,None)
-        #             # send_message(data)
-        #             return 'What is your inquiry?.\n\nReply with exit or q to exit.'
-        #     return "You have an open inquiry, Do you want to open a new inquiry?"
         other_pending_issues = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj,ticket_mode='other').first()
         if response.lower() in ["#exit","q","exit"]:
             inquirer_obj.user_status = INQUIRY_MODE
@@ -784,8 +770,8 @@ def handle_inquiry(wa_id, response, name):
 
     if len(response) < 20:
         return 'Please provide a detailed inquiry if you want to open an inquiry, if you do not intent to, please just ignore this message!'
-    if response == 'hello i want help':
-        return 'Hello what do you need help with?'
+    if response.lower() in ["thank you","ok","noted"]:
+        return ''
     ticket = Ticket.objects.create(
         title=f"Inquiry from {name}",
         description=response,
