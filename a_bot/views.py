@@ -715,71 +715,71 @@ def handle_inquiry(wa_id, response, name):
             return 'No branches to choose from found!'
     try:
         open_inquiries = Ticket.objects.filter(status=OPEN_MODE,created_by=inquirer_obj.id).first()
-    except Ticket.DoesNotExist:
-        open_inquiries = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj.id).first()
-    if open_inquiries or inquirer_obj.user_status == NEW_TICKET_MODE:
-        
-        for no_response in deny_open_new_ticket:
-            if no_response == response.lower():
-                inquirer_obj.user_status = INQUIRY_MODE
-                inquirer_obj.save()
-                return 'Please wait for a message from the support team, you will be notified when someone is attending to your inquiry\n> please do not reply to this message.'
-        # return "You have an open inquiry, Do you want to open a new inquiry?"
-        if not inquirer_obj.user_status == NEW_TICKET_MODE:
-            for yes_response in confirm_open_new_ticket:
-                if yes_response in response.lower():
-                    inquirer_obj.user_status = NEW_TICKET_MODE
+        if open_inquiries:
+            for no_response in deny_open_new_ticket:
+                if no_response == response.lower():
+                    inquirer_obj.user_status = INQUIRY_MODE
                     inquirer_obj.save()
-                    # open_inquiries.ticket_mode = QUEUED_MODE
-                    # open_inquiries.save()
-                    # new_message = f"Hi {open_inquiries.assigned_to.username.split()[0].title()}, {inquirer_obj.username} has opened a new inquiry,Your pending ticket (#{open_inquiries.id})  with them have now been queued.You can resume assisting them anytime by replying with #resume or #continue."
-                    # data = get_text_message_input(open_inquiries.assigned_to.phone_number,new_message ,None)
-                    # send_message(data)
-                    return 'What is your inquiry?.\n\nReply with exit or q to exit.'
-            return "You have an open inquiry, Do you want to open a new inquiry?"
-        if inquirer_obj.user_status == NEW_TICKET_MODE:
-            other_pending_issues = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj,ticket_mode='other').first()
-            if response.lower() == 'exit' or response.lower() == 'q':
-                inquirer_obj.user_status = INQUIRY_MODE
-                inquirer_obj.user_mode = INQUIRY_MODE
-                inquirer_obj.save()
-                message_to_send = f'You have exited the inquiry process, now you can continue sending messages on inquiry *({other_pending_issues.description})*' if other_pending_issues else 'You have exited the inquiry process, you can open a new inquiry anytime.'
-                return message_to_send
-            if other_pending_issues:
-                other_pending_issues.ticket_mode = QUEUED_MODE
-                other_pending_issues.queued_at = timezone.now()
-                other_pending_issues.save()
-                TicketLog.objects.create(
-                    ticket=other_pending_issues,
-                    status=QUEUED_MODE,
-                    changed_by=inquirer_obj,
-                )
-                inquirer_obj.user_status =INQUIRY_MODE
-                inquirer_obj.user_mode = INQUIRY_MODE
-                inquirer_obj.save()
-                assigned_member = SupportMember.objects.filter(phone_number=other_pending_issues.assigned_to.phone_number).first()
-                assigned_member.user_status = ACCEPT_TICKET_MODE
-                assigned_member.user_mode = ACCEPT_TICKET_MODE
-                assigned_member.save()
-                message_alert = f'Hello *{other_pending_issues.assigned_to.username.title()}* , {inquirer_obj.username.upper()} has opened a new inquiry,Your pending ticket (#{other_pending_issues.id})  with them have now been queued,This new inquiry might be urgent so you should consider assisting them first before resuming with inquiry *(#{other_pending_issues.id})* .You can resume assisting them anytime by replying with #resume or #continue.'
-                data = get_text_message_input(other_pending_issues.assigned_to.phone_number,message_alert ,None)
-                send_message(data)
-            ticket = Ticket.objects.create(
-                title=f"Inquiry from {name}",
-                description=response,
-                created_by=inquirer_obj, 
-                branch_opened =inquirer_obj.branch,
-                status=OPEN_MODE
-            )
-            TicketLog.objects.create(
-                ticket=ticket,
-                status=OPEN_MODE,
-                changed_by=inquirer_obj
-            )
+                    return 'Please wait for a message from the support team,\n> do not reply to this message.'
+    except Ticket.DoesNotExist:
+        ...
+    if inquirer_obj.user_status == NEW_TICKET_MODE:
+        
+        # return "You have an open inquiry, Do you want to open a new inquiry?"
+        # if not inquirer_obj.user_status == NEW_TICKET_MODE:
+        #     for yes_response in confirm_open_new_ticket:
+        #         if yes_response in response.lower():
+        #             inquirer_obj.user_status = NEW_TICKET_MODE
+        #             inquirer_obj.save()
+        #             # open_inquiries.ticket_mode = QUEUED_MODE
+        #             # open_inquiries.save()
+        #             # new_message = f"Hi {open_inquiries.assigned_to.username.split()[0].title()}, {inquirer_obj.username} has opened a new inquiry,Your pending ticket (#{open_inquiries.id})  with them have now been queued.You can resume assisting them anytime by replying with #resume or #continue."
+        #             # data = get_text_message_input(open_inquiries.assigned_to.phone_number,new_message ,None)
+        #             # send_message(data)
+        #             return 'What is your inquiry?.\n\nReply with exit or q to exit.'
+        #     return "You have an open inquiry, Do you want to open a new inquiry?"
+        other_pending_issues = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj,ticket_mode='other').first()
+        if response.lower() in ["#exit","q","exit"]:
             inquirer_obj.user_status = INQUIRY_MODE
+            inquirer_obj.user_mode = INQUIRY_MODE
             inquirer_obj.save()
-            broadcast_messages(name,ticket)
-            return new_inquiry_opened_response
+            message_to_send = f'You have exited the inquiry process, now you can continue sending messages on inquiry *({other_pending_issues.description})*' if other_pending_issues else 'You have exited the inquiry process, you can open a new inquiry anytime.'
+            return message_to_send
+        if other_pending_issues:
+            other_pending_issues.ticket_mode = QUEUED_MODE
+            other_pending_issues.queued_at = timezone.now()
+            other_pending_issues.save()
+            TicketLog.objects.create(
+                ticket=other_pending_issues,
+                status=QUEUED_MODE,
+                changed_by=inquirer_obj,
+            )
+            inquirer_obj.user_status =INQUIRY_MODE
+            inquirer_obj.user_mode = INQUIRY_MODE
+            inquirer_obj.save()
+            assigned_member = SupportMember.objects.filter(phone_number=other_pending_issues.assigned_to.phone_number).first()
+            assigned_member.user_status = ACCEPT_TICKET_MODE
+            assigned_member.user_mode = ACCEPT_TICKET_MODE
+            assigned_member.save()
+            message_alert = f'Hello *{other_pending_issues.assigned_to.username.title()}* , {inquirer_obj.username.upper()} has opened a new inquiry,Your pending ticket (#{other_pending_issues.id})  with them have now been queued,This new inquiry might be urgent so you should consider assisting them first before resuming with inquiry *(#{other_pending_issues.id})* .You can resume assisting them anytime by replying with #resume or #continue.'
+            data = get_text_message_input(other_pending_issues.assigned_to.phone_number,message_alert ,None)
+            send_message(data)
+        ticket = Ticket.objects.create(
+            title=f"Inquiry from {name}",
+            description=response,
+            created_by=inquirer_obj, 
+            branch_opened =inquirer_obj.branch,
+            status=OPEN_MODE
+        )
+        TicketLog.objects.create(
+            ticket=ticket,
+            status=OPEN_MODE,
+            changed_by=inquirer_obj
+        )
+        inquirer_obj.user_status = INQUIRY_MODE
+        inquirer_obj.save()
+        broadcast_messages(name,ticket)
+        return new_inquiry_opened_response
 
     if len(response) < 20:
         return 'Please provide a detailed inquiry if you want to open an inquiry, if you do not intent to, please just ignore this message!'
