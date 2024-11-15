@@ -7,13 +7,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Satisfaction Data Form</title>
     <link rel="stylesheet" href="{% static 'css/form_styles.css' %}">
+    <script>
+        // Add JavaScript to ensure the username is included in the form submission
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.querySelector("form");
+
+            form.addEventListener("submit", function (event) {
+                const username = localStorage.getItem("smedco_username");
+                if (username) {
+                    const usernameField = document.createElement("input");
+                    usernameField.type = "hidden";
+                    usernameField.name = "username";
+                    usernameField.value = username;
+
+                    form.appendChild(usernameField);
+                }
+            });
+        });
+    </script>
 </head>
 <body>
     <form method="post">
         <h1>Job Satisfaction Survey</h1>  <!-- Add a title for clarity -->
         <p class="info-icon">Please select the most appropriate response for each question:
-                <span clas='icon-icon' >ℹ️</span>
-
+                <span clas='icon-icon'>ℹ️</span>
             </p>
         <div class="tooltip">
             Your responses will remain anonymous and confidential.<br>
@@ -35,6 +52,6 @@
     </form>
 </body>
 <footer>
-    <p>powered by Empyrean Intergrated Solutions | &copy; 2024</p>
+    <p>powered by Empyrean Integrated Solutions | &copy; 2024</p>
 </footer>
 </html>

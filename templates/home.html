@@ -23,7 +23,8 @@
             {% if user.is_authenticated %}
                 <a href="/smedco/start" class="btn">Take Survey</a>
             {% else %}
-                <a href="/accounts/login" class="btn">Get Started</a>
+            <a href="/smedco/start" class="btn">Take Survey</a>
+                {% comment %} <a href="/accounts/login" class="btn">Get Started</a> {% endcomment %}
             {% endif %}
         </div>
     </section>

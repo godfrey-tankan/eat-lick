@@ -7,59 +7,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Demographic Data Form</title>
     <link rel="stylesheet" href="{% static 'css/form_styles.css' %}">
+    <script>
+        // Generate a random 10-digit username
+        function generateRandomUsername() {
+            return Math.floor(1000000000 + Math.random() * 9000000000).toString();
+        }
+
+        // Save username to localStorage if not already present
+        function saveUsernameToLocalStorage() {
+            let username = localStorage.getItem('smedco_username');
+            if (!username) {
+                username = generateRandomUsername();
+                localStorage.setItem('smedco_username', username);
+            }
+            return username;
+        }
+
+        // Add the username as a query parameter to the current URL
+        function appendUsernameToURL() {
+            const username = saveUsernameToLocalStorage();
+            const url = new URL(window.location.href);
+            if (!url.searchParams.has('username')) {
+                url.searchParams.append('username', username);
+                window.history.replaceState({}, '', url.toString());
+            }
+        }
+
+        // Append the username to the form data before submission
+        function appendUsernameToForm() {
+            const username = localStorage.getItem('smedco_username');
+            if (username) {
+                const form = document.querySelector('form');
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'username';
+                input.value = username;
+                form.appendChild(input);
+            }
+        }
+
+        // Execute on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            appendUsernameToURL();
+
+            // Add submit event listener to include the username in the form
+            const form = document.querySelector('form');
+            form.addEventListener('submit', appendUsernameToForm);
+        });
+    </script>
 </head>
 <body>
-    
     <form method="post">
         {% csrf_token %}
-        <h2>Demographic Data Form
-        </h2>
+        <h2>Demographic Data Form</h2>
         <p class="info-icon">Please fill in the following details accordingly:
-            <span clas='icon-icon' >ℹ️</span>
-            
+            <span class='icon-icon'>ℹ️</span>
         </p>
         <div class="tooltip">
             Your responses will remain anonymous and confidential.<br>
             We value your privacy and ensure that your data will only be used for statistical purposes.
         </div>
 
-    <div>
-        <label>Gender:</label>
-        {{ form.gender }}
-    </div>
+        <div>
+            <label>Gender:</label>
+            {{ form.gender }}
+        </div>
 
-    <div>
-        <label>Age Group:</label>
-        {{ form.age_group }}
-    </div>
+        <div>
+            <label>Age Group:</label>
+            {{ form.age_group }}
+        </div>
 
-    <div>
-        <label>Work Experience:</label>
-        {{ form.work_experience }}
-    </div>
+        <div>
+            <label>Work Experience:</label>
+            {{ form.work_experience }}
+        </div>
 
-    <div>
-        <label>Highest Qualification:</label>
-        {{ form.highest_qualification }}
-    </div>
+        <div>
+            <label>Highest Qualification:</label>
+            {{ form.highest_qualification }}
+        </div>
 
-    <div>
-        <label>Designation:</label>
-        {{ form.designation }}
-    </div>
+        <div>
+            <label>Designation:</label>
+            {{ form.designation }}
+        </div>
 
-    <div>
-        <label>Department:</label>
-        {{ form.department }}
-    </div>
+        <div>
+            <label>Department:</label>
+            {{ form.department }}
+        </div>
 
-    <div>
-        <label>Contract Type:</label>
-        {{ form.contract_type }}
-    </div>
+        <div>
+            <label>Contract Type:</label>
+            {{ form.contract_type }}
+        </div>
 
-    <button type="submit">Submit</button>
-</form>
-
+        <button type="submit">Submit</button>
+    </form>
 </body>
 </html>
