@@ -714,13 +714,14 @@ def handle_inquiry(wa_id, response, name):
                 return branches_list
             return 'No branches to choose from found!'
     try:
-        open_inquiries = Ticket.objects.filter(status=OPEN_MODE,created_by=inquirer_obj.id).first()
+        open_inquiries = Ticket.objects.filter(status__in=[OPEN_MODE,PENDING_MODE],created_by=inquirer_obj.id).first()
         if open_inquiries:
             for no_response in deny_open_new_ticket:
                 if no_response == response.lower():
                     inquirer_obj.user_status = INQUIRY_MODE
                     inquirer_obj.save()
-                    return 'Please wait for a message from the support team,\n> do not reply to this message.'
+                    return '> Please wait for support team to attend to your issue.'
+        
     except Ticket.DoesNotExist:
         ...
     if inquirer_obj.user_status == NEW_TICKET_MODE:
