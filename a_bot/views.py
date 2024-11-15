@@ -44,7 +44,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
     if inquirer:
         name = inquirer.username.split()[0]
         check_ticket = Ticket.objects.filter(created_by=inquirer.id,status=PENDING_MODE,ticket_mode='other').first()
-        if inquirer.user_status in [NEW_TICKET_MODE,INQUIRY_MODE]:
+        
+        if inquirer.user_status == NEW_TICKET_MODE:
             return handle_inquiry(wa_id, response, name)
     else:
         check_ticket = None
