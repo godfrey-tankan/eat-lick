@@ -128,7 +128,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
             
         if response.lower() in ['#commands','#codes']:
             extension_codes = ''
-            if support_member.username.lower()[:4] in ['simon','tankan']:
+            if support_member.phone_number in ['263772428281','263779586059']:
                 extension_codes = '11. #summary or #dashboard - view Detailed Summary of each support person \n\n12. #green or #completed - view all weekly resolved tickets\n\n13. #current or #pending - Returns the ticket that you are currently working on.\n\n'
             return COMMANDS.format(extension_codes)
         if response.lower() in ["#current","#pending"]:
