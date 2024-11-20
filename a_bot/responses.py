@@ -106,6 +106,6 @@ COMMANDS ="""
 7. #release \n- This will release the pending ticket you're currently providing assistance on back to open state\n\n
 8. #hold \n- This will hold the ticket allowing you to attend to other tickets in your queue\n\n
 9. #pending or #current \n- This will list the details of the current ticket you are providing assistance on.\n\n
-10. #reopen + ticketNo\n- This will reopen a closed ticket with the ticketNo provided e.g #reopen 10 will reopen ticket number 10\n\n
+10. #reopen + ticketNo\n- This will reopen a closed ticket with the ticketNo provided e.g #reopen 10 will reopen ticket number 10\n\n{}
 
 """

@@ -119,7 +119,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
             support_member.user_status = REOPENING_TICKET_MODE
             support_member.save()
             return reopen_ticket(support_member,response)
-        if response.lower() in ["#summary","#dasshboard"] or support_member.user_status in [DASHBOARD_MODE,DETAILED_TICKET_MODE,DETAILED_VIEW_MODE]:
+        if response.lower() in ["#summary","#dashboard"] or support_member.user_status in [DASHBOARD_MODE,DETAILED_TICKET_MODE,DETAILED_VIEW_MODE]:
             if not "#" in response:
                 return get_dashboard(support_member,response)
             support_member.user_status = DASHBOARD_MODE
@@ -127,6 +127,10 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return get_dashboard(support_member,response)
             
         if response.lower() in ['#commands','#codes']:
+            extension = ''
+            if support_member.username.lower()[:4] in ['simon','tankan']:
+                extension = '11. #summary or #dashboard - view Detailed Summary of each support person \n\n12. #green or #completed - view all weekly resolved tickets\n\n13. #current or #pending - Returns the ticket that you are currently working on.\n\n'
+                extension = 'dashboard'
             return COMMANDS
         if response.lower() in ["#current","#pending"]:
             current_pending_ticket_ob = Ticket.objects.filter(assigned_to=support_member,status=PENDING_MODE,ticket_mode='other').first()
@@ -1043,7 +1047,7 @@ def get_dashboard(support_member,response):
         support_member.save()
         summary_data = "> Support Members Summary\n\n"
         for sm in support_member_summaries:
-            summary_data += f"Support ID: {sm.id}\n Name: *{sm.username.title()}* -> {sm.total_tickets_count} tickets\n- Resolved: *{sm.resolved_tickets_count}*\n- Pending: *{sm.pending_tickets_count}*\n- Closed : *{sm.closed_tickets_count}*\n\n"
+            summary_data += f"Support Member No: {sm.id}\n Name: *{sm.username.title()}* -> {sm.total_tickets_count} tickets\n- Resolved: *{sm.resolved_tickets_count}*\n- Pending: *{sm.pending_tickets_count}*\n- Closed : *{sm.closed_tickets_count}*\n\n"
         summary_data += '\n> Reply with the support member number to view detailed information.'
         return summary_data
 
