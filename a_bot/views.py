@@ -127,11 +127,10 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return get_dashboard(support_member,response)
             
         if response.lower() in ['#commands','#codes']:
-            extension = ''
+            extension_codes = ''
             if support_member.username.lower()[:4] in ['simon','tankan']:
-                extension = '11. #summary or #dashboard - view Detailed Summary of each support person \n\n12. #green or #completed - view all weekly resolved tickets\n\n13. #current or #pending - Returns the ticket that you are currently working on.\n\n'
-                extension = 'dashboard'
-            return COMMANDS
+                extension_codes = '11. #summary or #dashboard - view Detailed Summary of each support person \n\n12. #green or #completed - view all weekly resolved tickets\n\n13. #current or #pending - Returns the ticket that you are currently working on.\n\n'
+            return COMMANDS.format(extension_codes)
         if response.lower() in ["#current","#pending"]:
             current_pending_ticket_ob = Ticket.objects.filter(assigned_to=support_member,status=PENDING_MODE,ticket_mode='other').first()
             if current_pending_ticket_ob:
