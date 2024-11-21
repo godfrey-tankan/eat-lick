@@ -111,7 +111,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 support_member.user_status = GET_CLOSED_MODE
                 support_member.save()
                 return closed_tickets(support_member,response)
-        if ("#take" in response.lower() or "#revoke" in response.lower()  and support_member.phone_number =='263772428281') or support_member.user_status == REVOKE_TICKET_MODE:
+        if ("#take" in response.lower() or "#revoke" in response.lower()  and support_member.phone_number in['263772428281','263779586059']) or support_member.user_status == REVOKE_TICKET_MODE:
             support_member.user_status = REVOKE_TICKET_MODE
             support_member.save()   
             return revoke_ticket(support_member,response)
@@ -129,7 +129,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         if response.lower() in ['#commands','#codes']:
             extension_codes = ''
             if support_member.phone_number in ['263772428281','263779586059']:
-                extension_codes = '11. #summary or #dashboard - view Detailed Summary of each support person \n\n12. #green or #completed - view all weekly resolved tickets\n\n13. #current or #pending - Returns the ticket that you are currently working on.\n\n'
+                extension_codes = '11. #summary or #dashboard - view Detailed Summary of each support person \n\n12. #green or #completed - view all weekly resolved tickets\n\n13. #current or #pending - Returns the ticket that you are currently working on.\n\n13. #take + ticketNo or #revoke + ticketNo - take or revoke a ticket from other member'
             return COMMANDS.format(extension_codes)
         if response.lower() in ["#current","#pending"]:
             current_pending_ticket_ob = Ticket.objects.filter(assigned_to=support_member,status=PENDING_MODE,ticket_mode='other').first()
