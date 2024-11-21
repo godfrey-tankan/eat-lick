@@ -1307,7 +1307,7 @@ def revoke_ticket(support_member,ticket_id):
             ticket.ticket_mode = 'other'
             ticket.save()
             return f'You have revoked the ticket number #{ticket.id}, it is now assigned to you.'
-    return 'Ticket not found please check the ticket id, please use #revoke ticketNo to revoke a ticket e.g #revoke 4 and also make sure the ticket is in pending state'
+    return 'Ticket not found please check the ticket id, please use #revoke or #take ticketNo to revoke a ticket e.g #revoke 4 and also make sure the ticket is in pending state'
 
 def accept_ticket(wa_id,name, ticket_id):
     try:
