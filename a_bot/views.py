@@ -452,7 +452,8 @@ def view_ticket(support_member,response):
     except Ticket.DoesNotExist:
         return 'Ticket not found, please provide existing ticket number'
     time_created = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
-    time_attended = timezone.localtime(ticket.attended_at).strftime('%Y-%m-%d %H:%M') if ticket.attended_at else 'Not yet attended'
+    time_attended_ob = TicketLog.objects.filter(ticket=ticket,status__icontains='pending').last()
+    time_attended = timezone.localtime(time_attended_ob.timestamp).strftime('%Y-%m-%d %H:%M') if time_attended_ob else 'Not yet attended'
     messages_sent = Message.objects.filter(ticket_id=ticket).count()
     messages_count = messages_sent if messages_sent > 0 else 'No messages sent yet'
     ticket_status = f'Ticket Number: *{ticket.id}*\n- Assigned to: *{ticket.assigned_to.username}*\n Time Created: *{time_created}* - attended at: *{time_attended}*\n- Description: {ticket.description}\n- Status: *{ticket.status}*\nInquirer mobile:{ticket.created_by.phone_number}\nMessages sent count: {messages_count}\n\n'
