@@ -1012,6 +1012,8 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
             else:
                 if message:
                     message=message
+                    data = get_text_message_input(support_member.phone_number, message, None)
+                    return send_message(data)
                 else:
                     message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.created_by.phone_number,ticket.id, ticket.description)
                 pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member.id,ticket_mode='other').first()
