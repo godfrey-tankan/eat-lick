@@ -450,8 +450,8 @@ def view_ticket(support_member,response):
     messages_sent = Message.objects.filter(ticket_id=ticket).count()
     messages_count = messages_sent if messages_sent > 0 else 'No messages sent yet'
     ticket_type = ticket.inquiry_type if ticket.inquiry_type else 'General'
-    ticket_status = f'Ticket Number: *{ticket.id}* -> *{ticket.status}* ->*{ticket.assigned_to.username.title()}*\n\nOpened by: *{ticket.created_by.username.title()}* - *{ticket.branch_opened}* branch\n- *Time Created:* {time_created}\n- *Attended at*: {time_attended}\n- *Description:* {ticket.description}\n- *Status:* {ticket.status}\n- Messages sent count: {messages_count}\nInquirer mobile:{ticket.created_by.phone_number}\n\n'
-    ticket_status += '> Reply with #summary to view detailed summary of each support person.'
+    ticket_status = f'Ticket Number: *{ticket.id}* -> *{ticket.status}* ->*{ticket.assigned_to.username.title()}*\n\nOpened by: *{ticket.created_by.username.title()}* - *{ticket.branch_opened}* branch\n- *Time Created:* {time_created}\n- *Attended at*: {time_attended}\n- *Description:* {ticket.description}\n- *Status:* {ticket.status}\n- Messages sent count: {messages_count}\n\nInquirer mobile:{ticket.created_by.phone_number}\n\n'
+    ticket_status += '> Reply with #summary to view detailed summary'
     return ticket_status
 
 def process_whatsapp_message(body):
