@@ -1079,7 +1079,7 @@ def get_dashboard(support_member,response):
         support_member.save()
         try:
             support_member_ob = SupportMember.objects.filter(id=member_id).first()
-            assigned_tickets = Ticket.objects.filter(assigned_to=support_member_ob).order_by('-created_at')
+            assigned_tickets = Ticket.objects.filter(assigned_to=support_member_ob).order_by('-created_at')[:20]
             attended_at =""
             detailed_info = f"username: {support_member_ob.username.title()}\n- phone_number: {support_member_ob.phone_number}\n\n"
             for i, ticket in enumerate(assigned_tickets, start=1):
