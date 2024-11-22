@@ -75,7 +75,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
     
         if response.lower() == 'help':
             return support_member_help_menu
-        if response.lower() in ["#view","#ticket"] or support_member.user_status == VIEW_TICKET_MODE:
+        if ("#view" in response.lower() or "#ticket" in response.lower()) or support_member.user_status == VIEW_TICKET_MODE:
             if response.lower() in ["#view","#ticket"]:
                 support_member.user_status = VIEW_TICKET_MODE
                 support_member.save()
