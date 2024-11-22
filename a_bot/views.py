@@ -1020,8 +1020,9 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                     support_member.user_status = ACCEPT_TICKET_MODE
                     support_member.save()
                 else:
-                    support_member.user_status = NEW_TICKET_ACCEPT_MODE
-                    support_member.save()
+                    if not support_member.user_status == RESUME_MODE:
+                        support_member.user_status = NEW_TICKET_ACCEPT_MODE
+                        support_member.save()
                     message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.\n> 🚨please choose an option.'
                 data = get_text_message_input(support_member.phone_number, message, None)
                 send_message(data)
@@ -1279,7 +1280,6 @@ def closed_tickets(support_member,response):
             ticket_summaries += "\n> reply #exit to exit or 1,2,3 or 4 for more."
             return ticket_summaries
         return '> No more closed tickets found.'
-    
     
 def revoke_ticket(support_member,ticket_id):
     ticket_id_ob = ticket_id.split()[1]
