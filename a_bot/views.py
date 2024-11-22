@@ -75,6 +75,11 @@ def generate_response(response, wa_id, name,message_type,message_id):
     
         if response.lower() == 'help':
             return support_member_help_menu
+        if response.lower() in ["#view","#ticket"] or support_member.user_status == VIEW_TICKET_MODE:
+            if response.lower() in ["#view","#ticket"]:
+                support_member.user_status = VIEW_TICKET_MODE
+                support_member.save()
+            return view_ticket(support_member,response)
         if support_member.user_status==NEW_TICKET_ACCEPT_MODE:
             if response.lower() in ["skip", "cancel","#skip","#cancel"]:
                 support_member.user_status = HELPING_MODE
@@ -432,6 +437,29 @@ def create_manual_ticket(response,wa_id,support_member):
         support_member.save()
         return 'Inquirer is being created, please provide the inquirer name!'
     return "please provide the number of the inquirer you want to create a ticket for."
+
+def view_ticket(support_member,response):
+    if response.lower() == '#exit':
+        support_member.user_status = HELPING_MODE
+        support_member.save()
+        return 'You are now back to your previous mode, you can continue with what you were doing.'
+    try:
+        requested_ticket_id = response.split()[1]
+    except IndexError:
+        return 'Please provide a valid ticket number eg #view 20'
+    try:
+        ticket = Ticket.objects.get(id=requested_ticket_id)
+    except Ticket.DoesNotExist:
+        return 'Ticket not found, please provide existing ticket number'
+    time_created = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
+    time_attended = timezone.localtime(ticket.attended_at).strftime('%Y-%m-%d %H:%M') if ticket.attended_at else 'Not yet attended'
+    messages_sent = Message.objects.filter(ticket_id=ticket).count()
+    messages_count = messages_sent if messages_sent > 0 else 'No messages sent yet'
+    ticket_status = f'Ticket Number: *{ticket.id}*\n- Assigned to: *{ticket.assigned_to.username}*\n Time Created: *{time_created}* - attended at: *{time_attended}*\n- Description: {ticket.description}\n- Status: *{ticket.status}*\nInquirer mobile:{ticket.created_by.phone_number}\nMessages sent count: {messages_count}\n\n'
+    support_member.user_status = HELPING_MODE
+    support_member.save()
+    ticket_status += 'Reply with #summary to view detailed summary of each support person.'
+    return ticket_status
 
 def process_whatsapp_message(body):
     data = body
@@ -1722,4 +1750,3 @@ def alert_support_members(name,ticket, message,resolved=False):
     if resolved:
         return mark_as_resolved(ticket.id)
     return broadcast_messages(name,ticket)
-    

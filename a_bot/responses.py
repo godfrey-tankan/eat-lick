@@ -43,6 +43,7 @@ SUPPORT_MEMBER_ASSISTING='support_member_assisting'
 MANUAL_RESOLUTION_MODE = "manual_resolution"
 INQUIRER_NUMBER_MODE = "providing_number"
 INQUIRER_NAME_MODE = "providing_name"
+VIEW_TICKET_MODE="view_ticket"
 INQUIRER_BRANCH_MODE = "providing_branch"
 TICKET_TYPE_MODE = "providing_ticket_type"
 TICKET_INFO_MODE = "providing_ticket_info"
@@ -97,15 +98,15 @@ support_member_help_menu = '''*👨‍💻 SUPPORT MEMBER GUIDE*\n\n
 COMMANDS ="""
 > LIST OF HELPFUL COMMANDS TO USE.\n\n
 
-1. #taken\n- This lists all the tickets being attended to\n\n
-2. #resume \n- This lists all your tickets that are in the queue\n\n
-3. #assist, #support \n- This will request assistance or help from other support members\n\n
-4. #open \n- this will list all the open tickets that are not being attended to\n\n
-5. #exit \n- This will exit th current mode back to inquirer assistance mode or ticket acceptance mode provided you do not have any in hand.\n\n
-6. help \n- This will popup the Support member Guide (Help menu)\n\n
-7. #release \n- This will release the pending ticket you're currently providing assistance on back to open state\n\n
-8. #hold \n- This will hold the ticket allowing you to attend to other tickets in your queue\n\n
-9. #pending or #current \n- This will list the details of the current ticket you are providing assistance on.\n\n
-10. #reopen + ticketNo\n- This will reopen a closed ticket with the ticketNo provided e.g #reopen 10 will reopen ticket number 10\n\n{}
+1. #taken - This lists all the tickets being attended to\n\n
+2. #resume  - This lists all your tickets that are in the queue\n\n
+3. #assist, #support  - This will request assistance or help from other support members\n\n
+4. #open  - this will list all the open tickets that are not being attended to\n\n
+5. #exit  - This will exit th current mode back to inquirer assistance mode or ticket acceptance mode provided you do not have any in hand.\n\n
+6. help  - This will popup the Support member Guide (Help menu)\n\n
+7. #release  - This will release the pending ticket you're currently providing assistance on back to open state\n\n
+8. #hold  - This will hold the ticket allowing you to attend to other tickets in your queue\n\n
+9. #pending or #current  - This will list the details of the current ticket you are providing assistance on.\n\n
+10. #reopen + ticketNo - This will reopen a closed ticket with the ticketNo provided e.g #reopen 10 will reopen ticket number 10\n\n{}
 
 """
