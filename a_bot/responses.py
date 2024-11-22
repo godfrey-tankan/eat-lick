@@ -96,7 +96,7 @@ support_member_help_menu = '''*👨‍💻 SUPPORT MEMBER GUIDE*\n\n
 > Also, remember to interact with this bot daily! 🤖🚀
 '''
 COMMANDS ="""
-> LIST OF HELPFUL COMMANDS TO USE.\n\n
+> LIST OF HELPFUL COMMANDS TO USE.\n
 
 1. #taken - This lists all the tickets being attended to\n
 2. #resume  - This lists all your tickets that are in the queue\n
