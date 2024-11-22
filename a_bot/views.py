@@ -75,10 +75,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
     
         if response.lower() == 'help':
             return support_member_help_menu
-        if ("#view" in response.lower() or "#ticket" in response.lower()) or support_member.user_status == VIEW_TICKET_MODE:
-            if response.lower() in ["#view","#ticket"]:
-                support_member.user_status = VIEW_TICKET_MODE
-                support_member.save()
+        if "#view" in response.lower() or "#ticket" in response.lower():
             return view_ticket(support_member,response)
         if support_member.user_status==NEW_TICKET_ACCEPT_MODE:
             if response.lower() in ["skip", "cancel","#skip","#cancel"]:
@@ -439,10 +436,6 @@ def create_manual_ticket(response,wa_id,support_member):
     return "please provide the number of the inquirer you want to create a ticket for."
 
 def view_ticket(support_member,response):
-    if response.lower() == '#exit':
-        support_member.user_status = HELPING_MODE
-        support_member.save()
-        return 'You are now back to your previous mode, you can continue with what you were doing.'
     try:
         requested_ticket_id = response.split()[1]
     except IndexError:
@@ -457,8 +450,6 @@ def view_ticket(support_member,response):
     messages_sent = Message.objects.filter(ticket_id=ticket).count()
     messages_count = messages_sent if messages_sent > 0 else 'No messages sent yet'
     ticket_status = f'Ticket Number: *{ticket.id}*\n- Assigned to: *{ticket.assigned_to.username}*\n Time Created: *{time_created}* - attended at: *{time_attended}*\n- Description: {ticket.description}\n- Status: *{ticket.status}*\nInquirer mobile:{ticket.created_by.phone_number}\nMessages sent count: {messages_count}\n\n'
-    support_member.user_status = HELPING_MODE
-    support_member.save()
     ticket_status += 'Reply with #summary to view detailed summary of each support person.'
     return ticket_status
 
