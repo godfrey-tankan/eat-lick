@@ -449,7 +449,8 @@ def view_ticket(support_member,response):
     time_attended = timezone.localtime(time_attended_ob.timestamp).strftime('%Y-%m-%d %H:%M') if time_attended_ob else 'Not yet attended'
     messages_sent = Message.objects.filter(ticket_id=ticket).count()
     messages_count = messages_sent if messages_sent > 0 else 'No messages sent yet'
-    ticket_status = f'Ticket Number: *{ticket.id}*\n- Assigned to: *{ticket.assigned_to.username}*\n Time Created: *{time_created}* - attended at: *{time_attended}*\n- Description: {ticket.description}\n- Status: *{ticket.status}*\nInquirer mobile:{ticket.created_by.phone_number}\nMessages sent count: {messages_count}\n\n'
+    ticket_type = ticket.inquiry_type if ticket.inquiry_type else 'General'
+    ticket_status = f'Ticket Number: *{ticket.id}* -> *{ticket.status}* ->*{ticket.assigned_to.username.title()}*\nOpened by: *{ticket.created_by.username.title()}* - *{ticket.branch_opened}* \n `Time Created:` *{time_created}*\n `Attended at:` *{time_attended}*\n- *Description:* {ticket.description}\n- Status: *{ticket.status}*\nInquirer mobile:{ticket.created_by.phone_number}\nMessages sent count: {messages_count}\n\n'
     ticket_status += 'Reply with #summary to view detailed summary of each support person.'
     return ticket_status
 
