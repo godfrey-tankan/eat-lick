@@ -1,7 +1,6 @@
 {% load i18n static admin_soft %}
 
-<aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3 " id="sidenav-main"
-{% comment %} style='background-color:#fff;' {% endcomment %}
+<aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3 " id="nav-main"
 >
 <style>
   .text-black{
@@ -210,3 +209,18 @@
        href="https://appseed.us/product/soft-ui-dashboard-pro/django/">PRO Version</a>
   </div> {% endcomment %}
 </aside>
+
+<div id="sidenav-main"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidenav = document.getElementById('nav-main');
+        const theme = localStorage.getItem('theme');
+
+        if (theme === 'dark') {
+            sidenav.style.backgroundColor = '#283149'; // Dark background
+        } else {
+            sidenav.style.backgroundColor = '#fff'; // Light background
+        }
+    });
+</script>
