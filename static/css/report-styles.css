@@ -6,8 +6,8 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #000000;
-    max-width: 1200px;
-    margin: auto;
+    max-width: 100%;
+    overflow-x: auto;
 }
 h1,h2,h3,h4,h5,h6 {
     color: #000000;
@@ -30,9 +30,9 @@ h1,h2,h3,h4,h5,h6 {
     margin-bottom: 30px;
 }
 .report-overview {
-    display: flex;
     justify-content: space-between;
     padding: 20px;
+    display: flex;
     background-color: #f8f9fa;
     border-radius: 8px;
 }
@@ -46,16 +46,20 @@ h1,h2,h3,h4,h5,h6 {
     font-size: 1.8rem;
     color: #007bff;
     display: block;
+    max-width: 100%;
     font-weight: bold;
 }
 .report-stat .stat-label {
     font-size: 1rem;
     color: #272727;
+    max-width: 100%;
 }
 .report-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    overflow-x: auto;
+    display: block;
 }
 .report-table th, .report-table td {
     padding: 12px 15px;
@@ -98,11 +102,22 @@ h1,h2,h3,h4,h5,h6 {
         margin: 30px;
         padding: 0;
     }
-
+}
+@media (max-width: 768px) {
     .report-container {
-        width: 100%;
-        margin: 0;
         padding: 10px;
-        box-shadow: none;
+    }
+    .report-header h1 {
+        font-size: 1.5rem;
+    }
+    .report-stat .stat-number {
+        font-size: 1.2rem;
+    }
+    .report-stat .stat-label {
+        font-size: 0.9rem;
+    }
+    .btn-action {
+        padding: 8px 10px;
+        font-size: 0.9rem;
     }
 }

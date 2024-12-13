@@ -6,7 +6,7 @@
   <div class="container-fluid py-1 px-3">
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
-        <li class="breadcrumb-item text-sm"><a class="opacity-5 text-dark" href="javascript:;">Pages</a></li>
+        <li class="breadcrumb-item text-sm"><a class="opacity-5 text-dark" href="/enlsupport">Home</a></li>
         <li class="text-sm text-dark active ms-2" aria-current="page">
           {% if request.path == '/enlsupport' %} / Dashboard {% else %} {{ request.path|title }} {% endif %}
         </li>
@@ -16,9 +16,9 @@
       <div class="ms-md-auto pe-md-3 d-flex align-items-center">
         <form action="{%url 'global_search'%}" method="get" class="d-flex">
           <div class="input-group">
-              <span class="input-group-text text-body"><i class='bx bx-search'></i></span>
+              <span class="input-group-text text-body" style='z-index:200;'><i class='bx bx-search'></i></span>
               {% comment %} <input type="text" id="global-search-input" class="form-control" name="q" placeholder="Type here..." value="{{ query }}"> {% endcomment %}
-              <input type="text" id="global-search-input" name="q" class="form-control" placeholder="Type here...">
+              <input type="text" id="global-search-input" name="q" class="form-control" placeholder="Type here..." style='z-index:200;'>
           </div>
       </form>
       </div>
@@ -36,6 +36,7 @@
               <i class="bx b-user bx-sm"></i>
               <span class="d-sm-inline d-none me-3">Logout</span>
             </a>
+            
           </li>
         {% else %}
           <li class="nav-item d-flex align-items-center">
