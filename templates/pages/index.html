@@ -18414,7 +18414,7 @@
         
         submitButton.addEventListener('click', function(e) {
             e.preventDefault(); // Prevent the default form submission behavior
-           
+        submitButton.textContent = 'Loading...'; // Change button text to 'Loading...'
 
             // Gather form data
             const reportType = document.getElementById('report-type').value;
@@ -18450,16 +18450,20 @@
                 .then(response => {
                   mainContainer.style.display = 'none';
                   reportContainer.style.display = 'block';
+                  submitButton.textContent = 'Submit'; 
                     reportContainer.innerHTML = response.data;
                     // Update the content of a specified container with the response data
                     // Optionally, scroll to the top of the container or do other actions
                     reportContainer.scrollIntoView();
+            submitButton.textContent = 'Submit'; // Reset button text
                 })
                 .catch(error => {
                     console.error('Error:', error);
+            submitButton.textContent = 'Submit'; // Reset button text
                 });
             } else {
                 console.log('Invalid report type');
+          submitButton.textContent = 'Submit'; // Reset button text
             }
         });
     });
