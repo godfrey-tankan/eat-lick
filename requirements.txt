@@ -86,4 +86,10 @@ xhtml2pdf==0.2.16
 zopfli==0.2.3
 django-allauth
 WeasyPrint
+libpango-1.0-0 
+libcairo2
+libcairo2-dev
+libgdk-pixbuf2.0-0
+libffi-dev
+libpangocairo-1.0-0
 
