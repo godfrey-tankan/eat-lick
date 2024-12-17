@@ -35,12 +35,12 @@ class SupportMemberAdmin(admin.ModelAdmin):
     search_fields = ['username']
     list_filter = ['is_active']
     
-# @admin.register(Inquirer)
-# class InquirerAdmin(admin.ModelAdmin):
-#     list_display = ['username','phone_number','branch']
-#     list_display_links = ['username', 'phone_number']
-#     search_fields = ['username']
-#     list_filter = ['is_active',]
+@admin.register(Inquirer)
+class InquirerAdmin(admin.ModelAdmin):
+    list_display = ['username','phone_number','branch']
+    list_display_links = ['username', 'phone_number']
+    search_fields = ['username']
+    list_filter = ['is_active',]
 
 # @admin.register(Message)
 # class MessageAdmin(admin.ModelAdmin):
