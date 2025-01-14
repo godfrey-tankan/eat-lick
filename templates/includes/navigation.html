@@ -10,6 +10,15 @@
         <li class="text-sm text-dark active ms-2" aria-current="page">
           {% if request.path == '/enlsupport' %} / Dashboard {% else %} {{ request.path|title }} {% endif %}
         </li>
+        <li class="text-sm text-dark active ms-4" aria-current="page">
+          <a href="{% url 'staff_dashboard' %}">+Branch</a>
+        </li>
+        <li class="text-sm text-dark active ms-4" aria-current="page">
+          <a href="{% url 'staff_dashboard' %}">+Ticket</a>
+        </li>
+        <li class="text-sm text-dark active ms-4" aria-current="page">
+          <a href="{% url 'staff_dashboard' %}">+Inquirer</a>
+        </li>
       </ol>
     </nav>
     <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
