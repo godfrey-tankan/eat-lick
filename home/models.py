@@ -173,4 +173,4 @@ class Branch(models.Model):
     code = models.CharField(max_length=255)
 
     def __str__(self):
-        return f"Branch: {self.name}"
+        return f"Branch: {self.name} ({self.code})"
