@@ -126,8 +126,9 @@
 
 </script>
 
-<script>
 
+{% comment %} // Popup shortcuts for creating new branches, tickets, and inquirers {% endcomment %}
+<script>
   document.getElementById('create-branch-btn').addEventListener('click', function() {
     document.getElementById('unique-branch-popup').style.display = 'flex';
     loadBranches();  // Load existing branches when popup is opened
@@ -135,96 +136,102 @@
 
   // Close the Branch Popup
   document.getElementById('close-branch-popup').addEventListener('click', function() {
-    document.getElementById('unique-branch-popup').style.display = 'none';
+      document.getElementById('unique-branch-popup').style.display = 'none';
+  });
+
+  // Show the "Add New Branch" form when the button is clicked
+  document.getElementById('show-add-branch-form').addEventListener('click', function() {
+      document.getElementById('unique-branch-form').style.display = 'block';
+      this.style.display = 'none'; // Hide the "Add New Branch" button after clicking
   });
 
   // Load Branches from the database (AJAX)
   function loadBranches() {
-    // This should fetch branch data from your backend (replace this with actual AJAX)
-    const branches = [
-        { id: 1, name: 'Branch 1', code: 'B001' },
-        { id: 2, name: 'Branch 2', code: 'B002' },
-        { id: 3, name: 'Branch 3', code: 'B003' }
-    ];
+      // This should fetch branch data from your backend (replace this with actual AJAX)
+      const branches = [
+          { id: 1, name: 'Branch 1', code: 'B001' },
+          { id: 2, name: 'Branch 2', code: 'B002' },
+          { id: 3, name: 'Branch 3', code: 'B003' }
+      ];
 
-    const branchListContainer = document.getElementById('branch-list');
-    branchListContainer.innerHTML = ''; // Clear previous list
+      const branchListContainer = document.getElementById('branch-list');
+      branchListContainer.innerHTML = ''; // Clear previous list
 
-    branches.forEach(branch => {
-        const div = document.createElement('div');
-        div.classList.add('unique-list-item');
-        div.innerHTML = `
-            <span>${branch.name} (${branch.code})</span>
-            <div>
-                <button onclick="editBranch(${branch.id})">Edit</button>
-                <button onclick="deleteBranch(${branch.id})">Delete</button>
-            </div>
-        `;
-        branchListContainer.appendChild(div);
-    });
+      branches.forEach(branch => {
+          const div = document.createElement('div');
+          div.classList.add('unique-list-item');
+          div.innerHTML = `
+              <span>${branch.name} (${branch.code})</span>
+              <div>
+                  <button onclick="editBranch(${branch.id})">Edit</button>
+                  <button onclick="deleteBranch(${branch.id})">Delete</button>
+              </div>
+          `;
+          branchListContainer.appendChild(div);
+      });
   }
 
   // Edit Branch - Populate form with existing branch data (AJAX)
   function editBranch(branchId) {
-    // Replace this with an AJAX request to fetch the branch details
-    const branch = { id: branchId, name: 'Branch 1', code: 'B001' };  // Mock branch data
-    document.getElementById('branch-name').value = branch.name;
-    document.getElementById('branch-code').value = branch.code;
+      // Replace this with an AJAX request to fetch the branch details
+      const branch = { id: branchId, name: 'Branch 1', code: 'B001' };  // Mock branch data
+      document.getElementById('branch-name').value = branch.name;
+      document.getElementById('branch-code').value = branch.code;
 
-    // Update the form to submit as "Edit"
-    document.getElementById('submit-branch').textContent = 'Update Branch';
-    document.getElementById('submit-branch').onclick = function(event) {
-        event.preventDefault();
-        updateBranch(branchId); // Call update function
-    };
+      // Update the form to submit as "Edit"
+      document.getElementById('submit-branch').textContent = 'Update Branch';
+      document.getElementById('submit-branch').onclick = function(event) {
+          event.preventDefault();
+          updateBranch(branchId); // Call update function
+      };
   }
 
   // Update Branch (AJAX)
   function updateBranch(branchId) {
-    const branchName = document.getElementById('branch-name').value;
-    const branchCode = document.getElementById('branch-code').value;
+      const branchName = document.getElementById('branch-name').value;
+      const branchCode = document.getElementById('branch-code').value;
 
-    // Replace with an AJAX request to update the branch
-    console.log('Updated Branch:', branchId, branchName, branchCode);
+      // Replace with an AJAX request to update the branch
+      console.log('Updated Branch:', branchId, branchName, branchCode);
 
-    // Reset form after update
-    document.getElementById('branch-name').value = '';
-    document.getElementById('branch-code').value = '';
-    document.getElementById('submit-branch').textContent = 'Add New Branch';
-    loadBranches(); // Reload branches
+      // Reset form after update
+      document.getElementById('branch-name').value = '';
+      document.getElementById('branch-code').value = '';
+      document.getElementById('submit-branch').textContent = 'Add New Branch';
+      loadBranches(); // Reload branches
   }
 
   // Delete Branch (AJAX)
   function deleteBranch(branchId) {
-    // Replace this with an AJAX request to delete the branch
-    console.log('Deleted Branch:', branchId);
-    loadBranches(); // Reload branches
+      // Replace this with an AJAX request to delete the branch
+      console.log('Deleted Branch:', branchId);
+      loadBranches(); // Reload branches
   }
 
   // Search Functionality (Filter Branches)
   function filterBranches() {
-    const searchTerm = document.getElementById('branch-search').value.toLowerCase();
-    const branchItems = document.querySelectorAll('.unique-list-item');
-    
-    branchItems.forEach(item => {
-        const name = item.querySelector('span').textContent.toLowerCase();
-        if (name.includes(searchTerm)) {
-            item.style.display = 'flex';
-        } else {
-            item.style.display = 'none';
-        }
-    });
+      const searchTerm = document.getElementById('branch-search').value.toLowerCase();
+      const branchItems = document.querySelectorAll('.unique-list-item');
+      
+      branchItems.forEach(item => {
+          const name = item.querySelector('span').textContent.toLowerCase();
+          if (name.includes(searchTerm)) {
+              item.style.display = 'flex';
+          } else {
+              item.style.display = 'none';
+          }
+      });
   }
 
   // Add New Branch (AJAX)
   document.getElementById('unique-branch-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const branchName = document.getElementById('branch-name').value;
-    const branchCode = document.getElementById('branch-code').value;
-    
-    // Replace with an AJAX request to add the branch
-    console.log('New Branch:', branchName, branchCode);
-    loadBranches(); // Reload branches
+      event.preventDefault();
+      const branchName = document.getElementById('branch-name').value;
+      const branchCode = document.getElementById('branch-code').value;
+      
+      // Replace with an AJAX request to add the branch
+      console.log('New Branch:', branchName, branchCode);
+      loadBranches(); // Reload branches
   });
 </script>
 
