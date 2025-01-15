@@ -18069,7 +18069,7 @@
 
       
 
-      <div id="unique-branch-popup" class="unique-popup-form-container">
+    <div id="unique-branch-popup" class="unique-popup-form-container">
         <div class="unique-popup-form-content">
           <span class="close-branch-popup-btn" id="close-branch-popup-btn">&times;</span>
 
@@ -18092,23 +18092,50 @@
                 <input type="text" id="branch-code" class="unique-form-input" placeholder="Branch Code" required>
                 <button type="submit" id="submit-branch" class="unique-submit-btn">Add New Branch</button>
                 <span class="unique-popup-close-btn" id="close-branch-form">&times;</span> <!-- Close button inside form -->
-            </form>
-        </div>
-    </div>
+              </form>
+          </div>
+      </div>
     
+
+
+    <!-- Popup form for creating tickets -->
+<div id="ticket-popup" class="unique-popup-form-container">
+  <div class="unique-popup-form-content">
+      <span class="close-ticket-popup-btn" id="close-ticket-popup-btn">&times;</span>
+      
+      <h3>Create New Ticket</h3>
+
+      <!-- Ticket Form -->
+      <form id="ticket-form" class="unique-form-container">
+          <!-- Ticket Fields -->
+          <input type="text" id="ticket-title" class="unique-form-input" placeholder="Ticket Title" required>
+          <textarea id="ticket-description" class="unique-form-input" placeholder="Ticket Description" required></textarea>
+          <input type="text" id="ticket-branch" class="unique-form-input" placeholder="Branch" required>
+          
+          <!-- Ticket Status Dropdown -->
+          <select id="ticket-status" class="unique-form-input" required>
+              <option value="open">Open</option>
+              <option value="pending">Pending</option>
+              <option value="closed">Closed</option>
+              <option value="resolved">Resolved</option>
+              <option value="expired">Expired</option>
+          </select>
+          
+          <!-- Assign to Support Member (can be dynamic if needed) -->
+          <select id="ticket-assigned-to" class="unique-form-input" required>
+              <!-- Dynamically filled with support members -->
+          </select>
+
+          <!-- Submit Button -->
+          <button type="submit" id="submit-ticket" class="unique-submit-btn">Create Ticket</button>
+          
+          <!-- Close form button inside the popup -->
+          <span class="unique-popup-close-btn" id="close-ticket-form">&times;</span>
+      </form>
+  </div>
+</div>
+
     
-    <!-- Create/Edit Ticket Popup Form -->
-    <div id="unique-ticket-popup" class="unique-popup-form-container">
-        <div class="unique-popup-form-content">
-            <span class="unique-popup-close-btn" id="close-ticket-popup">&times;</span>
-            <h3>Create/Edit Ticket</h3>
-            <form id="unique-ticket-form">
-                <input type="text" id="ticket-title" class="unique-form-input" placeholder="Ticket Title" required>
-                <textarea id="ticket-description" class="unique-form-textarea" placeholder="Ticket Description" required></textarea>
-                <button type="submit" id="submit-ticket" class="unique-submit-btn">Submit</button>
-            </form>
-        </div>
-    </div>
     
     <!-- Create/Edit Inquirer Popup Form -->
     <div id="unique-inquirer-popup" class="unique-popup-form-container">

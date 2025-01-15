@@ -8,6 +8,28 @@ class TicketForm(forms.ModelForm):
     class Meta:
         model = Ticket
         fields = ['title', 'description', 'assigned_to'] 
+        
+        
+        # forms.py
+
+class TicketNewForm(forms.ModelForm):
+    class Meta:
+        model = Ticket
+        fields = [
+            'title', 'description', 'branch_opened', 'assigned_to', 
+            'status', 'ticket_mode', 'inquiry_type'
+        ]
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 5}),
+            'assigned_to': forms.Select(attrs={'class': 'select2'}),  # Use select2 for easier user experience
+            'branch_opened': forms.TextInput(attrs={'placeholder': 'Enter branch name'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(TicketNewForm, self).__init__(*args, **kwargs)
+        # Optionally pre-populate the 'assigned_to' field with active support members
+        self.fields['assigned_to'].queryset = SupportMember.objects.filter(is_active=True, is_deleted=False)
+
 
 class CommentForm(forms.ModelForm):
     class Meta:

@@ -1,0 +1,46 @@
+{% extends 'layouts/base.html' %}
+
+{% load static %}
+{% load tz %}
+
+
+{% block content %}
+  <h1>Create a New Ticket</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create Ticket</button>
+  </form>
+{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    // JavaScript to create a ticket via AJAX
+    function createTicket() {
+        const ticketData = {
+            title: document.getElementById('ticket-title').value,
+            description: document.getElementById('ticket-description').value,
+            branch_opened: document.getElementById('ticket-branch').value,
+            assigned_to: document.getElementById('ticket-assigned-to').value,
+            status: document.getElementById('ticket-status').value,
+            ticket_mode: document.getElementById('ticket-mode').value,
+            inquiry_type: document.getElementById('ticket-inquiry-type').value,
+        };
+
+        axios.post('/api/create/', ticketData)
+            .then(response => {
+                if (response.data.status === 'success') {
+                    alert('Ticket created successfully!');
+                    window.location.href = `/ticket/${response.data.ticket_id}/`;  // Redirect to the ticket detail page
+                } else {
+                    alert('Failed to create ticket: ' + response.data.errors);
+                }
+            })
+            .catch(error => {
+                console.error('There was an error creating the ticket:', error);
+            });
+    }
+</script>
+
