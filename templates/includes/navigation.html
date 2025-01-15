@@ -11,14 +11,19 @@
           {% if request.path == '/enlsupport' %} / Dashboard {% else %} {{ request.path|title }} {% endif %}
         </li>
         <li class="text-sm text-dark active ms-4" aria-current="page">
-          <a href="{% url 'staff_dashboard' %}">+Branch</a>
+          <a href="javascript:void(0);" id="create-branch-btn" class="unique-branch-popup-btn">+Branch</a>
         </li>
+        
+        <!-- Button to trigger +Ticket form -->
         <li class="text-sm text-dark active ms-4" aria-current="page">
-          <a href="{% url 'staff_dashboard' %}">+Ticket</a>
+            <a href="javascript:void(0);" id="create-ticket-btn" class="unique-ticket-popup-btn">+Ticket</a>
         </li>
+        
+        <!-- Button to trigger +Inquirer form -->
         <li class="text-sm text-dark active ms-4" aria-current="page">
-          <a href="{% url 'staff_dashboard' %}">+Inquirer</a>
+            <a href="javascript:void(0);" id="create-inquirer-btn" class="unique-inquirer-popup-btn">+Inquirer</a>
         </li>
+
       </ol>
     </nav>
     <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
@@ -117,6 +122,57 @@
                 document.getElementById('search-results').innerHTML = html;
             });
     }
+});
+
+</script>
+
+<script>
+ // Open the Branch Popup
+document.getElementById('create-branch-btn').addEventListener('click', function() {
+  document.getElementById('unique-branch-popup').style.display = 'flex';
+});
+
+// Open the Ticket Popup
+document.getElementById('create-ticket-btn').addEventListener('click', function() {
+  document.getElementById('unique-ticket-popup').style.display = 'flex';
+});
+
+// Open the Inquirer Popup
+document.getElementById('create-inquirer-btn').addEventListener('click', function() {
+  document.getElementById('unique-inquirer-popup').style.display = 'flex';
+});
+
+// Close the Branch Popup
+document.getElementById('close-branch-popup').addEventListener('click', function() {
+  document.getElementById('unique-branch-popup').style.display = 'none';
+});
+
+// Close the Ticket Popup
+document.getElementById('close-ticket-popup').addEventListener('click', function() {
+  document.getElementById('unique-ticket-popup').style.display = 'none';
+});
+
+// Close the Inquirer Popup
+document.getElementById('close-inquirer-popup').addEventListener('click', function() {
+  document.getElementById('unique-inquirer-popup').style.display = 'none';
+});
+
+// Form Submission Handling for Branch
+document.getElementById('unique-branch-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+  // Add your form submission logic here (e.g., via AJAX)
+});
+
+// Form Submission Handling for Ticket
+document.getElementById('unique-ticket-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+  // Add your form submission logic here (e.g., via AJAX)
+});
+
+// Form Submission Handling for Inquirer
+document.getElementById('unique-inquirer-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+  // Add your form submission logic here (e.g., via AJAX)
 });
 
 </script>

@@ -17758,7 +17758,93 @@
   body {
     transition: background-color 200ms ease-in;
   }
-  
+  .unique-popup-form-container {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+  }
+
+  .unique-popup-form-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      width: 500px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .unique-popup-close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      cursor: pointer;
+  }
+
+  /* Input and button styling */
+  .unique-form-input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+  }
+
+  .unique-submit-btn {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+  }
+
+  .unique-submit-btn:hover {
+      background-color: #0056b3;
+  }
+
+  /* List container styling */
+  .unique-list-container {
+      margin-top: 20px;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+  }
+
+  .unique-list-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+  }
+
+  .unique-list-item button {
+      background-color: transparent;
+      border: none;
+      color: #007bff;
+      cursor: pointer;
+  }
+
+  .unique-list-item button:hover {
+      text-decoration: underline;
+  }
+
+  /* Search input styling */
+  .unique-form-input:focus {
+      border-color: #007bff;
+  }
+
+
+
+
   body.dark-page {
     background-color: #283149;
     color: #d7d7d7 !important;
@@ -17976,6 +18062,58 @@
 
 
     <div class="container-fluid py-4" id='home-container-main'>
+
+      
+
+      <div id="unique-branch-popup" class="unique-popup-form-container">
+        <div class="unique-popup-form-content">
+            <span class="unique-popup-close-btn" id="close-branch-popup">&times;</span>
+            <h3>Manage Branches</h3>
+            
+            <!-- Search Input -->
+            <input type="text" id="branch-search" class="unique-form-input" placeholder="Search Branches" onkeyup="filterBranches()">
+            
+            <!-- List of Branches -->
+            <div id="branch-list" class="unique-list-container">
+                <!-- List of available branches will be injected here -->
+            </div>
+    
+            <!-- Add New Branch Form -->
+            <form id="unique-branch-form" class="unique-form-container">
+                <input type="text" id="branch-name" class="unique-form-input" placeholder="Branch Name" required>
+                <input type="text" id="branch-code" class="unique-form-input" placeholder="Branch Code" required>
+                <button type="submit" id="submit-branch" class="unique-submit-btn">Add New Branch</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Create/Edit Ticket Popup Form -->
+    <div id="unique-ticket-popup" class="unique-popup-form-container">
+        <div class="unique-popup-form-content">
+            <span class="unique-popup-close-btn" id="close-ticket-popup">&times;</span>
+            <h3>Create/Edit Ticket</h3>
+            <form id="unique-ticket-form">
+                <input type="text" id="ticket-title" class="unique-form-input" placeholder="Ticket Title" required>
+                <textarea id="ticket-description" class="unique-form-textarea" placeholder="Ticket Description" required></textarea>
+                <button type="submit" id="submit-ticket" class="unique-submit-btn">Submit</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Create/Edit Inquirer Popup Form -->
+    <div id="unique-inquirer-popup" class="unique-popup-form-container">
+        <div class="unique-popup-form-content">
+            <span class="unique-popup-close-btn" id="close-inquirer-popup">&times;</span>
+            <h3>Create/Edit Inquirer</h3>
+            <form id="unique-inquirer-form">
+                <input type="text" id="inquirer-username" class="unique-form-input" placeholder="Username" required>
+                <input type="text" id="inquirer-phone" class="unique-form-input" placeholder="Phone Number" required>
+                <button type="submit" id="submit-inquirer" class="unique-submit-btn">Submit</button>
+            </form>
+        </div>
+    </div>
+
+
       
       <div class="row">
           {% if request.user.is_authenticated and request.user.is_superuser %}
@@ -18161,7 +18299,7 @@
             </div>
           </div>
         </div>
-        <div class="col-lg-4">
+      <div class="col-lg-4">
           <div class="card custom-card z-index-2">
             <div class="card-header pb-0">
               <h6>
@@ -18355,7 +18493,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <script>
+  <script>
       const printBtn = document.getElementById("generate-report-button");
       if (printBtn){
       printBtn.addEventListener("click", function () {
@@ -18812,7 +18950,56 @@
 
 </script>
 
+<script>
+  // Open the Branch Popup
+document.getElementById('create-branch-btn').addEventListener('click', function() {
+  document.getElementById('unique-branch-popup').style.display = 'flex';
+});
 
+// Open the Ticket Popup
+document.getElementById('create-ticket-btn').addEventListener('click', function() {
+  document.getElementById('unique-ticket-popup').style.display = 'flex';
+});
+
+// Open the Inquirer Popup
+document.getElementById('create-inquirer-btn').addEventListener('click', function() {
+  document.getElementById('unique-inquirer-popup').style.display = 'flex';
+});
+
+// Close the Branch Popup
+document.getElementById('close-branch-popup').addEventListener('click', function() {
+  document.getElementById('unique-branch-popup').style.display = 'none';
+});
+
+// Close the Ticket Popup
+document.getElementById('close-ticket-popup').addEventListener('click', function() {
+  document.getElementById('unique-ticket-popup').style.display = 'none';
+});
+
+// Close the Inquirer Popup
+document.getElementById('close-inquirer-popup').addEventListener('click', function() {
+  document.getElementById('unique-inquirer-popup').style.display = 'none';
+});
+
+// Form Submission Handling for Branch
+document.getElementById('unique-branch-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+  // Add your form submission logic here (e.g., via AJAX)
+});
+
+// Form Submission Handling for Ticket
+document.getElementById('unique-ticket-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+  // Add your form submission logic here (e.g., via AJAX)
+});
+
+// Form Submission Handling for Inquirer
+document.getElementById('unique-inquirer-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+  // Add your form submission logic here (e.g., via AJAX)
+});
+
+</script>
 
 
 
