@@ -814,7 +814,7 @@ def all_tickets_list(request):
         except ValueError:
             pass  # Ignore if the filter_time is not a valid integer
 
-    return render(request, 'tickets/ticket_list.html', {'tickets': tickets})
+    return render(request, 'tickets/ticket_list.html', {'tickets': tickets[:150]})
 
 def ticket_detail(request, pk):
     ticket = get_object_or_404(Ticket, pk=pk)
