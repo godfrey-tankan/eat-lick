@@ -39,7 +39,7 @@ DEBUG = str2bool(os.environ.get('DEBUG'))
 
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://localhost:5085', 'http://127.0.0.1:8000', 'https://tithehurst.co.zw/','https://empyreanintegratedsolutions.com ']
+CSRF_TRUSTED_ORIGINS = ['https://empyreanintegratedsolutions.com/','http://localhost:8000', 'http://localhost:5085', 'http://127.0.0.1:8000', 'https://tithehurst.co.zw/','https://empyreanintegratedsolutions.com/']
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:    
