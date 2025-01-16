@@ -80,6 +80,7 @@ class FAQDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = FAQSerializer
     permission_classes = [IsAuthenticated]
 
+@csrf_exempt
 @login_required
 def index(request):
     # Get all tickets
@@ -393,7 +394,7 @@ def home_view(request):
 def users_list(request):
     users = User.objects.all()
     return render(request, 'pages/users.html', {'users': users})
-
+@csrf_exempt
 @login_required
 @staff_required
 def edit_user(request, id):
@@ -439,6 +440,7 @@ def create_user(request):
         'form_action': 'Create',
     })
 
+@csrf_exempt
 @login_required
 @staff_required
 def edit_support_member(request, id):
@@ -453,6 +455,7 @@ def edit_support_member(request, id):
         form = SupportMemberForm(instance=member)
     return render(request, 'pages/edit_user.html', {'form': form, 'member': member})
 
+@csrf_exempt
 @login_required
 @staff_required
 def create_support_member(request):
