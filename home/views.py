@@ -748,42 +748,36 @@ def support_member_tickets(request, member_id):
 def all_tickets_list(request):
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
+
+    # Limit to the last 100 tickets based on `created_at`
+    base_queryset = Ticket.objects.order_by('-created_at')[:100]
+
+    # Subquery to check if the ticket was escalated
     escalated_subquery = TicketLog.objects.filter(
         ticket=OuterRef('pk'),
         changed_by__icontains='escalated'
     ).values('id')
-    tickets = Ticket.objects.order_by('-created_at').annotate(
-            message_count=Count('messages'),
-            is_escalated=Exists(escalated_subquery),
-            attended_at=Subquery(
+
+    # Annotate base queryset
+    tickets = base_queryset.annotate(
+        message_count=Count('messages'),
+        is_escalated=Exists(escalated_subquery),
+        attended_at=Subquery(
             TicketLog.objects.filter(
                 ticket=OuterRef('pk'),
                 status__icontains='pending'
             ).values('timestamp')[:1]
         )
-    ).order_by('-created_at')
-    # if request.user.is_superuser:
-    # else:
-    #     support_member = SupportMember.objects.filter(user=request.user).first()
-    #     if not support_member:
-    #         return render(request, 'tickets/ticket_list.html', {'tickets': []})
-    #     escalated_subquery = TicketLog.objects.filter(
-    #         ticket=OuterRef('pk'),
-    #         changed_by__icontains='escalated'
-    #     ).values('id')
-    #     tickets = Ticket.objects.filter(assigned_to=support_member).order_by('-created_at').annotate(
-    #             message_count=Count('messages'),
-    #             is_escalated=Exists(escalated_subquery)
-    #     ).order_by('-created_at')
+    )
 
+    # Apply filter based on time_to_resolve if `filter_time` is provided
     if filter_time:
         try:
             filter_time = int(filter_time)
-            # Convert minutes to a timedelta object
+            # Convert minutes to timedelta
             filter_time_duration = timedelta(minutes=filter_time)
-            end_time = now()
 
-            # Use expression to calculate the duration from creation to the end time
+            # Annotate with time_to_resolve
             tickets = tickets.annotate(
                 time_to_resolve=ExpressionWrapper(
                     F('resolved_at') - F('created_at'),
@@ -791,30 +785,21 @@ def all_tickets_list(request):
                 )
             )
 
-            if operator == '=':
-                tickets = tickets.filter(
-                    time_to_resolve=filter_time_duration
-                )
-            elif operator == '<':
-                tickets = tickets.filter(
-                    time_to_resolve__lt=filter_time_duration
-                )
-            elif operator == '>':
-                tickets = tickets.filter(
-                    time_to_resolve__gt=filter_time_duration
-                )
-            elif operator == '<=':
-                tickets = tickets.filter(
-                    time_to_resolve__lte=filter_time_duration
-                )
-            elif operator == '>=':
-                tickets = tickets.filter(
-                    time_to_resolve__gte=filter_time_duration
-                )
-        except ValueError:
-            pass  # Ignore if the filter_time is not a valid integer
+            # Apply filtering based on operator
+            filter_mapping = {
+                '=': {'time_to_resolve': filter_time_duration},
+                '<': {'time_to_resolve__lt': filter_time_duration},
+                '>': {'time_to_resolve__gt': filter_time_duration},
+                '<=': {'time_to_resolve__lte': filter_time_duration},
+                '>=': {'time_to_resolve__gte': filter_time_duration},
+            }
+            tickets = tickets.filter(**filter_mapping.get(operator, {}))
 
-    return render(request, 'tickets/ticket_list.html', {'tickets': tickets[:150]})
+        except ValueError:
+            pass  # Ignore invalid filter_time
+
+    # Render the filtered and annotated tickets
+    return render(request, 'tickets/ticket_list.html', {'tickets': tickets})
 
 def ticket_detail(request, pk):
     ticket = get_object_or_404(Ticket, pk=pk)
