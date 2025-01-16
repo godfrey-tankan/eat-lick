@@ -28,12 +28,12 @@ from .models import *
 #     search_fields = ['question', 'answer']
 #     list_filter = ['created_at']
 
-@admin.register(SupportMember)
-class SupportMemberAdmin(admin.ModelAdmin):
-    list_display = ['username','phone_number']
-    list_display_links = ['username', 'phone_number']
-    search_fields = ['username']
-    list_filter = ['is_active']
+# @admin.register(SupportMember)
+# class SupportMemberAdmin(admin.ModelAdmin):
+#     list_display = ['username','phone_number']
+#     list_display_links = ['username', 'phone_number']
+#     search_fields = ['username']
+#     list_filter = ['is_active']
     
 @admin.register(Inquirer)
 class InquirerAdmin(admin.ModelAdmin):
@@ -48,9 +48,9 @@ class InquirerAdmin(admin.ModelAdmin):
 #     search_fields = ['inquirer']
 #     list_filter = ['created_at']
 
-@admin.register(Branch)
-class BranchAdmin(admin.ModelAdmin):
-    list_display = ['name', 'code']
-    list_display_links = ['name', 'code']
-    search_fields = ['name']
-    list_filter = ['name']
+# @admin.register(Branch)
+# class BranchAdmin(admin.ModelAdmin):
+#     list_display = ['name', 'code']
+#     list_display_links = ['name', 'code']
+#     search_fields = ['name']
+#     list_filter = ['name']

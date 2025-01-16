@@ -9,9 +9,9 @@ User = get_user_model()
 
 class Inquirer(models.Model):
     username = models.CharField(max_length=255,null=True, blank=True,default='Inquirer')
-    phone_number = models.CharField(max_length=15, null=True, blank=True)
-    user_mode = models.CharField(max_length=255, null=True, blank=True)
-    user_status = models.CharField(max_length=255, null=True, blank=True)
+    phone_number = models.CharField(max_length=15, null=True, blank=True,default='2637')
+    user_mode = models.CharField(max_length=255, null=True, blank=True ,default='inquiry')
+    user_status = models.CharField(max_length=255, null=True, blank=True ,default='inquiry')
     branch = models.CharField(max_length=255, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)

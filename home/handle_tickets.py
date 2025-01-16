@@ -1,8 +1,9 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from .models import Ticket, Inquirer, SupportMember, Branch
+from .models import Ticket, Inquirer, SupportMember, Branch, TicketLog
 from .forms import NewTicketForm
 import json
+from datetime import datetime
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -27,9 +28,13 @@ def create_ticket(request):
         if form.is_valid():
             ticket = form.save(commit=False)
             ticket.status = 'resolved'
-            ticket.resolved_at=timezone.now()
             ticket.save()  # Save the ticket
-            print("ticket saved.....")
+            ticket.resolved_at=ticket.created_at
+            ticket.save()
+            
+            print(ticket.created_at,ticket.resolved_at)
+            TicketLog.objects.create(ticket=ticket, changed_by='Manually created ticket', status='resolved') 
+        
             return JsonResponse({"success": True})
         else:
             return JsonResponse({"success": False, "errors": form.errors})

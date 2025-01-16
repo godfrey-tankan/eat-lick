@@ -101,7 +101,7 @@
         <input type="text" id="ticket-title" name="title" class="unique-form-input" placeholder="Ticket Title" required>
   
         <label for="ticket-description" class="unique-form-label">Description</label>
-        <textarea id="ticket-description" name="description" class="unique-form-textarea" placeholder="Ticket Description" rows="4" required></textarea>
+        <textarea id="ticket-description" name="description" class="unique-form-textarea" placeholder="Ticket Description" rows="2" required></textarea>
   
         <label for="ticket-inquirer" class="unique-form-label">Inquirer</label>
         
@@ -634,7 +634,7 @@
         .then(data => {
             // Show success message or handle the response
             if (data.success) {
-                alert("Ticket created successfully.");
+              window.location.href = '/inquiries/';
                 form.reset();  // Reset the form fields
                 document.getElementById('unique-ticket-popup').classList.remove('show');  // Close the popup
             } else {
