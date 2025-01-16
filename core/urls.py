@@ -34,7 +34,7 @@ urlpatterns = [
     path('', include('home.urls')),
     path('resolved/', resolved_tickets,name='resolved_tickets'),
     path('admins/logout/', logout_view),
-    # path('accounts/login/', custom_login, name='login'),
+    path('accounts/login/', custom_login, name='login'),
     
     path('tables/', support_users_list, name='support_users_list'),
      path('smedco/', include('a_home.urls')),
