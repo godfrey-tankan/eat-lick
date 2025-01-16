@@ -11,6 +11,5 @@ urlpatterns = [
     path('branches/add/', add_branch, name='add_branch'),
     path('branches/update/<int:branch_id>/', update_branch, name='update_branch'),
     path('branches/delete/<int:branch_id>/', delete_branch, name='delete_branch'),
-    path('create/', api_create_ticket, name='api_create_ticket'),
-    path('get_support_members/', get_support_members, name='get_support_members'),
+    path('create_ticket/', create_ticket, name='create_ticket'),
 ]

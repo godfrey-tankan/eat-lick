@@ -166,7 +166,7 @@
                       <span>${branch.name} (${branch.code})</span>
                       <div>
                           <button class="edit-branch-btn" data-branch-id="${branch.id}">Edit</button>
-                          <button onclick="deleteBranch(${branch.id})">Delete</button>
+                          <button style="color:red" class="delete-branch-btn" data-branch-id="${branch.id}">Delete</button>
                       </div>
                   `;
                   branchListContainer.appendChild(div);
@@ -174,12 +174,19 @@
 
               // Add event listeners to Edit buttons
               const editButtons = document.querySelectorAll('.edit-branch-btn');
+              const deleteButtons = document.querySelectorAll('.delete-branch-btn');
               editButtons.forEach(button => {
                   button.addEventListener('click', function() {
                       const branchId = this.getAttribute('data-branch-id');
                       editBranch(branchId);
                   });
               });
+              deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const branchId = this.getAttribute('data-branch-id');
+                    deleteBranch(branchId);
+                });
+            });
           });
     }
 
@@ -293,17 +300,17 @@
 <script>
   // Open the ticket popup
 document.getElementById("show-ticket-form-btn").addEventListener("click", function() {
-  document.getElementById("ticket-popup").style.display = "block";
+  document.getElementById("unique-ticket-popup").style.display = "block";
 });
 
 // Close the ticket popup
 document.getElementById("close-ticket-popup-btn").addEventListener("click", function() {
-  document.getElementById("ticket-popup").style.display = "none";
+  document.getElementById("unique-ticket-popup").style.display = "none";
 });
 
 // Close the form inside the popup
 document.getElementById("close-ticket-form").addEventListener("click", function() {
-  document.getElementById("ticket-popup").style.display = "none";
+  document.getElementById("unique-ticket-popup").style.display = "none";
 });
 
 // Handle ticket form submission

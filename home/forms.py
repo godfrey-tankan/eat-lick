@@ -1,5 +1,5 @@
 from django import forms
-from .models import Ticket, Comment,SupportMember
+from .models import *
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -12,24 +12,18 @@ class TicketForm(forms.ModelForm):
         
         # forms.py
 
-class TicketNewForm(forms.ModelForm):
+class NewTicketForm(forms.ModelForm):
+    created_by = forms.ModelChoiceField(queryset=Inquirer.objects.filter(is_active=True), required=True)
+    
+    assigned_to = forms.ModelChoiceField(queryset=SupportMember.objects.filter(is_active=True), required=True)
+    
+    branch_opened = forms.ModelChoiceField(queryset=Branch.objects.all(), required=True)
+    
+    inquiry_type = forms.TextInput()
+
     class Meta:
         model = Ticket
-        fields = [
-            'title', 'description', 'branch_opened', 'assigned_to', 
-            'status', 'ticket_mode', 'inquiry_type'
-        ]
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 5}),
-            'assigned_to': forms.Select(attrs={'class': 'select2'}),  # Use select2 for easier user experience
-            'branch_opened': forms.TextInput(attrs={'placeholder': 'Enter branch name'}),
-        }
-
-    def __init__(self, *args, **kwargs):
-        super(TicketNewForm, self).__init__(*args, **kwargs)
-        # Optionally pre-populate the 'assigned_to' field with active support members
-        self.fields['assigned_to'].queryset = SupportMember.objects.filter(is_active=True, is_deleted=False)
-
+        fields = ['title', 'description', 'created_by', 'assigned_to', 'branch_opened', 'inquiry_type']
 
 class CommentForm(forms.ModelForm):
     class Meta:

@@ -1,46 +1,37 @@
 from django.http import JsonResponse
-from django.shortcuts import render
-from .models import Ticket, Inquirer, SupportMember
-from .forms import TicketNewForm
+from django.shortcuts import render, redirect
+from .models import Ticket, Inquirer, SupportMember, Branch
+from .forms import NewTicketForm
 import json
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 
 # API endpoint to submit a ticket
 @csrf_exempt
 @login_required
-def api_create_ticket(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        
-        # Ensure the data includes required fields
-        required_fields = ['title', 'description', 'branch', 'status', 'assigned_to']
-        if not all(field in data for field in required_fields):
-            return JsonResponse({'status': 'error', 'message': 'Missing required fields'}, status=400)
+def create_ticket(request):
+    if request.method == 'GET':
+        inquirers = list(Inquirer.objects.filter(is_active=True).values('id', 'username')) 
+        support_members = list(SupportMember.objects.filter(is_active=True).values('id', 'username')) 
+        branches = list(Branch.objects.all().values('id', 'name')) 
 
-        # Get the inquirer (logged-in user) and assigned support member
-        try:
-            inquirer = Inquirer.objects.get(user=request.user)
-            assigned_to = SupportMember.objects.get(id=data['assigned_to'])
-        except Inquirer.DoesNotExist or SupportMember.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Inquirer or Support Member not found'}, status=400)
+        return JsonResponse({
+            'inquirers': inquirers,
+            'support_members': support_members,
+            'branches': branches,
+        })
 
-        # Create the new ticket
-        ticket = Ticket.objects.create(
-            title=data['title'],
-            description=data['description'],
-            branch_opened=data['branch'],
-            status=data['status'],
-            assigned_to=assigned_to,
-            created_by=inquirer
-        )
+    elif request.method == 'POST':
+        form = NewTicketForm(request.POST)
+        if form.is_valid():
+            ticket = form.save(commit=False)
+            ticket.status = 'resolved'
+            ticket.resolved_at=timezone.now()
+            ticket.save()  # Save the ticket
+            print("ticket saved.....")
+            return JsonResponse({"success": True})
+        else:
+            return JsonResponse({"success": False, "errors": form.errors})
 
-        # Respond with the created ticket's ID
-        return JsonResponse({'status': 'success', 'ticket_id': ticket.id})
-
-    return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
-
-
-def get_support_members(request):
-    members = SupportMember.objects.all().values('id', 'username', 'phone_number')
-    return JsonResponse({'members': list(members)})
+    return JsonResponse({"success": False, "message": "Invalid request"})

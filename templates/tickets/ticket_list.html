@@ -3,13 +3,147 @@
 {% load tz %}
 
 {% block content %}
+
+
+<style>
+  .unique-ticket-popup-form-container {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  
+  .unique-ticket-popup-form-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 100%;
+    position: relative;
+  }
+  
+  .unique-popup-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .unique-close-ticket-popup-btn,
+  .unique-popup-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #333;
+  }
+  
+  .unique-form-label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  .unique-form-input,
+  .unique-form-textarea,
+  .unique-form-select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+  }
+  
+  .unique-form-textarea {
+    resize: vertical;
+  }
+  
+  .unique-submit-ticket-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  .unique-submit-ticket-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  .unique-ticket-popup-form-container.show {
+    display: flex;
+  }
+  </style>
 {% comment %} {% if request.user.is_superuser%} {% endcomment %}
 
 <div class="container-fluid py-4">
+
+
+
+  <div id="unique-ticket-popup" class="unique-ticket-popup-form-container">
+    <div class="unique-ticket-popup-form-content">
+      <span class="unique-close-ticket-popup-btn" id="close-ticket-popup-btn">&times;</span>
+  
+      <h3 class="unique-popup-title">Add New Ticket</h3>
+  
+      <!-- Ticket Form -->
+      <form id="unique-ticket-form" class="unique-ticket-form-container">
+        <label for="ticket-title" class="unique-form-label">Title</label>
+        <input type="text" id="ticket-title" name="title" class="unique-form-input" placeholder="Ticket Title" required>
+  
+        <label for="ticket-description" class="unique-form-label">Description</label>
+        <textarea id="ticket-description" name="description" class="unique-form-textarea" placeholder="Ticket Description" rows="4" required></textarea>
+  
+        <label for="ticket-inquirer" class="unique-form-label">Inquirer</label>
+        
+        <select id="ticket-inquirer" name="created_by" class="unique-form-select" required>
+          <!-- Inquirer options will be populated dynamically -->
+        </select>
+
+        <label for="ticket-assigned-to" class="unique-form-label">Assigned To</label>
+        <select id="ticket-assigned-to" name="assigned_to" class="unique-form-select" required>
+          <!-- Support Member options will be populated dynamically -->
+        </select>
+  
+        <label for="ticket-branch" class="unique-form-label">Branch</label>
+        <select id="ticket-branch" name="branch_opened" class="unique-form-select" required>
+          <!-- Branch options will be populated dynamically -->
+        </select>
+
+        <label for="ticket-inquiry-type" class="unique-form-label">Inquiry Type</label>
+
+        <label for="ticket-inquiry-type" class="unique-form-label">Inquiry Type</label>
+            <select id="ticket-inquiry-type" name="inquiry_type" class="unique-form-select">
+                <option value="technical">Technical Issues</option>
+                <option value="sales">Sales</option>
+                <option value="billing">Billing Issues</option>
+                <option value="account">Account Management</option>
+                <option value="feedback">Feedback</option>
+                <option value="others">Others</option>
+            </select>
+
+        <button type="submit" id="submit-ticket" class="unique-submit-ticket-btn">Add Ticket</button>
+      </form>
+  
+      <span class="unique-popup-close-btn" id="close-ticket-form-btn">&times;</span>
+    </div>
+</div>
+
+
   <div class="row">
     <div class="col-12">
       <div class="card mb-4">
         <div class="card-header pb-0">
+
           {% if branch%}
           <h6>Branch: 
             <span 
@@ -56,16 +190,19 @@
                 font-weight:bold;
                 '
                 >{{ creator }}</span>
-    
-            </h6>
-          {% else %}
-          
-          <h6>Inquiries Table
-          </h6>
-          {% endif %}
+                
+              </h6>
+              {% else %}
+              
+              <h6>Inquiries Table
+              </h6>
+              {% endif %}
+              <button id="open-ticket-popup-btn" class="btn btn-primary">+ New Ticket</button>
+
           <form id="field-filter-form">
+            
             <label class="me-2">
-                <input type="checkbox" name="field" value="opened-by" checked> Opened By
+              <input type="checkbox" name="field" value="opened-by" checked> Opened By
             </label>
             <label class="me-2">
                 <input type="checkbox" name="field" value="description" checked> Description
@@ -78,11 +215,11 @@
             </label>
             <label class="me-2">
                 <input type="checkbox" name="field" value="created-at" checked> Created At
-            </label>
-            <label class="me-2">
+              </label>
+              <label class="me-2">
                 <input type="checkbox" name="field" value="assigned-to" checked> Assigned to
-            </label>
-        </form>
+              </label>
+            </form>
 
 
         </div>
@@ -423,6 +560,101 @@
       });
   });
 </script>
+{% comment %}Add manual Ticket popup form {% endcomment %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Open the Ticket Popup
+    document.getElementById('open-ticket-popup-btn').addEventListener('click', function() {
+        document.getElementById('unique-ticket-popup').classList.add('show');
+    });
+
+    // Close the Ticket Popup
+    document.getElementById('close-ticket-popup-btn').addEventListener('click', function() {
+        document.getElementById('unique-ticket-popup').classList.remove('show');
+    });
+
+    // Close form button inside popup
+    document.getElementById('close-ticket-form-btn').addEventListener('click', function() {
+        document.getElementById('unique-ticket-popup').classList.remove('show');
+    });
+
+    // Get references to DOM elements
+    const form = document.getElementById("unique-ticket-form");
+    const submitBtn = document.getElementById("submit-ticket");
+
+    // Fetch data for inquirers, support members, and branches on page load
+    fetch('/create_ticket/')  // Create an endpoint to serve this data
+        .then(response => response.json())
+        .then(data => {
+            populateSelectOptions('ticket-inquirer', data.inquirers);
+            populateSelectOptions('ticket-assigned-to', data.support_members);
+            populateSelectOptions('ticket-branch', data.branches);
+        })
+        .catch(error => console.error('Error fetching ticket data:', error));
+
+    // Function to populate select options dynamically
+    function populateSelectOptions(selectId, options) {
+        const selectElement = document.getElementById(selectId);
+
+        // Clear existing options before appending new ones
+        selectElement.innerHTML = ''; // Clear previous options
+
+        options.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option.id;
+            if (selectId === 'ticket-branch') {
+                optionElement.textContent = option.name;
+            } else {
+                optionElement.textContent = option.username;
+            }
+            selectElement.appendChild(optionElement);
+        });
+    }
+
+    // Handle form submission via AJAX
+    form.addEventListener("submit", function(event) {
+        event.preventDefault(); // Prevent the form from submitting the traditional way
+
+        // Ensure form submission is not triggered again
+        if (submitBtn.disabled) {
+            return; // Prevent duplicate submission if the button is disabled
+        }
+
+        const formData = new FormData(form);
+        
+        // Show a loading indicator on the submit button
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = "Creating...";
+
+        fetch("/create_ticket/", {  // Use the correct backend endpoint
+            method: "POST",
+            body: formData,  // This will include the selected inquirer
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Show success message or handle the response
+            if (data.success) {
+                alert("Ticket created successfully.");
+                form.reset();  // Reset the form fields
+                document.getElementById('unique-ticket-popup').classList.remove('show');  // Close the popup
+            } else {
+                alert("There was an error creating the ticket. Please try again.");
+            }
+        })
+        .catch(error => {
+            alert("Error submitting the form. Please try again.");
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = "Add Ticket";  // Restore the button text
+        });
+    });
+});
+
+
+</script>
+
+
 
 
 <script>
@@ -477,7 +709,7 @@
           }
       });
   });
-  </script>
+  </>
   
 
 
