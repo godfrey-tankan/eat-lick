@@ -42,6 +42,8 @@ ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = [
     'https://empyreanintegratedsolutions.com',
     'https://www.empyreanintegratedsolutions.com',
+    'http://localhost:3000',
+    'http://localhost:8000',
 ]
 CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
 
