@@ -38,6 +38,28 @@ DEBUG = str2bool(os.environ.get('DEBUG'))
 #print(' DEBUG -> ' + str(DEBUG) ) 
 
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://empyreanintegratedsolutions.com', 'https://www.empyreanintegratedsolutions.com', 'http://localhost:3000', 'http://localhost:8000']
+CSRF_ALLOWED_ORIGINS = [
+    'https://empyreanintegratedsolutions.com',
+    'https://www.empyreanintegratedsolutions.com',
+    'https://empyreanintegratedsolutions.com/accounts/login',
+    'http://localhost:3000',
+    'http://localhost:8000',
+]
+CORS_ORIGINS_WHITELIST = [
+    'https://empyreanintegratedsolutions.com',
+    'https://www.empyreanintegratedsolutions.com',
+    'https://empyreanintegratedsolutions.com/accounts/login',
+    'http://localhost:3000',
+    'http://localhost:8000',
+]
+CORS_ALLOWED_ORIGINS = [
+    'https://empyreanintegratedsolutions.com',
+    'https://www.empyreanintegratedsolutions.com',
+    'https://empyreanintegratedsolutions.com/accounts/login',
+    'http://localhost:3000',
+    'http://localhost:8000',
+]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://empyreanintegratedsolutions.com',
@@ -113,23 +135,23 @@ DB_PORT     = os.getenv('DB_PORT'     , None)
 DB_NAME     = os.getenv('DB_NAME'     , None)
 
 # if DB_ENGINE and DB_NAME and DB_USERNAME:
-DATABASES = { 
-    'default': {
-    'ENGINE'  : 'django.db.backends.mysql', 
-    'NAME'    : 'customer_support',
-    'USER'    : 'simon',
-    'PASSWORD': 'simonmusabayana',
-    'HOST'    : '198.12.221.104',
-    'PORT'    : '3306',
-    }, 
-}
-# else:
-# DATABASES = {
+# DATABASES = { 
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': 'db.sqlite3',
-#     }
+#     'ENGINE'  : 'django.db.backends.mysql', 
+#     'NAME'    : 'customer_support',
+#     'USER'    : 'simon',
+#     'PASSWORD': 'simonmusabayana',
+#     'HOST'    : '198.12.221.104',
+#     'PORT'    : '3306',
+#     }, 
 # }
+# else:
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'db.sqlite3',
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
