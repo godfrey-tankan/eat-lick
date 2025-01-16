@@ -18,10 +18,8 @@ def custom_login(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                print('User is authenticated')
                 return HttpResponseRedirect('/enlsupport/') 
             else:
-                print('User is not authenticated')
                 messages.error(request, "Invalid username or password.")
         else:
             messages.error(request, "Please fix the errors below.")
