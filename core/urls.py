@@ -28,11 +28,14 @@ from home.fetch_messages import fetch_messages
 from a_bot.views import forward_message, testing, resolved_tickets
 from home.web_support import web_support
 from home.web_reports import *
-
+from core.custom_login import custom_login
+ 
 urlpatterns = [
     path('', include('home.urls')),
     path('resolved/', resolved_tickets,name='resolved_tickets'),
     path('admins/logout/', logout_view),
+    # path('accounts/login/', custom_login, name='login'),
+    
     path('tables/', support_users_list, name='support_users_list'),
      path('smedco/', include('a_home.urls')),
     path('users/', users_list, name='user_list'),
