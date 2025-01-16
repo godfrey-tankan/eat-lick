@@ -42,6 +42,7 @@ ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = [
     'https://empyreanintegratedsolutions.com',
     'https://www.empyreanintegratedsolutions.com',
+    'https://empyreanintegratedsolutions.com/accounts/login',
     'http://localhost:3000',
     'http://localhost:8000',
 ]
