@@ -88,7 +88,6 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 "third_id":"#resume",
                 "third_reply":"#resume",
                 "button":True,
-                'list':False,
                 
             }
             
