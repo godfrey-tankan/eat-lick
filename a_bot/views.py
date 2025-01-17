@@ -1714,8 +1714,13 @@ def forward_message(request):
         "heading":'Inquiry type Confirmation',
         "body":'Please confirm the type of inquiry you are handling',
         "footer":'x_tc',
+        "first_id":'general',
         "first_reply":'1. General Inquiry',
-        'list':True,
+        "second_id":'support',
+        "second_reply":'2. Support Inquiry',
+        "third_id":'complaint',
+        "third_reply":'3. Complaint Inquiry',
+        'button':True,
         
     }
     
