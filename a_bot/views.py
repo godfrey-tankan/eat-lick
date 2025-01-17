@@ -244,6 +244,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
     return f"Golden greetings. How can i help you today?"    
 
 def get_text_message_input(recipient, text,name=None,template=False,**details):
+    details = details if details else None
     try:
         if template:
             return json.dumps(
@@ -257,7 +258,7 @@ def get_text_message_input(recipient, text,name=None,template=False,**details):
                     },
                 }
             )
-        elif details['details'].get('button',False):
+        elif details and details['details'].get('button',False):
             return json.dumps(
                 {
                     "messaging_product": "whatsapp",
@@ -305,7 +306,7 @@ def get_text_message_input(recipient, text,name=None,template=False,**details):
                     }
             )
         
-        elif details['details'].get('list',False):
+        elif details and details['details'].get('list',False):
             return json.dumps(
                 {
                     "messaging_product": "whatsapp",
