@@ -700,8 +700,12 @@ def process_message_file_type(body, phone_number_id, profile_name):
     
     if message_type == "text" or message_type == "interactive":
         if message_type == "interactive":
-            message_body = message["interactive"]["list_reply"]["title"]
-            message_id = message["interactive"]["list_reply"]["id"]
+            try:
+                message_body = message["interactive"]["list_reply"]["title"]
+                message_id = message["interactive"]["list_reply"]["id"]
+            except:
+                message_body = message["interactive"]["button_reply"]["title"]
+                message_id = message["interactive"]["button_reply"]["id"]
         else:
             message_body = message["text"]["body"]
         
