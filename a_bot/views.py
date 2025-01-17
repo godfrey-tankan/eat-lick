@@ -244,8 +244,16 @@ def generate_response(response, wa_id, name,message_type,message_id):
     return f"Golden greetings. How can i help you today?"    
 
 def get_text_message_input(recipient, text,name=None,template=False,details=None):
-    print('details:',details)
-    details = details if details else {}
+    if not details:
+        return json.dumps(
+            {
+                "messaging_product": "whatsapp",
+                "recipient_type": "individual",
+                "to": recipient,
+                "type": "text",
+                "text": {"preview_url": False, "body": text},
+            }
+        )
     try:
         if template:
             return json.dumps(
@@ -360,15 +368,7 @@ def get_text_message_input(recipient, text,name=None,template=False,details=None
                     }
             )
         
-        return json.dumps(
-            {
-                "messaging_product": "whatsapp",
-                "recipient_type": "individual",
-                "to": recipient,
-                "type": "text",
-                "text": {"preview_url": False, "body": text},
-            }
-        )
+
     except Exception as e:
         return e
     
