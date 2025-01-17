@@ -1569,25 +1569,14 @@ def accept_ticket(wa_id,name, ticket_id):
                     f'Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to by *{ticket.assigned_to.username}*.'
                 )
                 support_msg = None
-                details={
-                        "list":True,
-                        "heading":f'You have accepted the ticket number #{ticket_id}',
-                    }
-                data = get_text_message_input(support_member.phone_number, 'list',False,False,details=details)
-                send_message(data)
+                
             
         else:
             message_to_send = (
                 f'Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to by *{ticket.assigned_to.username}*.'
             )
             support_msg = None
-            details={
-                        "list":True,
-                        "heading":f'You have accepted the ticket number #{ticket_id}',
-                    }
-            data = get_text_message_input(support_member.phone_number, 'list',False,False,details=details)
-            send_message(data)
-            
+                        
             
         data = get_text_message_input(ticket.created_by.phone_number, message_to_send, None,False,details=details)
         send_message(data)        
@@ -1599,9 +1588,17 @@ def accept_ticket(wa_id,name, ticket_id):
         support_member.user_mode=HELPING_MODE
         support_member.user_status = HELPING_MODE
         support_member.save()
-        data2 = get_text_message_input(support_member.phone_number,support_msg, None,False,details=details)
-        send_message(data2)
-        message=f"🟡ticket *#{ticket.id}* is now assigned to *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
+        if support_msg is None:
+            details={
+                        "list":True,
+                        "heading":f'You have accepted the ticket number #{ticket_id}',
+                    }
+            data = get_text_message_input(support_member.phone_number, 'list',False,False,details=details)
+            send_message(data)
+        else:
+            data2 = get_text_message_input(support_member.phone_number,support_msg, None,False,details=details)
+            send_message(data2)
+        message=f"> 🟡ticket *#{ticket.id}* is now assigned to *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
         return broadcast_messages(name,None,message,support_member.phone_number)
     else:
         return "Ticket not available or already assigned"
