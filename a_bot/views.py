@@ -647,10 +647,7 @@ def process_message_file_type(body, phone_number_id, profile_name):
             
         if message_type == "image":
             message_id = message["image"]["id"]
-        if message_type == "text" or message_type == "interactive":
-            if message_type == "interactive":
-                message_body = message["interactive"]["list_reply"]["title"]
-            else:
+        if message_type == "text":
                 message_body = message["text"]["body"]
         return assist_support_member(support_member.id, message_body,message_type,message_id)
         
@@ -695,23 +692,31 @@ def process_message_file_type(body, phone_number_id, profile_name):
             Message.objects.create(ticket_id=inquirer_pending_ticket, inquirer=inquirer, content='sent image message')
             data = get_image_message(inquirer_pending_ticket.assigned_to.phone_number, message_id)
         return send_message(data)
-    elif message_type == "text":
-        message_body = message["text"]["body"]
-    
-    if message_type == "text" or message_type == "interactive":
+
+    elif message_type in ["text", "interactive"]:
+        message_body = ""
+        message_id = ""
+
         if message_type == "interactive":
             try:
-                message_body = message["interactive"]["list_reply"]["title"]
-                message_id = message["interactive"]["list_reply"]["id"]
-            except:
-                message_body = message["interactive"]["button_reply"]["title"]
-                message_id = message["interactive"]["button_reply"]["id"]
+                if "list_reply" in message["interactive"]:
+                    message_body = message["interactive"]["list_reply"]["title"]
+                    message_id = message["interactive"]["list_reply"]["id"]
+                elif "button_reply" in message["interactive"]:
+                    message_body = message["interactive"]["button_reply"]["title"]
+                    message_id = message["interactive"]["button_reply"]["id"]
+                else:
+                    print("Unsupported interactive message subtype.")
+            except KeyError as e:
+                print(f"Missing key in interactive message: {e}")
+            except Exception as e:
+                print(f"Unexpected error processing interactive message: {e}")
         else:
             message_body = message["text"]["body"]
-        
-    response = generate_response(message_body, phone_number_id, profile_name,message_type,message_id)
-    data = get_text_message_input(phone_number_id, response, None, False)
-    return send_message(data)
+
+        response = generate_response(message_body, phone_number_id, profile_name, message_type, message_id)
+        data = get_text_message_input(phone_number_id, response, None, False)
+        return send_message(data)
 
 def get_audio_message_input(phone_number_id, audio_id):
     return json.dumps(
