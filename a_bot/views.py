@@ -244,8 +244,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
     return f"Golden greetings. How can i help you today?"    
 
 def get_text_message_input(recipient, text,name=None,template=False,details=None):
-    details = details if details else {}
     print('details:',details)
+    details = details if details else {}
     try:
         if template:
             return json.dumps(
