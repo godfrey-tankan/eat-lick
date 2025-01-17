@@ -85,10 +85,10 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 "footer":'choose one of the following options',
                 "first_id":'#open',
                 "first_reply":"#open",
-                "second_id":"#closed",
-                "second_reply":"#closed",
-                "third_id":"#resume",
-                "third_reply":"#resume",
+                "second_id":"#resume",
+                "second_reply":"#resume",
+                "third_id":"#codes",
+                "third_reply":"#codes",
                 "button":True,
                 
             }
