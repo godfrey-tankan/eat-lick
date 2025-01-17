@@ -242,127 +242,131 @@ def generate_response(response, wa_id, name,message_type,message_id):
     return f"Golden greetings. How can i help you today?"    
 
 def get_text_message_input(recipient, text,name=None,template=False,**details):
-    if template:
-        return json.dumps(
-            {
-                "messaging_product": "whatsapp",
-                "to": recipient,
-                "type": "template",
-                "template": {
-                    "name": f"{name}",
-                    "language": {"code": "en"},
-                },
-            }
-        )
-    elif details['details'].get('button',False):
-        return json.dumps(
-            {
-                "messaging_product": "whatsapp",
-                "recipient_type": "individual",
-                "to": recipient,
-                "type": "interactive",
-                "interactive": {
-                    "type": "button",
-                    "header": {
-                    "type": "text",
-                    "text": details['details'].get('heading', None) 
+    try:
+        if template:
+            return json.dumps(
+                {
+                    "messaging_product": "whatsapp",
+                    "to": recipient,
+                    "type": "template",
+                    "template": {
+                        "name": f"{name}",
+                        "language": {"code": "en"},
                     },
-                    "body": {
-                    "text": details['details'].get('body', None)
-                    },
-                    "footer": {
-                    "text": details['details'].get('footer', None)
-                    },
-                    "action": {
-                    "buttons": [
-                        {
-                        "type": "reply",
-                        "reply": {
-                            "id": details['details'].get('first_id', None),
-                            "title": details['details'].get('first_reply', None)
-                        }
-                        },
-                        {
-                        "type": "reply",
-                        "reply": {
-                            "id": details['details'].get('second_id', None),
-                            "title": details['details'].get('second_reply', None)
-                        }
-                        },
-                        {
-                        "type": "reply",
-                        "reply": {
-                            "id": details['details'].get('third_id', None),
-                            "title": details['details'].get('third_reply', None)
-                        }
-                        }
-                    ]
-                    }
                 }
-                }
-        )
-    
-    elif details['details'].get('list',False):
-        return json.dumps(
-            {
-                "messaging_product": "whatsapp",
-                "recipient_type": "individual",
-                "to": recipient,
-                "type": "interactive",
-                "interactive": {
-                    "type": "list",
-                    "header": {
-                    "type": "text",
-                    "text": "Confirm Inquiry Type"
-                    },
-                    "body": {
-                    "text": "Please confirm the type of inquiry you are handling:"
-                    },
-                    "footer": {
-                    "text": "choose one of the following options"
-                    },
-                    "action": {
-                    "button": "Choose Type",
-                    "sections": [
-                        {
-                        "title": "Inquiry Types",
-                        "rows": [
+            )
+        elif details['details'].get('button',False):
+            return json.dumps(
+                {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": recipient,
+                    "type": "interactive",
+                    "interactive": {
+                        "type": "button",
+                        "header": {
+                        "type": "text",
+                        "text": details['details'].get('heading', None) 
+                        },
+                        "body": {
+                        "text": details['details'].get('body', None)
+                        },
+                        "footer": {
+                        "text": details['details'].get('footer', None)
+                        },
+                        "action": {
+                        "buttons": [
                             {
-                            "id": "general_inquiry",
-                            "title": "General Inquiry"
+                            "type": "reply",
+                            "reply": {
+                                "id": details['details'].get('first_id', None),
+                                "title": details['details'].get('first_reply', None)
+                            }
                             },
                             {
-                            "id": "technical_inquiry",
-                            "title": "Technical Inquiry"
+                            "type": "reply",
+                            "reply": {
+                                "id": details['details'].get('second_id', None),
+                                "title": details['details'].get('second_reply', None)
+                            }
                             },
                             {
-                            "id": "sales_inquiry",
-                            "title": "Sales Inquiry"
-                            },
-                            {
-                            "id": "support_inquiry",
-                            "title": "Support Inquiry"
-                            },
-                            {
-                            "id": "other_inquiry",
-                            "title": "Other Inquiry"
+                            "type": "reply",
+                            "reply": {
+                                "id": details['details'].get('third_id', None),
+                                "title": details['details'].get('third_reply', None)
+                            }
                             }
                         ]
                         }
-                    ]
                     }
-                }
-                }
+                    }
+            )
+        
+        elif details['details'].get('list',False):
+            return json.dumps(
+                {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": recipient,
+                    "type": "interactive",
+                    "interactive": {
+                        "type": "list",
+                        "header": {
+                        "type": "text",
+                        "text": "Confirm Inquiry Type"
+                        },
+                        "body": {
+                        "text": "Please confirm the type of inquiry you are handling:"
+                        },
+                        "footer": {
+                        "text": "choose one of the following options"
+                        },
+                        "action": {
+                        "button": "Choose Type",
+                        "sections": [
+                            {
+                            "title": "Inquiry Types",
+                            "rows": [
+                                {
+                                "id": "general_inquiry",
+                                "title": "General Inquiry"
+                                },
+                                {
+                                "id": "technical_inquiry",
+                                "title": "Technical Inquiry"
+                                },
+                                {
+                                "id": "sales_inquiry",
+                                "title": "Sales Inquiry"
+                                },
+                                {
+                                "id": "support_inquiry",
+                                "title": "Support Inquiry"
+                                },
+                                {
+                                "id": "other_inquiry",
+                                "title": "Other Inquiry"
+                                }
+                            ]
+                            }
+                        ]
+                        }
+                    }
+                    }
+            )
+        return json.dumps(
+            {
+                "messaging_product": "whatsapp",
+                "recipient_type": "individual",
+                "to": recipient,
+                "type": "text",
+                "text": {"preview_url": False, "body": text},
+            }
         )
-    return json.dumps(
-        {
-            "messaging_product": "whatsapp",
-            "recipient_type": "individual",
-            "to": recipient,
-            "type": "text",
-            "text": {"preview_url": False, "body": text},
-        }
-    )
+    except Exception as e:
+        print('error in get_text_message_input:',e)
+        return e
     
 def main_menu(response,wa_id,time_of_day):
     inquirer_ob = Inquirer.objects.filter(phone_number=wa_id[0]).first()
@@ -715,7 +719,7 @@ def process_message_file_type(body, phone_number_id, profile_name):
                 print(f"Unexpected error processing interactive message: {e}")
         else:
             message_body = message["text"]["body"]
-
+        print('message_body',message_body,'type:',message_type)
         response = generate_response(message_body, phone_number_id, profile_name, message_type, message_id)
         data = get_text_message_input(phone_number_id, response, None, False)
         return send_message(data)
