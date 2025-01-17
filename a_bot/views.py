@@ -326,7 +326,7 @@ def get_text_message_input(recipient, text,name=None,template=False,details=None
                         "type": "list",
                         "header": {
                         "type": "text",
-                        "text": details["details"].get("heading") if details["details"].get("heading") else "Confirm Inquiry Type"
+                        "text": details.get("heading") if details.get("heading") else "Confirm Inquiry Type"
                         },
                         "body": {
                         "text": "Please confirm the type of inquiry you are handling:"
