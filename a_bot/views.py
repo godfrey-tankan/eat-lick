@@ -90,9 +90,12 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 "button":True,
                 
             }
-            
-            data =get_text_message_input(support_member.phone_number, 'my gee', False,False,details=details)
-            return send_message(data)
+            try:
+                data =get_text_message_input(support_member.phone_number, 'my gee', False,False,details=details)
+                return send_message(data)
+            except Exception as e:
+                print('error in generate response:',e)
+                return e
             
         if response.lower() == 'help':
             return support_member_help_menu
