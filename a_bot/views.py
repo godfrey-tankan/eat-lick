@@ -20,7 +20,7 @@ from django.db.models import Count, Q
 from django.db.models.functions import ExtractWeekDay
 
 
-details = {'test':'test'}
+details = {}
 
 def get_greeting():
     current_hour = datetime.now().hour
@@ -93,7 +93,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 
             }
             try:
-                data =get_text_message_input(support_member.phone_number, 'my gee', False,False,details=details)
+                data =get_text_message_input(support_member.phone_number, 'my gee', False,False, details=details)
                 return send_message(data)
             except Exception as e:
                 print('error in generate response:',e)
@@ -191,15 +191,15 @@ def generate_response(response, wa_id, name,message_type,message_id):
         if inquirer and inquirer.user_mode== CONFIRM_RESPONSE:
             if response == '1' or response == '1.':
                 mark_as_resolved(check_ticket.id,False,True)
-                data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True,details=details)
+                data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 return send_message(data)
             elif response =='2' or response == '2.':
                 mark_as_resolved(check_ticket.id,True,True)
-                data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True,details=details)
+                data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 return send_message(data)
             elif response=='3':
                 last_msg = Message.objects.filter(ticket_id=check_ticket,inquirer=inquirer).last()
-                data= get_text_message_input(check_ticket.assigned_to.phone_number, last_msg.content, None,False,details=details)
+                data= get_text_message_input(check_ticket.assigned_to.phone_number, last_msg.content, None,False)
                 send_message(data)
                 return 'Your message has been sent.'
             
@@ -228,7 +228,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
 
     if inquirer and inquirer.user_status == SUPPORT_RATING:
         if not '/' in response:
-            data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True,False,details=details)
+            data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True,False)
             return send_message(data)
         return inquirer_assistance_response(response, check_ticket, inquirer)
     if not support_member :
@@ -243,8 +243,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
         return handle_inquiry(wa_id, response, name)
     return f"Golden greetings. How can i help you today?"    
 
-def get_text_message_input(recipient, text,name=None,template=False,**details):
-    details = details if details else None
+def get_text_message_input(recipient, text,name=None,template=False,details=None):
+    details = details if details else {}
     try:
         if template:
             return json.dumps(
@@ -258,7 +258,7 @@ def get_text_message_input(recipient, text,name=None,template=False,**details):
                     },
                 }
             )
-        elif details and details['details'].get('button',False):
+        elif details and details.get('button',False):
             return json.dumps(
                 {
                     "messaging_product": "whatsapp",
@@ -269,35 +269,35 @@ def get_text_message_input(recipient, text,name=None,template=False,**details):
                         "type": "button",
                         "header": {
                         "type": "text",
-                        "text": details['details'].get('heading', None) 
+                        "text": details.get('heading', None) 
                         },
                         "body": {
-                        "text": details['details'].get('body', None)
+                        "text": details.get('body', None)
                         },
                         "footer": {
-                        "text": details['details'].get('footer', None)
+                        "text": details.get('footer', None)
                         },
                         "action": {
                         "buttons": [
                             {
                             "type": "reply",
                             "reply": {
-                                "id": details['details'].get('first_id', None),
-                                "title": details['details'].get('first_reply', None)
+                                "id": details.get('first_id', None),
+                                "title": details.get('first_reply', None)
                             }
                             },
                             {
                             "type": "reply",
                             "reply": {
-                                "id": details['details'].get('second_id', None),
-                                "title": details['details'].get('second_reply', None)
+                                "id": details.get('second_id', None),
+                                "title": details.get('second_reply', None)
                             }
                             },
                             {
                             "type": "reply",
                             "reply": {
-                                "id": details['details'].get('third_id', None),
-                                "title": details['details'].get('third_reply', None)
+                                "id": details.get('third_id', None),
+                                "title": details.get('third_reply', None)
                             }
                             }
                         ]
@@ -306,7 +306,7 @@ def get_text_message_input(recipient, text,name=None,template=False,**details):
                     }
             )
         
-        elif details and details['details'].get('list',False):
+        elif details and details.get('list',False):
             return json.dumps(
                 {
                     "messaging_product": "whatsapp",
@@ -358,6 +358,7 @@ def get_text_message_input(recipient, text,name=None,template=False,**details):
                     }
                     }
             )
+        
         return json.dumps(
             {
                 "messaging_product": "whatsapp",
@@ -368,7 +369,6 @@ def get_text_message_input(recipient, text,name=None,template=False,**details):
             }
         )
     except Exception as e:
-        print('error in get_text_message_input:',e)
         return e
     
 def main_menu(response,wa_id,time_of_day):
@@ -613,7 +613,7 @@ def hold_ticket(support_member,response):
             reason = 'no reason provided'
         time_opened = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
         notifier = f'Hello {ticket.created_by.username.title()},\nYour inquiry *({ticket.description})* is now on hold, `Reason:`\n *{reason}* .'
-        data = get_text_message_input(ticket.created_by.phone_number, notifier, None,False,details=details)
+        data = get_text_message_input(ticket.created_by.phone_number, notifier, None,False)
         send_message(data)
         message = f'*{support_member.username.title()}* has put the ticket #{ticket.id} on hold.'
         ticket.status = PENDING_MODE
@@ -724,7 +724,7 @@ def process_message_file_type(body, phone_number_id, profile_name):
             message_body = message["text"]["body"]
         print('message_body',message_body,'type:',message_type)
         response = generate_response(message_body, phone_number_id, profile_name, message_type, message_id)
-        data = get_text_message_input(phone_number_id, response, None, False,details=details)
+        data = get_text_message_input(phone_number_id, response, None, False)
         return send_message(data)
 
 def get_audio_message_input(phone_number_id, audio_id):
@@ -791,7 +791,7 @@ def release_ticket(support_member):
     if ticket:
         time_opened = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
         notifier = f'Hello {ticket.created_by.username.title()},\nYour inquiry *({ticket.description})* is now now on hold, please wait for your turn to be assisted.'
-        data = get_text_message_input(ticket.created_by.phone_number, notifier, None,False,details=details)
+        data = get_text_message_input(ticket.created_by.phone_number, notifier, None,False)
         send_message(data)
         message = f'*{support_member.username.title()}* has released the ticket #{ticket.id}\n- Opened by: *{ticket.created_by.username}* - *{ticket.branch_opened}* at *{time_opened}* \n- Description: {ticket.description}\n\nYou can reply with #open to assign this open ticket to yourself.'
         ticket.status = OPEN_MODE
@@ -863,7 +863,7 @@ def handle_inquiry(wa_id, response, name):
                     inquirer_obj.user_status = INQUIRY_MODE
                     inquirer_obj.save()
                     message = f'You are now inquiring under *{selected_branch.name.title()}* ,to change your branch, send *#menu*'
-                    data = get_text_message_input(inquirer_obj.phone_number,message,None,False,details=details)
+                    data = get_text_message_input(inquirer_obj.phone_number,message,None,False)
                     send_message(data)
                     return f'Hello {inquirer_obj.username.split()[0].title()}, What is your inquiry?'
                 return '> Invalid branch number, please try again!'
@@ -924,7 +924,7 @@ def handle_inquiry(wa_id, response, name):
             assigned_member.user_mode = ACCEPT_TICKET_MODE
             assigned_member.save()
             message_alert = f'Hello *{other_pending_issues.assigned_to.username.title()}* , {inquirer_obj.username.upper()} has opened a new inquiry,Your pending ticket (#{other_pending_issues.id})  with them have now been queued,This new inquiry might be urgent so you should consider assisting them first before resuming with inquiry *(#{other_pending_issues.id})* .You can resume assisting them anytime by replying with #resume or #continue.'
-            data = get_text_message_input(other_pending_issues.assigned_to.phone_number,message_alert ,None,False,details=details)
+            data = get_text_message_input(other_pending_issues.assigned_to.phone_number,message_alert ,None,False)
             send_message(data)
         if len(response) < 20:
             return 'Please provide a detailed message if you want to open an inquiry `or` ignore this message if otherwise'
@@ -1008,7 +1008,7 @@ def handle_help(wa_id, response, name,message_type,message_id):
                 Message.objects.create(ticket_id=open_inquiries,inquirer=None, support_member=support_member, content=response)
             except Exception as e:
                 ...
-            data = get_text_message_input(open_inquiries.created_by.phone_number, response, None,False,details=details)
+            data = get_text_message_input(open_inquiries.created_by.phone_number, response, None,False)
             return send_message(data)
         else:
             if response in resolve_ticket_responses:
@@ -1025,15 +1025,15 @@ def handle_help(wa_id, response, name,message_type,message_id):
                         inquirer.user_mode = CONFIRM_RESPONSE
                         inquirer.user_status = SUPPORT_RATING
                         inquirer.save()
-                        data = get_text_message_input(inquirer.phone_number, 'Hello', 'customer_helped_template',True,details=details)
+                        data = get_text_message_input(inquirer.phone_number, 'Hello', 'customer_helped_template',True)
                         # is_inquirer_helped.format(inquirer.username.split()[0].title(),open_inquiries.description)
                         return send_message(data)
 
-                    data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None,False,details=details)
+                    data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None,False)
                     send_message(data)
-                    data = get_text_message_input(open_inquiries.assigned_to.phone_number,inquirer_helped_assumed_messages , None,False,details=details)
+                    data = get_text_message_input(open_inquiries.assigned_to.phone_number,inquirer_helped_assumed_messages , None,False)
                 else:
-                    data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None,False,details=details)
+                    data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None,False)
                 return send_message(data)
     if inquirer:
         return process_queued_tickets(inquirer, None,response)
@@ -1049,7 +1049,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                 for i,queued_ticket in enumerate(all_queued_tickets,start=1):
                     tickets_info +=f"Number in queue: {i}.\n- Ticket Number: # *{queued_ticket.id}*\nInquirer: {queued_ticket.created_by.username.title()} from {queued_ticket.branch_opened.title()}\nDescription: {queued_ticket.description}\n"
                 tickets_info += '\nReply with ticketNo eg *4* to resume assisting the inquirer.'
-                data = get_text_message_input(support_member.phone_number, tickets_info, None,False,details=details)
+                data = get_text_message_input(support_member.phone_number, tickets_info, None,False)
                 return send_message(data)
             else:
                 try:
@@ -1060,7 +1060,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                     current_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
                     if current_ticket:
                         notifier = f'Hello {current_ticket.created_by.username.title()}, your inquiry is now now on hold, please wait for your turn to be assisted.'
-                        data = get_text_message_input(current_ticket.created_by.phone_number, notifier, None,False,details=details)
+                        data = get_text_message_input(current_ticket.created_by.phone_number, notifier, None,False)
                         send_message(data)
                         current_ticket.ticket_mode = QUEUED_MODE
                         current_ticket.queued_at = timezone.now()
@@ -1070,10 +1070,10 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                         ticket_obj.ticket_mode = 'other'
                         ticket_obj.save()
                         message_to_inquirer = f'Hello {ticket_obj.created_by.username.title()}, your inquiry is now being attended to, please wait for a response.'
-                        data_to_inquirer = get_text_message_input(ticket_obj.created_by.phone_number,message_to_inquirer , None,False,details=details)
+                        data_to_inquirer = get_text_message_input(ticket_obj.created_by.phone_number,message_to_inquirer , None,False)
                         send_message(data_to_inquirer)
                         message= f'You are now assisting the inquirer with ticket number *{ticket_obj.id}*'
-                        data = get_text_message_input(support_member.phone_number,message , None,False,details=details)
+                        data = get_text_message_input(support_member.phone_number,message , None,False)
                         return send_message(data)
                     else:
                         return "Ticket not found"
@@ -1097,7 +1097,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                     not_found = False
             message_to_send += '\nPlease wait for your turn to be assisted.'
             if not_found:
-                data = get_text_message_input(inquirer.phone_number, message_to_send, None,False,details=details)
+                data = get_text_message_input(inquirer.phone_number, message_to_send, None,False)
                 return send_message(data)
         return 
         
@@ -1116,7 +1116,7 @@ def resume_assistance(support_member,response):
             for i,queued_ticket in enumerate(all_queued_tickets,start=1):
                 tickets_info +=f"Number in Queue: {i}\n- Ticket Number: *{queued_ticket.id}*\nOpened By: {queued_ticket.created_by.username} from {queued_ticket.branch_opened} branch.\n- {queued_ticket.description}\n\n"
             tickets_info += '\nReply with ticketNo eg *1* to resume assisting the inquirer.'
-            data = get_text_message_input(support_member.phone_number, tickets_info, None,False,details=details)
+            data = get_text_message_input(support_member.phone_number, tickets_info, None,False)
             return send_message(data)
         else:
             try:
@@ -1133,7 +1133,7 @@ def resume_assistance(support_member,response):
                         check_other_pending_tickets.save()
                         TicketLog.objects.create(ticket=check_other_pending_tickets, status='pending', timestamp=timezone.now(),changed_by=f'{support_member.username}- ticket on hold')
                         notifier = f'Hello {check_other_pending_tickets.created_by.username.title()}.Your inquiry is now on hold, please wait for your turn to be assisted.'
-                        data_to_paused_inquirer = get_text_message_input(check_other_pending_tickets.created_by.phone_number, notifier, None,False,details=details)
+                        data_to_paused_inquirer = get_text_message_input(check_other_pending_tickets.created_by.phone_number, notifier, None,False)
                         send_message(data_to_paused_inquirer)
                     ticket_obj.ticket_mode = 'other'
                     ticket_obj.save()
@@ -1141,11 +1141,11 @@ def resume_assistance(support_member,response):
                     support_member.user_mode = HELPING_MODE
                     support_member.save()
                     inquirer_msg = f'Hello {ticket_obj.created_by.username.title()}, your inquiry is now being attended to, please wait for a response.'
-                    data_to_inquirer = get_text_message_input(ticket_obj.created_by.phone_number,inquirer_msg , None,False,details=details)
+                    data_to_inquirer = get_text_message_input(ticket_obj.created_by.phone_number,inquirer_msg , None,False)
                     send_message(data_to_inquirer)
                     
                     message= f'You are now assisting *{ticket_obj.created_by.username.title()}* - *{ticket_obj.created_by.branch}* \nTicket number *{ticket_obj.id}*\n- Description: {ticket_obj.description} .'
-                    data = get_text_message_input(support_member.phone_number,message , None,False,details=details)
+                    data = get_text_message_input(support_member.phone_number,message , None,False)
                     return send_message(data)
                 else:
                     return "No tickets with That ticket number assigned to you found"
@@ -1162,7 +1162,7 @@ def inquirer_assistance_response(response, open_inquiries, inquirer):
         return 'Thank you for your response.'
     check_ticket.support_level = response
     check_ticket.save()
-    data = get_text_message_input(inquirer.phone_number, '✨Thank you for your feedback.', None,False,details=details)
+    data = get_text_message_input(inquirer.phone_number, '✨Thank you for your feedback.', None,False)
     send_message(data)
     inquirer.user_mode = INQUIRY_MODE
     inquirer.user_status = INQUIRY_MODE
@@ -1201,7 +1201,7 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                         support_member.user_status = NEW_TICKET_ACCEPT_MODE
                         support_member.save()
                     message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.\n> 🚨please choose an option.'
-                data = get_text_message_input(support_member.phone_number, message, None,False,details=details)
+                data = get_text_message_input(support_member.phone_number, message, None,False)
                 send_message(data)
 
 def get_dashboard(support_member,response):
@@ -1300,7 +1300,7 @@ def reopen_ticket(support_member,ticket_id):
     if ticket:
         if ticket.assigned_to != support_member:
             message_to_inquirer = f"Hello {ticket.created_by.username.title()},\nyour inquiry: {ticket.description} has been re-opened, please wait for the support person to talk to you!"
-            data_2 = get_text_message_input(ticket.created_by.phone_number,message_to_inquirer,None,False,details=details)
+            data_2 = get_text_message_input(ticket.created_by.phone_number,message_to_inquirer,None,False)
             send_message(data_2)
             support_member_pending_tickets = Ticket.objects.filter(assigned_to=ticket.assigned_to,status=PENDING_MODE,ticket_mode='other').first()
             if support_member_pending_tickets:
@@ -1324,7 +1324,7 @@ def reopen_ticket(support_member,ticket_id):
                     ...
                 ticket.save()
                 message_to_prev_assistor = f"Hello {ticket.assigned_to.username.title()},\nTicket number *{ticket.id}* \nDescription - {ticket.description} has been re-opened by *{support_member.username.title()}* \nPlease assist the inquirer now or send #release to release it"
-                data = get_text_message_input(ticket.assigned_to.phone_number, message_to_prev_assistor, None,False,details=details)
+                data = get_text_message_input(ticket.assigned_to.phone_number, message_to_prev_assistor, None,False)
                 send_message(data)
                 return f'You have re-opened the ticket number #{ticket.id},\n Description {ticket.description}\n *{ticket.assigned_to.username.title()}* will provide assistance to the inquirer or release this ticket'
         else:
@@ -1342,7 +1342,7 @@ def reopen_ticket(support_member,ticket_id):
                 ticket.closed_at=None
                 ticket.save()
                 message_to_inquirer = f"Hello {ticket.created_by.username.title()}, your inquiry ({ticket.description}) has been re-opened, please wait for support message"
-                data = get_text_message_input(ticket.created_by.phone_number,message_to_inquirer,None,False,details=details)
+                data = get_text_message_input(ticket.created_by.phone_number,message_to_inquirer,None,False)
                 send_message(data)
                 support_member.user_mode = HELPING_MODE
                 support_member.save()
@@ -1470,7 +1470,7 @@ def revoke_ticket(support_member,ticket_id):
         if ticket.assigned_to == support_member:
             return "> You are trying to take a ticket that is already assigned to you!"
         message_to_prev_assistor = f"Hello {ticket.assigned_to.username.title()},\nTicket number *{ticket.id}* has been escalated from you and it is no longer assigned to you, you can now continue with your current task."
-        data = get_text_message_input(ticket.assigned_to.phone_number, message_to_prev_assistor, None,False,details=details)
+        data = get_text_message_input(ticket.assigned_to.phone_number, message_to_prev_assistor, None,False)
         send_message(data)
         support_member_pending_tickets = Ticket.objects.filter(assigned_to=support_member.id,status=PENDING_MODE,ticket_mode='other').first()
         if support_member_pending_tickets:
@@ -1538,7 +1538,7 @@ def accept_ticket(wa_id,name, ticket_id):
                 queued_at_time = timezone.now()
                 ticket_mode = QUEUED_MODE
             message = f'Inquirer : {check_ticket.created_by.username.title()} is being attended to by *{creator_pending_tickets.assigned_to.username.title()}* on inquiry *#{creator_pending_tickets.id}*\n ({creator_pending_tickets.description}).Your inquiry with them is now in the queue.'
-            data = get_text_message_input(wa_id[0], message, None,False,details=details)
+            data = get_text_message_input(wa_id[0], message, None,False)
             send_message(data)
 
         ticket = Ticket.objects.get(id=ticket_id)
@@ -1581,7 +1581,7 @@ def accept_ticket(wa_id,name, ticket_id):
             support_msg = None
                         
             
-        data = get_text_message_input(ticket.created_by.phone_number, message_to_send, None,False,details=details)
+        data = get_text_message_input(ticket.created_by.phone_number, message_to_send, None,False)
         send_message(data)        
         TicketLog.objects.create(
             ticket=ticket,
@@ -1599,7 +1599,7 @@ def accept_ticket(wa_id,name, ticket_id):
             data = get_text_message_input(support_member.phone_number, 'list',False,False,details=details)
             send_message(data)
         else:
-            data2 = get_text_message_input(support_member.phone_number,support_msg, None,False,details=details)
+            data2 = get_text_message_input(support_member.phone_number,support_msg, None,False)
             send_message(data2)
         message=f"> 🟡ticket *#{ticket.id}* is now assigned to *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
         return broadcast_messages(name,None,message,support_member.phone_number)
@@ -1617,7 +1617,7 @@ def request_assistance_support_member(id):
     request_user.save()
     message = f'🔔 *Support Member {request_user.username.title()}* is requesting assistance.\nPlease select:\n\n1. Assist\n2. Skip \n\n `please choose an option to continue!`'
     broadcast_messages(None,None,message,request_user.phone_number)
-    data = get_text_message_input(request_user.phone_number, support_users_interaction, None,False,details=details)
+    data = get_text_message_input(request_user.phone_number, support_users_interaction, None,False)
     return send_message(data)
 
 def assist_support_member(support_member_id, response,message_type,message_id):
@@ -1628,18 +1628,18 @@ def assist_support_member(support_member_id, response,message_type,message_id):
         if '2' == response.lower() or 'skip' in response.lower():
             support_member.user_status = HELPING_MODE
             support_member.save()
-            data = get_text_message_input(support_member.phone_number, passed_support_helping, None,False,details=details)
+            data = get_text_message_input(support_member.phone_number, passed_support_helping, None,False)
             return send_message(data)
         elif '1' == response.lower() or 'assist' in response.lower():
             support_member.user_status = SUPPORT_MEMBER_ASSISTING
             support_member.save()
-            data = get_text_message_input(support_member.phone_number, support_user_helper, None,False,details=details)
+            data = get_text_message_input(support_member.phone_number, support_user_helper, None,False)
             return send_message(data)
         else:
             support_member.user_status = HELPING_MODE
             support_member.save()
             message ='you skipped assisting the support member who was requesting assistance.You can now continue with your current task.'
-            data = get_text_message_input(support_member.phone_number, message, None,False,details=details)
+            data = get_text_message_input(support_member.phone_number, message, None,False)
             return send_message(data)
     elif support_member.user_status == SUPPORT_MEMBER_ASSISTANCE_MODE:
         if '#exit' in response.lower() or '#cancel' in response.lower():
@@ -1651,11 +1651,11 @@ def assist_support_member(support_member_id, response,message_type,message_id):
                 for member in support_members:
                     if member.user_status == SUPPORT_MEMBER_ASSISTING:
                         message = '*Support Member is now helped,You can now proceed with your previous tasks*'
-                        data = get_text_message_input(member.phone_number, message, None,False,details=details)
+                        data = get_text_message_input(member.phone_number, message, None,False)
                         send_message(data)
                     member.user_status = HELPING_MODE
                     member.save()
-                data = get_text_message_input(support_member.phone_number, back_to_helping_mode, None,False,details=details)
+                data = get_text_message_input(support_member.phone_number, back_to_helping_mode, None,False)
                 return send_message(data)
         if assisting_member:
             if message_type == "document":
@@ -1670,7 +1670,7 @@ def assist_support_member(support_member_id, response,message_type,message_id):
             elif message_type == "video":
                 data = get_video_message(assisting_member.phone_number, message_id)
                 return send_message(data)
-            data = get_text_message_input(assisting_member.phone_number, response, None,False,details=details)
+            data = get_text_message_input(assisting_member.phone_number, response, None,False)
             return send_message(data)
         return 'wait for the support member to accept  assisting you first or reply with *#exit* to quit.'
     elif support_member.user_status == SUPPORT_MEMBER_ASSISTING:
@@ -1688,7 +1688,7 @@ def assist_support_member(support_member_id, response,message_type,message_id):
             elif message_type == "video":
                 data = get_video_message(member_to_assist.phone_number, message_id)
                 return send_message(data)
-            data = get_text_message_input(member_to_assist.phone_number, response, None,False,details=details)
+            data = get_text_message_input(member_to_assist.phone_number, response, None,False)
             return send_message(data)
         support_member.user_status = HELPING_MODE
         support_member.save()
@@ -1718,7 +1718,7 @@ def forward_message(request):
         
     }
     
-    data =get_text_message_input('263779586059', 'my gee', False,False,details=details)
+    data =get_text_message_input('263779586059', 'my gee', False,False, details=details)
     send_message(data)
     return JsonResponse({'data':'y'})
     
@@ -1785,7 +1785,7 @@ def mark_as_resolved( ticket_id,is_closed=False,by_inquirer=False):
             
             for i, pending_ticket in enumerate(other_pending_tickets, start=1):
                 alert_message = f'Your inquiry *({pending_ticket.description})* is now number # *{i}* in the queue, please wait for your turn to be assisted.'
-                data = get_text_message_input(pending_ticket.created_by.phone_number, alert_message, None,False,details=details)
+                data = get_text_message_input(pending_ticket.created_by.phone_number, alert_message, None,False)
                 send_message(data)
                 created_time = timezone.localtime(pending_ticket.created_at).strftime('%Y-%m-%d %H:%M')
                 
@@ -1797,7 +1797,7 @@ def mark_as_resolved( ticket_id,is_closed=False,by_inquirer=False):
             support_member.user_status = RESUME_MODE
             support_member.save()
 
-            data = get_text_message_input(support_member.phone_number, message, None,False,details=details)
+            data = get_text_message_input(support_member.phone_number, message, None,False)
             send_message(data)
         if by_inquirer:
             ticket_closer = ticket.created_by.username.title()
@@ -1805,7 +1805,7 @@ def mark_as_resolved( ticket_id,is_closed=False,by_inquirer=False):
             ticket_closer = ticket.assigned_to.username.title()
         message=f"ticket *#{ticket.id}* has been closed ❌ by {ticket_closer} "
         reply = f'Your inquiry has been closed.'
-        data = get_text_message_input(ticket.created_by.phone_number, reply, None,False,details=details)
+        data = get_text_message_input(ticket.created_by.phone_number, reply, None,False)
         send_message(data)
         return broadcast_messages(None,ticket,message)
     
@@ -1843,7 +1843,7 @@ def mark_as_resolved( ticket_id,is_closed=False,by_inquirer=False):
         
         for i, pending_ticket in enumerate(other_pending_tickets, start=1):
             alert_message = f'Your inquiry is now number # *{i}* in the queue, please wait for the support member to assist you.'
-            data = get_text_message_input(pending_ticket.created_by.phone_number, alert_message, None,False,details=details)
+            data = get_text_message_input(pending_ticket.created_by.phone_number, alert_message, None,False)
             send_message(data)
             created_time = timezone.localtime(pending_ticket.created_at).strftime('%Y-%m-%d %H:%M')
             message += (f'{i}. Ticket Number: *{pending_ticket.id}*'
@@ -1854,7 +1854,7 @@ def mark_as_resolved( ticket_id,is_closed=False,by_inquirer=False):
         support_member.user_status = RESUME_MODE
         support_member.save()
 
-        data = get_text_message_input(support_member.phone_number, message, None,False,details=details)
+        data = get_text_message_input(support_member.phone_number, message, None,False)
         send_message(data)
     if by_inquirer:
         message =f"{ticket.created_by.username.title()} has marked ticket *{ticket.id}* as resolved ✅"
@@ -1862,7 +1862,7 @@ def mark_as_resolved( ticket_id,is_closed=False,by_inquirer=False):
         message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."
     ticket_description = ticket.description.split('Web:')[1] if 'Web:' in ticket.description else ticket.description
     reply = f'Your inquiry (*{ticket_description}*) has been marked as resolved'
-    data = get_text_message_input(ticket.created_by.phone_number, reply, None,False,details=details)
+    data = get_text_message_input(ticket.created_by.phone_number, reply, None,False)
     send_message(data)
     return broadcast_messages(None,ticket,message)
 
@@ -1879,7 +1879,7 @@ def web_messaging(ticket_id,message=None,is_broadcasting=False,prev_assignee=Non
             check_other_pending_tickets.queued_at = timezone.now()
             check_other_pending_tickets.save()
             notifier = f'Hello {check_other_pending_tickets.created_by.username.title()}, your inquiry is now on hold, please wait for your turn to be assisted.'
-            data_to_paused_inquirer = get_text_message_input(check_other_pending_tickets.created_by.phone_number, notifier, None,False,details=details)
+            data_to_paused_inquirer = get_text_message_input(check_other_pending_tickets.created_by.phone_number, notifier, None,False)
             send_message(data_to_paused_inquirer)
             created =timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
             message =f'Hello {ticket.assigned_to.username}\nInquiry *#{ticket.id}*:\nOpened by: *{ticket.created_by.username.title()} - {ticket.branch_opened.title()}* branch at {created}\n- {ticket.description}\n\nhas been escalated to you and your current inquiry with *{check_other_pending_tickets.created_by.username.title()}* has been placed on hold,start helping the new inquirer now!'
@@ -1893,27 +1893,27 @@ def web_messaging(ticket_id,message=None,is_broadcasting=False,prev_assignee=Non
                 if current_ticket:
                     created =timezone.localtime(current_ticket.created_at).strftime('%Y-%m-%d %H:%M')
                     message_ob = f'Hello {previous_supporter.username},\nInquiry *#{current_ticket.id}*:\nOpened by: *{current_ticket.created_by.username.title()} - {current_ticket.branch_opened.title()}* branch at {created}\n- {current_ticket.description}\n\nhas been taken from you and escalated to *{ticket.assigned_to.username}* ,please continue assisting {current_ticket.created_by.username.title()} inquiry No *#{current_ticket.id}*'
-                    data_ob = get_text_message_input(previous_supporter.phone_number, message_ob, None,False,details=details)
+                    data_ob = get_text_message_input(previous_supporter.phone_number, message_ob, None,False)
                     send_message(data_ob)
                 else:
                     created =timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
                     message_ob = f'Hello {previous_supporter.username},\nInquiry *#{ticket.id}*:\nOpened by: *{ticket.created_by.username.title()} - {ticket.branch_opened.title()}* branch at {created}\n- {ticket.description}\n\nhas been taken from you and escalated to *{ticket.assigned_to.username}* ,please reply with #resume to check your other queued tickets!.'
-                    data_ob = get_text_message_input(previous_supporter.phone_number, message_ob, None,False,details=details)
+                    data_ob = get_text_message_input(previous_supporter.phone_number, message_ob, None,False)
                     send_message(data_ob)
                 
         support_member = SupportMember.objects.filter(id=ticket.assigned_to.id).first()
         support_member.user_mode = HELPING_MODE
         support_member.user_status = HELPING_MODE
         support_member.save()
-        data = get_text_message_input(ticket.assigned_to.phone_number, message, None,False,details=details)
+        data = get_text_message_input(ticket.assigned_to.phone_number, message, None,False)
         return send_message(data)
     ticket = Ticket.objects.filter(id=ticket_id).first()
-    data =get_text_message_input(ticket.created_by.phone_number, message, None,False,details=details)
+    data =get_text_message_input(ticket.created_by.phone_number, message, None,False)
     return send_message(data)
 
 def alert_support_members(name,ticket, message,resolved=False):
     if message:
-        data = get_text_message_input(ticket.assigned_to.phone_number, message, None,False,details=details)
+        data = get_text_message_input(ticket.assigned_to.phone_number, message, None,False)
         return send_message(data)
     if resolved:
         return mark_as_resolved(ticket.id)
