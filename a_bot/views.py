@@ -864,7 +864,7 @@ def handle_inquiry(wa_id, response, name):
                     inquirer_obj.user_status = INQUIRY_MODE
                     inquirer_obj.save()
                     message = f'You are now inquiring under *{selected_branch.name.title()}* ,to change your branch, send *#menu*'
-                    data = get_text_message_input(inquirer_obj.phone_number,message,None,False)
+                    data = get_text_message_input(inquirer_obj.phone_number,message,None)
                     send_message(data)
                     return f'Hello {inquirer_obj.username.split()[0].title()}, What is your inquiry?'
                 return '> Invalid branch number, please try again!'
@@ -925,7 +925,7 @@ def handle_inquiry(wa_id, response, name):
             assigned_member.user_mode = ACCEPT_TICKET_MODE
             assigned_member.save()
             message_alert = f'Hello *{other_pending_issues.assigned_to.username.title()}* , {inquirer_obj.username.upper()} has opened a new inquiry,Your pending ticket (#{other_pending_issues.id})  with them have now been queued,This new inquiry might be urgent so you should consider assisting them first before resuming with inquiry *(#{other_pending_issues.id})* .You can resume assisting them anytime by replying with #resume or #continue.'
-            data = get_text_message_input(other_pending_issues.assigned_to.phone_number,message_alert ,None,False)
+            data = get_text_message_input(other_pending_issues.assigned_to.phone_number,message_alert ,None)
             send_message(data)
         if len(response) < 20:
             return 'Please provide a detailed message if you want to open an inquiry `or` ignore this message if otherwise'
@@ -1030,11 +1030,11 @@ def handle_help(wa_id, response, name,message_type,message_id):
                         # is_inquirer_helped.format(inquirer.username.split()[0].title(),open_inquiries.description)
                         return send_message(data)
 
-                    data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None,False)
+                    data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
                     send_message(data)
-                    data = get_text_message_input(open_inquiries.assigned_to.phone_number,inquirer_helped_assumed_messages , None,False)
+                    data = get_text_message_input(open_inquiries.assigned_to.phone_number,inquirer_helped_assumed_messages , None)
                 else:
-                    data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None,False)
+                    data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
                 return send_message(data)
     if inquirer:
         return process_queued_tickets(inquirer, None,response)
