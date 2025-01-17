@@ -79,7 +79,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
             
             details = {
                 "heading":f"Golden  {time_of_day} {name.title()}, how can i help you today?",
-                "body":f'current open inquiries : *{open_inquiries_total}*',
+                "body":f'current open inquiries : {open_inquiries_total}',
                 "footer":'choose one of the following options',
                 "first_id":'#open',
                 "first_reply":"#open",
@@ -618,6 +618,7 @@ def process_message_file_type(body, phone_number_id, profile_name):
     message = body["entry"][0]["changes"][0]["value"]["messages"][0]
     message_type = message["type"]
     message_id = None
+    print('body',body)
     try:
         support_member= SupportMember.objects.get(phone_number=phone_number_id[0])
     except SupportMember.DoesNotExist:
