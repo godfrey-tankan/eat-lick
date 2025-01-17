@@ -64,15 +64,37 @@ def generate_response(response, wa_id, name,message_type,message_id):
         pending_ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
         if  response.lower() in greeting_messages and not pending_ticket:
             time_of_day = get_greeting()
+            
+
             try:
                 open_inquiries_total= Ticket.objects.filter(status=OPEN_MODE,ticket_mode='other').count()
                 open_tasks = f'`current open inquiries` : *{open_inquiries_total}* \n\n'
                 if float(open_inquiries_total) > 0:
                     open_tasks += 'Reply with *#open* to view all open tickets.'
+                    
             except Ticket.DoesNotExist:
                 open_tasks = None
-            return f"Golden  {time_of_day} {name.title()}, how can i help you today?\n\n{open_tasks}"
+            # return f"Golden  {time_of_day} {name.title()}, how can i help you today?\n\n{open_tasks}"
     
+            
+            details = {
+                "heading":f"Golden  {time_of_day} {name.title()}, how can i help you today?",
+                "body":f'current open inquiries : *{open_inquiries_total}*',
+                "footer":'choose one of the following options',
+                "first_id":'#open',
+                "first_reply":"#open",
+                "second_id":"#closed",
+                "second_reply":"#closed",
+                "third_id":"#resume",
+                "third_reply":"#resume",
+                "button":True,
+                'list':False,
+                
+            }
+            
+            data =get_text_message_input(support_member.phone_number, 'my gee', False,False,details=details)
+            return send_message(data)
+            
         if response.lower() == 'help':
             return support_member_help_menu
         if "#view" in response.lower() or "#ticket" in response.lower():
