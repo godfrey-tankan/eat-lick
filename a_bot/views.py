@@ -20,7 +20,7 @@ from django.db.models import Count, Q
 from django.db.models.functions import ExtractWeekDay
 
 
-details ={}
+details = {'test':'test'}
 
 def get_greeting():
     current_hour = datetime.now().hour
