@@ -854,7 +854,7 @@ def handle_inquiry(wa_id, response, name):
                             branches_list += f'Branch number: *{branch.id}*\n- Name : *{branch.name}*\n\n'
                         branches_list += '\n> Please reply with your branch number eg *2* .'
                         return branches_list
-                    return 'No branches to choose from found!'
+                    return '> No branches to choose from found!'
                 selected_branch = Branch.objects.filter(id=branch_code).first()
                 if selected_branch:
                     inquirer_obj.branch = selected_branch.name
@@ -865,7 +865,7 @@ def handle_inquiry(wa_id, response, name):
                     data = get_text_message_input(inquirer_obj.phone_number,message,None,False,details=details)
                     send_message(data)
                     return f'Hello {inquirer_obj.username.split()[0].title()}, What is your inquiry?'
-                return 'Invalid branch number, please try again!'
+                return '> Invalid branch number, please try again!'
             names = response.split()
             if len(names) > 3:
                 return "> Please provide valid name(s)"
@@ -886,7 +886,7 @@ def handle_inquiry(wa_id, response, name):
                     branches_list += f'Branch number: *{branch.id}*\n- Name : *{branch.name}*\n\n'
                 branches_list += '\n> Please reply with your branch number eg *40* .'
                 return branches_list
-            return 'No branches to choose from found!'
+            return '> No branches to choose from found!'
     try:
         open_inquiries = Ticket.objects.filter(status__in=[OPEN_MODE,PENDING_MODE],created_by=inquirer_obj.id).first()
         if open_inquiries:
@@ -925,6 +925,8 @@ def handle_inquiry(wa_id, response, name):
             message_alert = f'Hello *{other_pending_issues.assigned_to.username.title()}* , {inquirer_obj.username.upper()} has opened a new inquiry,Your pending ticket (#{other_pending_issues.id})  with them have now been queued,This new inquiry might be urgent so you should consider assisting them first before resuming with inquiry *(#{other_pending_issues.id})* .You can resume assisting them anytime by replying with #resume or #continue.'
             data = get_text_message_input(other_pending_issues.assigned_to.phone_number,message_alert ,None,False,details=details)
             send_message(data)
+        if len(response) < 20:
+            return 'Please provide a detailed message if you want to open an inquiry `or` ignore this message if otherwise'
         ticket = Ticket.objects.create(
             title=f"Inquiry from {name}",
             description=response,
@@ -943,7 +945,7 @@ def handle_inquiry(wa_id, response, name):
         return new_inquiry_opened_response
 
     if len(response) < 20:
-        return 'Please provide a detailed inquiry if you want to open an inquiry, if you do not intent to, please just ignore this message!'
+        return 'Please provide a detailed inquiry if you want to open an inquiry `or` ignore this message if otherwise'
     if response.lower() in ["thank you","ok","noted"]:
         return ''
     ticket = Ticket.objects.create(
@@ -1487,10 +1489,10 @@ def accept_ticket(wa_id,name, ticket_id):
     try:
         ticket_id = int(ticket_id)
     except Exception as e:
-        return "Invalid ticket id"
+        return "> Invalid ticket id"
     support_team_mobiles =[support_member.phone_number for support_member in SupportMember.objects.all()]
     if wa_id[0] not in support_team_mobiles:
-        return "You are not authorized to accept tickets"
+        return "> You are not authorized to accept tickets"
     support_member = SupportMember.objects.filter(phone_number=wa_id[0]).first()
     is_ticket_open = False
     support_msg= 'hello'
@@ -1500,7 +1502,7 @@ def accept_ticket(wa_id,name, ticket_id):
         if check_ticket:
             is_ticket_open = check_ticket.status.lower() == OPEN_MODE
         else:
-            return "wrong ticket id"
+            return "> wrong ticket id"
     except Ticket.DoesNotExist:
         pending_ticket= Ticket.objects.filter(assigned_to=support_member.id,status=PENDING_MODE,ticket_mode='other').first()
         if pending_ticket:
@@ -1566,14 +1568,14 @@ def accept_ticket(wa_id,name, ticket_id):
                 support_msg = f'You have accepted the ticket number #{ticket_id},it is now in the queue, please continue with your current task first or reply with #resume to take it from the queued list.'
             else:
                 message_to_send = (
-                    f'Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to by *{ticket.assigned_to.username}*.'
+                    f'> Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to by *{ticket.assigned_to.username}*.'
                 )
                 support_msg = None
                 
             
         else:
             message_to_send = (
-                f'Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to by *{ticket.assigned_to.username}*.'
+                f'> Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to by *{ticket.assigned_to.username}*.'
             )
             support_msg = None
                         
@@ -1601,7 +1603,7 @@ def accept_ticket(wa_id,name, ticket_id):
         message=f"> 🟡ticket *#{ticket.id}* is now assigned to *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
         return broadcast_messages(name,None,message,support_member.phone_number)
     else:
-        return "Ticket not available or already assigned"
+        return "> Ticket not available or already assigned"
 
 def request_assistance_support_member(id):
     request_user = SupportMember.objects.filter(id=id).first()
