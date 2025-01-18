@@ -1142,39 +1142,22 @@ def handle_help(wa_id, response, name,message_type,message_id):
                 Message.objects.create(ticket_id=open_inquiries,inquirer=inquirer, support_member=None, content=response)
             except Exception as e:
                 ...
-            
             for message in thank_you_messages:
                 if message in response.lower():
                     if inquirer:
                         inquirer.user_mode = CONFIRM_RESPONSE
                         inquirer.user_status = SUPPORT_RATING
                         inquirer.save()
-                        details = {
-                            "heading":f"Please confirm if your inquiry has been resolved",
-                            "body":f'Let us know if your inquiry has been resolved',
-                            "footer":'choose one of the following options',
-                            "first_id":'yes',
-                            "first_reply":f"Yes resolved",
-                            "second_id":"no",
-                            "second_reply":"Completed but unresolved",
-                            "third_id":"continue",
-                            "third_reply":"Continue conversation",
-                            "button":True,
-                            
-                        }
-                        try:
-                            data =get_interactive_message_input(inquirer.phone_number,details=details)
-                            send_message(data)
-                            return ''
-                        except Exception as e:
-                            print('error in handle help:',e)
                         data = get_text_message_input(inquirer.phone_number, 'Hello', 'customer_helped_template',True)
                         # is_inquirer_helped.format(inquirer.username.split()[0].title(),open_inquiries.description)
                         return send_message(data)
+
+                    data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
+                    send_message(data)
+                    data = get_text_message_input(open_inquiries.assigned_to.phone_number,inquirer_helped_assumed_messages , None)
                 else:
-                    ...
-            data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
-            return send_message(data)
+                    data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
+                return send_message(data)
     if inquirer:
         return process_queued_tickets(inquirer, None,response)
     else:
