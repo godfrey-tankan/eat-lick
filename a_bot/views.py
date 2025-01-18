@@ -1463,8 +1463,9 @@ def reopen_ticket(support_member,ticket_id):
                 ticket.status = PENDING_MODE
                 ticket.ticket_mode = 'other'
                 ticket.closed_at=None
+                short_description =  ticket.description[:20] + "..." if len(ticket.description) > 20 else ticket.description
                 ticket.save()
-                message_to_inquirer = f"Hello {ticket.created_by.username.title()}, your inquiry ({ticket.description}) has been re-opened, please wait for support message"
+                message_to_inquirer = f"Hello {ticket.created_by.username.title()}, your inquiry ({short_description}) has been re-opened, please wait for support message"
                 data = get_text_message_input(ticket.created_by.phone_number,message_to_inquirer,None)
                 send_message(data)
                 support_member.user_mode = HELPING_MODE
@@ -1691,13 +1692,15 @@ def accept_ticket(wa_id,name, ticket_id):
                 )
                 support_msg = f'You have accepted the ticket number #{ticket_id},it is now in the queue, please continue with your current task first or reply with #resume to take it from the queued list.'
             else:
+                description_preview = ticket.description[:20] + "..." if len(ticket.description) > 20 else ticket.description
                 message_to_send = (
-                    f'Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to by *{ticket.assigned_to.username}*.'
+                    f'Hey {ticket.created_by.username.title()}, your inquiry *({description_preview})* is now being attended to by *{ticket.assigned_to.username}*.'
                 )
                 support_msg = None
         else:
+            description_preview = ticket.description[:20] + "..." if len(ticket.description) > 20 else ticket.description
             message_to_send = (
-                f'Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to by *{ticket.assigned_to.username}*.'
+                f'Hey {ticket.created_by.username.title()}, your inquiry *({description_preview})* is now being attended to by *{ticket.assigned_to.username}*.'
             )
             support_msg = None
             
@@ -2008,7 +2011,8 @@ def mark_as_resolved( ticket_id,is_closed=False,by_inquirer=False):
     else:
         message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."
     ticket_description = ticket.description.split('Web:')[1] if 'Web:' in ticket.description else ticket.description
-    reply = f'Your inquiry (*{ticket_description}*) has been marked as resolved'
+    description_preview = ticket_description[:20] + "..." if len(ticket_description) > 20 else ticket_description
+    reply = f'Your inquiry (*{description_preview}*) has been marked as resolved'
     data = get_text_message_input(ticket.created_by.phone_number, reply, None)
     send_message(data)
     return broadcast_messages(None,ticket,message)
