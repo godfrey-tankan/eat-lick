@@ -29,6 +29,116 @@ def get_greeting():
     else:
         return "evening"
 
+
+def get_interactive_message_input(recipient,details=None):
+   
+    try:
+        if details and details.get('button',False):
+            return json.dumps(
+                {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": recipient,
+                    "type": "interactive",
+                    "interactive": {
+                        "type": "button",
+                        "header": {
+                        "type": "text",
+                        "text": details.get('heading', None) 
+                        },
+                        "body": {
+                        "text": details.get('body', None)
+                        },
+                        "footer": {
+                        "text": details.get('footer', None)
+                        },
+                        "action": {
+                        "buttons": [
+                            {
+                            "type": "reply",
+                            "reply": {
+                                "id": details.get('first_id', None),
+                                "title": details.get('first_reply', None)
+                            }
+                            },
+                            {
+                            "type": "reply",
+                            "reply": {
+                                "id": details.get('second_id', None),
+                                "title": details.get('second_reply', None)
+                            }
+                            },
+                            {
+                            "type": "reply",
+                            "reply": {
+                                "id": details.get('third_id', None),
+                                "title": details.get('third_reply', None)
+                            }
+                            }
+                        ]
+                        }
+                    }
+                    }
+            )
+        
+        elif details and details.get('list',False):
+            return json.dumps(
+                {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": recipient,
+                    "type": "interactive",
+                    "interactive": {
+                        "type": "list",
+                        "header": {
+                        "type": "text",
+                        "text": details.get("heading") if details.get("heading") else "Confirm Inquiry Type"
+                        },
+                        "body": {
+                        "text": "Please confirm the type of inquiry you are handling:"
+                        },
+                        "footer": {
+                        "text": "choose one of the following options"
+                        },
+                        "action": {
+                        "button": "Choose Type",
+                        "sections": [
+                            {
+                            "title": "Inquiry Types",
+                            "rows": [
+                                {
+                                "id": "general_inquiry",
+                                "title": "General Inquiry"
+                                },
+                                {
+                                "id": "technical_inquiry",
+                                "title": "Technical Inquiry"
+                                },
+                                {
+                                "id": "sales_inquiry",
+                                "title": "Sales Inquiry"
+                                },
+                                {
+                                "id": "support_inquiry",
+                                "title": "Support Inquiry"
+                                },
+                                {
+                                "id": "other_inquiry",
+                                "title": "Other Inquiry"
+                                }
+                            ]
+                            }
+                        ]
+                        }
+                    }
+                    }
+            )
+        
+
+    except Exception as e:
+        return e
+
+
 def generate_response(response, wa_id, name,message_type,message_id):
     
     try:
@@ -69,9 +179,29 @@ def generate_response(response, wa_id, name,message_type,message_id):
                 open_tasks = f'`current open inquiries` : *{open_inquiries_total}* \n\n'
                 if float(open_inquiries_total) > 0:
                     open_tasks += 'Reply with *#open* to view all open tickets.'
+                    
             except Ticket.DoesNotExist:
                 open_tasks = None
-            return f"Golden  {time_of_day} {name.title()}, how can i help you today?\n\n{open_tasks}"
+            # return f"Golden  {time_of_day} {name.title()}, how can i help you today?\n\n{open_tasks}"
+            details = {
+                "heading":f"Golden  {time_of_day} {name.title()}, how can i help you today?",
+                "body":f'current open inquiries : {open_inquiries_total}',
+                "footer":'choose one of the following options',
+                "first_id":'#open',
+                "first_reply":"#open",
+                "second_id":"#resume",
+                "second_reply":"#resume",
+                "third_id":"#codes",
+                "third_reply":"#codes",
+                "button":True,
+                
+            }
+            try:
+                data =get_interactive_message_input(support_member.phone_number,details=details)
+                return send_message(data)
+            except Exception as e:
+                print('error in generate response:',e)
+                return e
     
         if response.lower() == 'help':
             return support_member_help_menu
@@ -216,6 +346,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         #     if help_message in response.lower() or len(response) > :
         return handle_inquiry(wa_id, response, name)
     return f"Golden greetings. How can i help you today?"    
+
 
 def get_text_message_input(recipient, text,name=None,template=False):
 
@@ -570,6 +701,22 @@ def process_message_file_type(body, phone_number_id, profile_name):
             Message.objects.create(ticket_id=inquirer_pending_ticket, inquirer=inquirer, content='sent image message')
             data = get_image_message(inquirer_pending_ticket.assigned_to.phone_number, message_id)
         return send_message(data)
+    
+    elif message_type == "interactive":
+            try:
+                if "list_reply" in message["interactive"]:
+                    message_body = message["interactive"]["list_reply"]["title"]
+                    message_id = message["interactive"]["list_reply"]["id"]
+                elif "button_reply" in message["interactive"]:
+                    message_body = message["interactive"]["button_reply"]["title"]
+                    message_id = message["interactive"]["button_reply"]["id"]
+                else:
+                    print("Unsupported interactive message subtype.")
+            except KeyError as e:
+                print(f"Missing key in interactive message: {e}")
+            except Exception as e:
+                print(f"Unexpected error processing interactive message: {e}")
+    
     elif message_type == "text":
         message_body = message["text"]["body"]
         
@@ -841,7 +988,11 @@ def handle_help(wa_id, response, name,message_type,message_id):
                 elif response == '5' or response == '5.':
                     open_inquiries.inquiry_type = 'Other Inquiry'
                 else:
-                    return inquiry_type_check
+                    details={
+                        "list":True,
+                    }
+                    data =get_interactive_message_input(support_member.phone_number,details=details)
+                    return send_message(data)
                 open_inquiries.save()
                 return "You have successfully confirmed the inquiry type, you can now continue assisting the inquirer."
                 
@@ -1416,13 +1567,12 @@ def accept_ticket(wa_id,name, ticket_id):
                 message_to_send = (
                     f'Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to by *{ticket.assigned_to.username}*.'
                 )
-                support_msg = f'You have accepted the ticket number #{ticket_id}\n\nBut before you start assisting the inquirer, please confirm the type of inquiry you are handling.\n\n1. General Inquiry\n2. Technical Inquiry\n3. Sales Inquiry\n4. Support Inquiry\n5. Other Inquiry\n\nReply with the number that corresponds to the inquiry type.'
-            
+                support_msg = None
         else:
             message_to_send = (
                 f'Hey {ticket.created_by.username.title()}, your inquiry *({ticket.description})* is now being attended to by *{ticket.assigned_to.username}*.'
             )
-            support_msg = f'You have accepted the ticket number #{ticket_id}\n\nBut before you start assisting the inquirer, please confirm the type of inquiry you are handling.\n\n1. General Inquiry\n2. Technical Inquiry\n3. Sales Inquiry\n4. Support Inquiry\n5. Other Inquiry\n\nReply with the number that corresponds to the inquiry type.'
+            support_msg = None
             
         data = get_text_message_input(ticket.created_by.phone_number, message_to_send, None)
         send_message(data)        
@@ -1434,8 +1584,17 @@ def accept_ticket(wa_id,name, ticket_id):
         support_member.user_mode=HELPING_MODE
         support_member.user_status = HELPING_MODE
         support_member.save()
-        data2 = get_text_message_input(support_member.phone_number,support_msg, None)
-        send_message(data2)
+        
+        if support_msg is None:
+            details={
+                "list":True,
+                "heading":f'You have accepted the ticket number #{ticket_id}'
+            }
+            data =get_interactive_message_input(support_member.phone_number,details=details)
+            return send_message(data)
+        else:
+            data2 = get_text_message_input(support_member.phone_number,support_msg, None)
+            send_message(data2)
         message=f"🟡ticket *#{ticket.id}* is now assigned to *{support_member.username if support_member.username.lower() != 'support' else support_member.phone_number}*"
         return broadcast_messages(name,None,message,support_member.phone_number)
     else:
@@ -1541,11 +1700,27 @@ def get_image_message(recipient, image_id):
             },
         }
     )
-
-def forward_message(message,number):
-    data =get_text_message_input(number, message, None)
-    return send_message(number)
     
+def forward_message(request):
+    
+    details = {
+        "heading":'Inquiry type Confirmation',
+        "body":'Please confirm the type of inquiry you are handling',
+        "footer":'x_tc',
+        "first_id":'general',
+        "first_reply":'1. General Inquiry',
+        "second_id":'support',
+        "second_reply":'2. Support Inquiry',
+        "third_id":'complaint',
+        "third_reply":'3. Complaint Inquiry',
+        'button':True,
+        
+    }
+    
+    data =get_interactive_message_input('263779586059', details=details)
+    send_message(data)
+    return JsonResponse({'data':'y'})
+
 def get_document_message(recipient, document_id, caption='New document'):
     return json.dumps(
         {
