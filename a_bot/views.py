@@ -439,7 +439,6 @@ def generate_response(response, wa_id, name,message_type,message_id):
 def get_text_message_input(recipient, text,name=None,template=False):
 
     if template:
-        print('template',name,recipient)
         return json.dumps(
             {
                 "messaging_product": "whatsapp",
