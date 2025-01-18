@@ -469,7 +469,7 @@ def main_menu(response,wa_id,time_of_day):
             inquirer_ob.user_mode = INQUIRY_MODE
             inquirer_ob.save()
             return f'Hello {inquirer_ob.username.title()}, how can i help you today?'
-        elif response =='1' or response.lower().startswith('update'):
+        elif response =='1' or  'update' in response.lower():
             inquirer_ob.user_mode = BRANCH_MODE
             inquirer_ob.save()
             details = {
@@ -489,7 +489,8 @@ def main_menu(response,wa_id,time_of_day):
                 return ''
             except:
                 return '> an error occurred while changing branch..'
-        elif response =='2' or response.lower().startswith('new'):
+        elif response =='2' or 'new' in response.lower():
+            print('got in new inquiry blco....')
             check_pending_inquiries = Ticket.objects.filter(created_by=inquirer_ob,status=PENDING_MODE,ticket_mode='other').first()
             if check_pending_inquiries:
                 inquirer_ob.user_status = NEW_TICKET_MODE
@@ -497,8 +498,9 @@ def main_menu(response,wa_id,time_of_day):
                 return 'What is your inquiry?\n\nReply with exit or q to exit.'
             inquirer_ob.user_mode = INQUIRY_MODE
             inquirer_ob.save()
+            print('inquiry opened!!')
             return 'What is your inquiry today?'
-        elif response =='3' or response.lower().startswith('your'):
+        elif response =='3' or 'your' in response.lower():
             inquirer_ob.user_mode = INQUIRY_STATUS_MODE
             inquirer_ob.save()
             inquirer_tickets = Ticket.objects.filter(created_by=inquirer_ob,status=PENDING_MODE).order_by('-created_at')
