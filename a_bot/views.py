@@ -462,7 +462,6 @@ def get_text_message_input(recipient, text,name=None,template=False):
     )
     
 def main_menu(response,wa_id,time_of_day):
-    print('Maine menu response:',response)
     inquirer_ob = Inquirer.objects.filter(phone_number=wa_id[0]).first()
     if inquirer_ob:
         if response == '#exit':
@@ -490,7 +489,6 @@ def main_menu(response,wa_id,time_of_day):
             except:
                 return '> an error occurred while changing branch..'
         elif response =='2' or 'new' in response.lower():
-            print('got in new inquiry blco....')
             check_pending_inquiries = Ticket.objects.filter(created_by=inquirer_ob,status=PENDING_MODE,ticket_mode='other').first()
             if check_pending_inquiries:
                 inquirer_ob.user_status = NEW_TICKET_MODE
@@ -498,7 +496,6 @@ def main_menu(response,wa_id,time_of_day):
                 return 'What is your inquiry?\n\nReply with exit or q to exit.'
             inquirer_ob.user_mode = INQUIRY_MODE
             inquirer_ob.save()
-            print('inquiry opened!!')
             return 'What is your inquiry today?'
         elif response =='3' or 'your' in response.lower():
             inquirer_ob.user_mode = INQUIRY_STATUS_MODE
@@ -1334,9 +1331,7 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                 return send_message(data)
             else:
                 if message:
-                    if 'has marked' in message.lower() or 'has been closed' in message.lower():
-                        data = get_text_message_input(support_member.phone_number, message, None)
-                        send_message(data)
+                    message = message
                     
                 else:
                     message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.created_by.phone_number,ticket.id, ticket.description)
@@ -1349,10 +1344,9 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                     if not support_member.user_status == RESUME_MODE:
                         support_member.user_status = NEW_TICKET_ACCEPT_MODE
                         support_member.save()
-                    if not 'has marked' in message.lower() or 'has been closed' in message.lower():
-                        message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.\n> 🚨please choose an option.'
-                        data = get_text_message_input(support_member.phone_number, message, None)
-                        send_message(data)
+                    message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.\n> 🚨please choose an option.'
+                data = get_text_message_input(support_member.phone_number, message, None)
+                send_message(data)
 
 def get_dashboard(support_member,response):
     support_member_summaries = SupportMember.objects.filter(is_deleted=False).annotate(
