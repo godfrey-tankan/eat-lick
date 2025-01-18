@@ -611,7 +611,7 @@ def send_message(data,template=False):
         # return jsonify({"status": "error", "message": "Failed to send message"}), 500
     else:
         # Process the response as normal
-        return response
+        ...
 
 def create_manual_ticket(response,wa_id,support_member):
     if 'exit' in response.lower() or 'cancel' in response.lower():
