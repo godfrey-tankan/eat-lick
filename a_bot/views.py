@@ -285,7 +285,8 @@ def generate_response(response, wa_id, name,message_type,message_id):
             }
             try:
                 data =get_interactive_message_input(support_member.phone_number,details=details)
-                return send_message(data)
+                send_message(data)
+                return ''
             except Exception as e:
                 print('error in generate response:',e)
                 return e
@@ -1119,7 +1120,8 @@ def handle_help(wa_id, response, name,message_type,message_id):
                         "list":True,
                     }
                     data =get_interactive_message_input(support_member.phone_number,details=details)
-                    return send_message(data)
+                    send_message(data)
+                    return ''
                 open_inquiries.save()
                 return "You have successfully confirmed the inquiry type, you can now continue assisting the inquirer."
                 
@@ -1740,7 +1742,8 @@ def accept_ticket(wa_id,name, ticket_id):
                 "heading":f'You have accepted the ticket number #{ticket_id}'
             }
             data =get_interactive_message_input(support_member.phone_number,details=details)
-            return send_message(data)
+            send_message(data)
+            return ''
         else:
             data2 = get_text_message_input(support_member.phone_number,support_msg, None)
             send_message(data2)
