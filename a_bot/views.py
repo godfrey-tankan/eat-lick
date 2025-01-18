@@ -138,6 +138,93 @@ def get_interactive_message_input(recipient,details=None):
     except Exception as e:
         return e
 
+def send_single_button_interactive(recipient,details=None):
+   
+    try:
+        if details and details.get('button',False):
+            return json.dumps(
+                {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": recipient,
+                    "type": "interactive",
+                    "interactive": {
+                        "type": "button",
+                        "header": {
+                        "type": "text",
+                        "text": details.get('heading', None) 
+                        },
+                        "body": {
+                        "text": details.get('body', None)
+                        },
+                        "footer": {
+                        "text": details.get('footer', None)
+                        },
+                        "action": {
+                        "buttons": [
+                            {
+                            "type": "reply",
+                            "reply": {
+                                "id": details.get('first_id', None),
+                                "title": details.get('first_reply', None)
+                            }
+                            }
+                        ]
+                        }
+                    }
+                    }
+            )
+
+    except Exception as e:
+        return e
+
+def send_double_button_interactive(recipient,details=None):
+   
+    try:
+        if details and details.get('button',False):
+            return json.dumps(
+                {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": recipient,
+                    "type": "interactive",
+                    "interactive": {
+                        "type": "button",
+                        "header": {
+                        "type": "text",
+                        "text": details.get('heading', None) 
+                        },
+                        "body": {
+                        "text": details.get('body', None)
+                        },
+                        "footer": {
+                        "text": details.get('footer', None)
+                        },
+                        "action": {
+                        "buttons": [
+                            {
+                            "type": "reply",
+                            "reply": {
+                                "id": details.get('first_id', None),
+                                "title": details.get('first_reply', None)
+                            }
+                            },
+                            {
+                            "type": "reply",
+                            "reply": {
+                                "id": details.get('second_id', None),
+                                "title": details.get('second_reply', None)
+                            }
+                            }
+                        ]
+                        }
+                    }
+                    }
+            )
+                
+
+    except Exception as e:
+        return e
 
 def generate_response(response, wa_id, name,message_type,message_id):
     
@@ -293,15 +380,15 @@ def generate_response(response, wa_id, name,message_type,message_id):
     
     if check_ticket:
         if inquirer and inquirer.user_mode== CONFIRM_RESPONSE:
-            if response == '1' or response == '1.':
+            if response == '1' or response.lower().startswith('yes'):
                 mark_as_resolved(check_ticket.id,False,True)
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 return send_message(data)
-            elif response =='2' or response == '2.':
+            elif response =='2' or response.lower().startswith('completed'):
                 mark_as_resolved(check_ticket.id,True,True)
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 return send_message(data)
-            elif response=='3':
+            elif response=='3'or response.lower().startswith('continue'):
                 last_msg = Message.objects.filter(ticket_id=check_ticket,inquirer=inquirer).last()
                 data= get_text_message_input(check_ticket.assigned_to.phone_number, last_msg.content, None)
                 send_message(data)
@@ -341,7 +428,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         
         for thank_you_message in thank_you_messages:
             if thank_you_message in response.lower():
-                return "You are welcome."
+                return "> You are welcome."
         # for help_message in help_messages:
         #     if help_message in response.lower() or len(response) > :
         return handle_inquiry(wa_id, response, name)
@@ -380,11 +467,27 @@ def main_menu(response,wa_id,time_of_day):
             inquirer_ob.user_mode = INQUIRY_MODE
             inquirer_ob.save()
             return f'Hello {inquirer_ob.username.title()}, how can i help you today?'
-        elif response =='1' or response == '1.':
+        elif response =='1' or response.lower().startswith('update branch'):
             inquirer_ob.user_mode = BRANCH_MODE
             inquirer_ob.save()
-            return 'Do you want to change your branch?'
-        elif response =='2' or response =='2.':
+            details = {
+                "heading":f"Do you want to change your branch?",
+                "body":f'Updating your branch from {inquirer_ob.branch.title()}?',
+                "footer":'choose one of the following options',
+                "first_id":'branch_update',
+                "first_reply":f"Yes",
+                "second_id":"not_update",
+                "second_reply":"No",
+                "button":True,
+                
+            }
+            try:
+                data = send_double_button_interactive(inquirer_ob.phone_number,details=details)
+                send_message(data)
+                return ''
+            except:
+                return '> an error occurred while changing branch..'
+        elif response =='2' or response.lower().startswith('new inquiry'):
             check_pending_inquiries = Ticket.objects.filter(created_by=inquirer_ob,status=PENDING_MODE,ticket_mode='other').first()
             if check_pending_inquiries:
                 inquirer_ob.user_status = NEW_TICKET_MODE
@@ -393,7 +496,7 @@ def main_menu(response,wa_id,time_of_day):
             inquirer_ob.user_mode = INQUIRY_MODE
             inquirer_ob.save()
             return 'What is your inquiry today?'
-        elif response =='3' or response =='3.':
+        elif response =='3' or response.lower().startswith('⁠your inquiry'):
             inquirer_ob.user_mode = INQUIRY_STATUS_MODE
             inquirer_ob.save()
             inquirer_tickets = Ticket.objects.filter(created_by=inquirer_ob,status=PENDING_MODE).order_by('-created_at')
@@ -408,6 +511,28 @@ def main_menu(response,wa_id,time_of_day):
                 return tickets_status
             return 'You have no inquiries at the moment.'
         else:
+            details = {
+                "heading":f"Golden  {time_of_day} {inquirer_ob.username.title()} — {inquirer_ob.branch.title()}",
+                "body":f'How can I help you today?',
+                "footer":'choose one of the following options',
+                "first_id":'branch_update',
+                "first_reply":f"Update branch",
+                "second_id":"new_inquiry",
+                "second_reply":"⁠New inquiry ",
+                "third_id":"inquiry_status",
+                "third_reply":"⁠Your inquiry status",
+                "button":True,
+                
+            }
+            try:
+                inquirer_ob.user_mode = MAIN_MENU_MODE
+                inquirer_ob.save()
+                data =get_interactive_message_input(inquirer_ob.phone_number,details=details)
+                send_message(data)
+                return '' 
+            except Exception as e:
+                print('error in generate response:',e)
+                # return e
             menu_option =f'''Golden {time_of_day} *{inquirer_ob.username.title()}*  — `{inquirer_ob.branch.title()}` branch.\nPlease Choose an option: 
             \n1. Update branch from *{inquirer_ob.branch}*
             \n2. ⁠New inquiry 
@@ -749,8 +874,9 @@ def get_all_open_tickets(support_member,response,wa_id,name):
         support_member.save()
         message = '🟢 Open Tickets:\n\n'
         for i,ticket in enumerate(open_tickets,start=1):
+            short_description = ticket.description[:30] + '...' if len(ticket.description) > 30 else ticket.description
             created = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
-            message += f"*{i}*. Ticket Number: *{ticket.id}*\n- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {ticket.description}\n\n"
+            message += f"*{i}*. Ticket Number: *{ticket.id}*\n- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {short_description}\n\n"
         message += '\nReply with *ticketNo* eg *4* to assign the ticket to yourself or *#exit* to exit'
         return message
     if '#exit' in response.lower() or '#cancel' in response.lower():
@@ -863,7 +989,7 @@ def handle_inquiry(wa_id, response, name):
                     data = get_text_message_input(inquirer_obj.phone_number,message,None)
                     send_message(data)
                     return f'Hello {inquirer_obj.username.split()[0].title()}, What is your inquiry?'
-                return 'Invalid branch number, please try again!'
+                return '> Invalid branch number, please try again!'
             names = response.split()
             if len(names) > 3:
                 return "> Please provide valid name(s)"
@@ -884,7 +1010,7 @@ def handle_inquiry(wa_id, response, name):
                     branches_list += f'Branch number: *{branch.id}*\n- Name : *{branch.name}*\n\n'
                 branches_list += '\n> Please reply with your branch number eg *40* .'
                 return branches_list
-            return 'No branches to choose from found!'
+            return '> No branches to choose from found!'
     try:
         open_inquiries = Ticket.objects.filter(status__in=[OPEN_MODE,PENDING_MODE],created_by=inquirer_obj.id).first()
         if open_inquiries:
@@ -923,6 +1049,8 @@ def handle_inquiry(wa_id, response, name):
             message_alert = f'Hello *{other_pending_issues.assigned_to.username.title()}* , {inquirer_obj.username.upper()} has opened a new inquiry,Your pending ticket (#{other_pending_issues.id})  with them have now been queued,This new inquiry might be urgent so you should consider assisting them first before resuming with inquiry *(#{other_pending_issues.id})* .You can resume assisting them anytime by replying with #resume or #continue.'
             data = get_text_message_input(other_pending_issues.assigned_to.phone_number,message_alert ,None)
             send_message(data)
+        if len(response) < 15:
+            return 'Please provide a detailed inquiry if you want to open an inquiry, at least `15 characters`'
         ticket = Ticket.objects.create(
             title=f"Inquiry from {name}",
             description=response,
@@ -940,8 +1068,8 @@ def handle_inquiry(wa_id, response, name):
         broadcast_messages(name,ticket)
         return new_inquiry_opened_response
 
-    if len(response) < 20:
-        return 'Please provide a detailed inquiry if you want to open an inquiry, if you do not intent to, please just ignore this message!'
+    if len(response) < 15:
+        return 'Please provide a detailed inquiry if you want to open an inquiry, at least `15 characters`'
     if response.lower() in ["thank you","ok","noted"]:
         return ''
     ticket = Ticket.objects.create(
@@ -976,16 +1104,15 @@ def handle_help(wa_id, response, name,message_type,message_id):
     if open_inquiries:
         if support_member:
             if open_inquiries.inquiry_type is None:
-                inquiry_type_check = f"Before you start assisting the inquirer, please confirm the type of inquiry you are handling.\n\n1. General Inquiry\n2. Technical Inquiry\n3. Sales Inquiry\n4. Support Inquiry\n5. Other Inquiry\n\nReply with the number that corresponds to the inquiry type."
-                if response == '1' or response == '1.':
+                if response == '1' or response.lower().startswith('general'):
                     open_inquiries.inquiry_type = 'General Inquiry'
-                elif response == '2' or response == '2.':
+                elif response == '2' or response.lower().startswith('technical'):
                     open_inquiries.inquiry_type = 'Technical Inquiry'
-                elif response == '3' or response == '3.':
+                elif response == '3' or response.lower().startswith('sales'):
                     open_inquiries.inquiry_type = 'Sales Inquiry'
-                elif response == '4' or response == '4.':
+                elif response == '4' or response.lower().startswith('support'):
                     open_inquiries.inquiry_type = 'Support Inquiry'
-                elif response == '5' or response == '5.':
+                elif response == '5' or response.lower().startswith('other'):
                     open_inquiries.inquiry_type = 'Other Inquiry'
                 else:
                     details={
@@ -1021,6 +1148,25 @@ def handle_help(wa_id, response, name,message_type,message_id):
                         inquirer.user_mode = CONFIRM_RESPONSE
                         inquirer.user_status = SUPPORT_RATING
                         inquirer.save()
+                        details = {
+                            "heading":f"Please confirm if your inquiry has been resolved",
+                            "body":f'Let us know if your inquiry has been resolved',
+                            "footer":'choose one of the following options',
+                            "first_id":'yes',
+                            "first_reply":f"Yes resolved",
+                            "second_id":"no",
+                            "second_reply":"Completed but unresolved",
+                            "third_id":"continue",
+                            "third_reply":"Continue conversation",
+                            "button":True,
+                            
+                        }
+                        try:
+                            data =get_interactive_message_input(inquirer.phone_number,details=details)
+                            send_message(data)
+                            return '' 
+                        except Exception as e:
+                            print('error in generate response:',e)
                         data = get_text_message_input(inquirer.phone_number, 'Hello', 'customer_helped_template',True)
                         # is_inquirer_helped.format(inquirer.username.split()[0].title(),open_inquiries.description)
                         return send_message(data)
@@ -1707,21 +1853,41 @@ def get_image_message(recipient, image_id):
 def forward_message(request):
     
     details = {
-        "heading":'Inquiry type Confirmation',
-        "body":'Please confirm the type of inquiry you are handling',
-        "footer":'x_tc',
-        "first_id":'general',
-        "first_reply":'1. General Inquiry',
-        "second_id":'support',
-        "second_reply":'2. Support Inquiry',
-        "third_id":'complaint',
-        "third_reply":'3. Complaint Inquiry',
-        'button':True,
+        "heading":f"Golden morning...",
+        "body":f'How can I help you today?',
+        "footer":'choose one of the following options',
+        "first_id":'branch_update',
+        "first_reply":f"Update branch",
+        "second_id":"new_inquiry",
+        "second_reply":"⁠New inquiry ",
+        "third_id":"inquiry_status",
+        "third_reply":"⁠Your inquiry status",
+        "button":True,
         
     }
+    try:
+        
+        data =get_interactive_message_input('263779586059',details=details)
+        send_message(data)
+    except Exception as e:
+        print('error in generate response:',e)
     
-    data =get_interactive_message_input('263779586059', details=details)
-    send_message(data)
+    # details = {
+    #     "heading":f"Do you want to change your branch?",
+    #     "body":f'Updating your branch from ....?',
+    #     "footer":'choose one of the following options',
+    #     "first_id":'branch_update',
+    #     "first_reply":f"Yes",
+    #     "second_id":"not_update",
+    #     "second_reply":"No",
+    #     "button":True,
+        
+    # }
+    # try:
+    #     data = send_single_button_interactive('263779586059',details=details)
+    #     send_message(data)
+    # except:
+    #     return '> an error occurred while changing branch..'
     return JsonResponse({'data':'y'})
 
 def get_document_message(recipient, document_id, caption='New document'):
