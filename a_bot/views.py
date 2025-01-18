@@ -509,7 +509,7 @@ def main_menu(response,wa_id,time_of_day):
                         tickets_status += f'*{i}*. Ticket Number: *{inquirer_ticket.id}*\n- Description: {inquirer_ticket.description}\n- Status: *{inquirer_ticket.status}*\n\n'
                 tickets_status += '\nReply with *ticketNo* eg *4* to view more details or *#exit* to exit\n\n'
                 return tickets_status
-            return 'You have no inquiries at the moment.'
+            return 'You have no pending inquiries at the moment.'
         else:
             details = {
                 "heading":f"Golden  {time_of_day} {inquirer_ob.username.title()} — {inquirer_ob.branch.title()}",
@@ -1703,7 +1703,6 @@ def accept_ticket(wa_id,name, ticket_id):
                 f'Hey {ticket.created_by.username.title()}, your inquiry *({description_preview})* is now being attended to by *{ticket.assigned_to.username}*.'
             )
             support_msg = None
-            
         data = get_text_message_input(ticket.created_by.phone_number, message_to_send, None)
         send_message(data)        
         TicketLog.objects.create(
