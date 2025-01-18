@@ -1072,7 +1072,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                         data = get_text_message_input(support_member.phone_number,message , None)
                         return send_message(data)
                     else:
-                        return "Ticket not found"
+                        return "> Ticket not found"
                 else:
                     return "Please check the ticket number and try again, use ticketNo eg *4*"
         support_member.user_status = HELPING_MODE
@@ -1097,7 +1097,7 @@ def process_queued_tickets(inquirer=None, support_member=None,response=None):
                 return send_message(data)
         return 
         
-    return "You have no queued inquiries"
+    return "> You have no queued inquiries"
 
 def resume_assistance(support_member,response):
     all_queued_tickets = Ticket.objects.filter(status=PENDING_MODE,ticket_mode=QUEUED_MODE,assigned_to=support_member).order_by('queued_at')
@@ -1144,7 +1144,7 @@ def resume_assistance(support_member,response):
                     data = get_text_message_input(support_member.phone_number,message , None)
                     return send_message(data)
                 else:
-                    return "No tickets with That ticket number assigned to you found"
+                    return "> No tickets with That ticket number assigned to you found"
             else:
                 return "Please check the ticket number and try again, reply with *#resume* to see all your queued tickets. or reply with *#exit* to exit the resume mode."
     support_member.user_status = HELPING_MODE
@@ -1183,7 +1183,9 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                 return send_message(data)
             else:
                 if message:
-                    message=message
+                    if 'has marked' in message.lower() or 'has been closed' in message.lower():
+                        data = get_text_message_input(support_member.phone_number, message, None)
+                        send_message(data)
                     
                 else:
                     message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.created_by.phone_number,ticket.id, ticket.description)
@@ -1196,9 +1198,10 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                     if not support_member.user_status == RESUME_MODE:
                         support_member.user_status = NEW_TICKET_ACCEPT_MODE
                         support_member.save()
-                    message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.\n> 🚨please choose an option.'
-                data = get_text_message_input(support_member.phone_number, message, None)
-                send_message(data)
+                    if not 'has marked' in message.lower() or 'has been closed' in message.lower():
+                        message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.\n> 🚨please choose an option.'
+                        data = get_text_message_input(support_member.phone_number, message, None)
+                        send_message(data)
 
 def get_dashboard(support_member,response):
     support_member_summaries = SupportMember.objects.filter(is_deleted=False).annotate(
