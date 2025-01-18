@@ -496,7 +496,7 @@ def main_menu(response,wa_id,time_of_day):
             inquirer_ob.user_mode = INQUIRY_MODE
             inquirer_ob.save()
             return 'What is your inquiry today?'
-        elif response =='3' or 'your' in response.lower():
+        elif response =='3' or 'my' in response.lower():
             inquirer_ob.user_mode = INQUIRY_STATUS_MODE
             inquirer_ob.save()
             inquirer_tickets = Ticket.objects.filter(created_by=inquirer_ob,status=PENDING_MODE).order_by('-created_at')
@@ -520,7 +520,7 @@ def main_menu(response,wa_id,time_of_day):
                 "second_id":"new_inquiry",
                 "second_reply":"⁠New inquiry ",
                 "third_id":"inquiry_status",
-                "third_reply":"⁠Your inquiry status",
+                "third_reply":"My inquiry status",
                 "button":True,
                 
             }
@@ -536,7 +536,7 @@ def main_menu(response,wa_id,time_of_day):
             menu_option =f'''Golden {time_of_day} *{inquirer_ob.username.title()}*  — `{inquirer_ob.branch.title()}` branch.\nPlease Choose an option: 
             \n1. Update branch from *{inquirer_ob.branch}*
             \n2. ⁠New inquiry 
-            \n3. ⁠Your inquiry status'''
+            \n3. Your inquiry status'''
             inquirer_ob.user_mode = MAIN_MENU_MODE
             inquirer_ob.save()
             return menu_option
@@ -1857,7 +1857,7 @@ def forward_message(request):
         "second_id":"new_inquiry",
         "second_reply":"⁠New inquiry ",
         "third_id":"inquiry_status",
-        "third_reply":"⁠Your inquiry status",
+        "third_reply":"My inquiry status",
         "button":True,
         
     }
