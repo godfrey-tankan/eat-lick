@@ -462,6 +462,7 @@ def get_text_message_input(recipient, text,name=None,template=False):
     )
     
 def main_menu(response,wa_id,time_of_day):
+    print('Maine menu response:',response)
     inquirer_ob = Inquirer.objects.filter(phone_number=wa_id[0]).first()
     if inquirer_ob:
         if response == '#exit':
