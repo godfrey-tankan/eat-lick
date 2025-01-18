@@ -1171,13 +1171,10 @@ def handle_help(wa_id, response, name,message_type,message_id):
                         data = get_text_message_input(inquirer.phone_number, 'Hello', 'customer_helped_template',True)
                         # is_inquirer_helped.format(inquirer.username.split()[0].title(),open_inquiries.description)
                         return send_message(data)
-
-                    data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
-                    send_message(data)
-                    data = get_text_message_input(open_inquiries.assigned_to.phone_number,inquirer_helped_assumed_messages , None)
                 else:
-                    data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
-                return send_message(data)
+                    ...
+            data = get_text_message_input(open_inquiries.assigned_to.phone_number, response, None)
+            return send_message(data)
     if inquirer:
         return process_queued_tickets(inquirer, None,response)
     else:
