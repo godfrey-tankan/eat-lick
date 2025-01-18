@@ -381,15 +381,15 @@ def generate_response(response, wa_id, name,message_type,message_id):
     
     if check_ticket:
         if inquirer and inquirer.user_mode== CONFIRM_RESPONSE:
-            if response == '1' or response.lower().startswith('yes'):
+            if response == '1' or 'yes' in response.lower():
                 mark_as_resolved(check_ticket.id,False,True)
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 return send_message(data)
-            elif response =='2' or response.lower().startswith('completed'):
+            elif response =='2' or 'completed' in response.lower():
                 mark_as_resolved(check_ticket.id,True,True)
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 return send_message(data)
-            elif response=='3'or response.lower().startswith('continue'):
+            elif response=='3'or 'continue' in response.lower():
                 last_msg = Message.objects.filter(ticket_id=check_ticket,inquirer=inquirer).last()
                 data= get_text_message_input(check_ticket.assigned_to.phone_number, last_msg.content, None)
                 send_message(data)
