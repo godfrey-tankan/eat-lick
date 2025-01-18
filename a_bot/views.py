@@ -1869,7 +1869,7 @@ def forward_message(request):
     #     send_message(data)
     # except:
     #     return '> an error occurred while changing branch..'
-    return JsonResponse({'data':'y'})
+    return JsonResponse({'response':'success'})
 
 def get_document_message(recipient, document_id, caption='New document'):
     return json.dumps(
