@@ -381,15 +381,15 @@ def generate_response(response, wa_id, name,message_type,message_id):
     
     if check_ticket:
         if inquirer and inquirer.user_mode== CONFIRM_RESPONSE:
-            if response == '1' or 'yes' in response.lower():
+            if response == '1' or response.lower()=='yes resolved':
                 mark_as_resolved(check_ticket.id,False,True)
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 return send_message(data)
-            elif response =='2' or 'completed' in response.lower():
+            elif response =='2' or response.lower() == "completed but unresolved":
                 mark_as_resolved(check_ticket.id,True,True)
                 data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
                 return send_message(data)
-            elif response=='3'or 'continue' in response.lower():
+            elif response=='3'or response.lower() == "continue conversation":
                 last_msg = Message.objects.filter(ticket_id=check_ticket,inquirer=inquirer).last()
                 data= get_text_message_input(check_ticket.assigned_to.phone_number, last_msg.content, None)
                 send_message(data)
@@ -1166,9 +1166,9 @@ def handle_help(wa_id, response, name,message_type,message_id):
                         try:
                             data =get_interactive_message_input(inquirer.phone_number,details=details)
                             send_message(data)
-                            return '' 
+                            return ''
                         except Exception as e:
-                            print('error in generate response:',e)
+                            print('error in handle help:',e)
                         data = get_text_message_input(inquirer.phone_number, 'Hello', 'customer_helped_template',True)
                         # is_inquirer_helped.format(inquirer.username.split()[0].title(),open_inquiries.description)
                         return send_message(data)
