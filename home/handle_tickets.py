@@ -7,6 +7,8 @@ from datetime import datetime
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from a_bot.views import alert_support_members
+
 
 # API endpoint to submit a ticket
 @csrf_exempt
@@ -27,14 +29,11 @@ def create_ticket(request):
         form = NewTicketForm(request.POST)
         if form.is_valid():
             ticket = form.save(commit=False)
-            ticket.status = 'resolved'
-            ticket.save()  # Save the ticket
-            ticket.resolved_at=ticket.created_at
+            ticket.status = 'pending'
             ticket.save()
-            
-            print(ticket.created_at,ticket.resolved_at)
-            TicketLog.objects.create(ticket=ticket, changed_by='Manually created ticket', status='resolved') 
-        
+            TicketLog.objects.create(ticket=ticket, changed_by='Manually created ticket', status='pending') 
+            message = f" Hello {ticket.assigned_to.username.title()}, ticket #{ticket.id} ({ticket.description}) has been assigned to you, reply with #resume to assist!"
+            alert_support_members(ticket.assigned_to.username,ticket,message)
             return JsonResponse({"success": True})
         else:
             return JsonResponse({"success": False, "errors": form.errors})
