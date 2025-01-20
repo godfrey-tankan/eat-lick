@@ -3,12 +3,12 @@ from django.contrib import admin
 from .models import *
 # Register your models here.
 
-# @admin.register(Ticket)
-# class TicketAdmin(admin.ModelAdmin):
-#     list_display = ['title', 'status', 'created_by', 'assigned_to']
-#     list_display_links = ['title', 'status', 'created_by', 'assigned_to']
-#     search_fields = ['title', 'status']
-#     list_filter = ['status', 'created_at', 'updated_at']
+@admin.register(Ticket)
+class TicketAdmin(admin.ModelAdmin):
+    list_display = ['title', 'status', 'created_by', 'assigned_to']
+    list_display_links = ['title', 'status', 'created_by', 'assigned_to']
+    search_fields = ['title', 'status']
+    list_filter = ['status', 'created_at', 'updated_at']
 
 # @admin.register(TicketLog)
 # class TicketLogAdmin(admin.ModelAdmin):
