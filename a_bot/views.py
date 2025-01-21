@@ -1310,7 +1310,7 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                 return send_message(data)
             else:
                 if message:
-                    message = message
+                    message=message
                     
                 else:
                     message=accept_ticket_response.format(ticket.created_by.username,ticket.branch_opened.upper(),ticket.created_by.phone_number,ticket.id, ticket.description)
@@ -1323,9 +1323,10 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                     if not support_member.user_status == RESUME_MODE:
                         support_member.user_status = NEW_TICKET_ACCEPT_MODE
                         support_member.save()
-                    message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.\n> 🚨please choose an option.'
+                    message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{pending_ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.\n> 🚨please choose an option.'
                 data = get_text_message_input(support_member.phone_number, message, None)
                 send_message(data)
+
 
 def get_dashboard(support_member,response):
     support_member_summaries = SupportMember.objects.filter(is_deleted=False).annotate(
@@ -1721,7 +1722,6 @@ def accept_ticket(wa_id,name, ticket_id):
             }
             data =get_interactive_message_input(support_member.phone_number,details=details)
             send_message(data)
-            return ''
         else:
             data2 = get_text_message_input(support_member.phone_number,support_msg, None)
             send_message(data2)
