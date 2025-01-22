@@ -902,13 +902,14 @@ def get_attended_tickets(support_member, response):
 
             support_member.user_status = ATTENDED_TICKETS_MODE
             support_member.save()
+
             try:
-                page_number = int(response)  # Extracts page number after '#taken'
-            except (IndexError, ValueError):
-                page_number = 1
+                page_number = int(response.strip("'"))  # Remove quotes and convert to int
+            except (ValueError, TypeError):
+                page_number = 1  # Default to page 1 if invalid or missing
 
             paginator = Paginator(attended_tickets, 10)
-            
+
             if page_number > paginator.num_pages or page_number < 1:
                 return f'> Invalid page number. Please choose a page between 1 and {paginator.num_pages}.'
 
@@ -926,11 +927,11 @@ def get_attended_tickets(support_member, response):
                 )
 
             if tickets_page.has_previous():
-                message += f"> Previous page: ` {page_number - 1}`\n"
+                message += f"> Previous page: `#taken {page_number - 1}`\n"
             if tickets_page.has_next():
-                message += f"> Next page: `{page_number + 1}`\n"
+                message += f"> Next page: `#taken {page_number + 1}`\n"
 
-            message += '\n> Reply with 1,2,3 or 4 for more or #exit to exit.'
+            message += '\n> Reply with the page number in quotes (e.g., \'2\') for more or #exit to exit.'
             return message
 
         if '#exit' in response.lower() or '#cancel' in response.lower():
