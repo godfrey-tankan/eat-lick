@@ -901,7 +901,8 @@ def get_attended_tickets(support_member,response):
         message = '🟡 Tickets being attended:\n\n'
         for i,ticket in enumerate(attended_tickets,start=1):
             created =timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
-            message += f"*{i}*. Ticket Number: *{ticket.id}*\n- Attended by *{ticket.assigned_to.username}*\n- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {ticket.description[:20]}\n\n"
+            description = ticket.description[:20] + '...' if len(ticket.description) > 20 else ticket.description
+            message += f"*{i}*. Ticket Number: *{ticket.id}*\n- Attended by *{ticket.assigned_to.username}*\n- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {description}\n\n"
         message += '\n> These are tickets being attended to.'
         return message
     if '#exit' in response.lower() or '#cancel' in response.lower():
