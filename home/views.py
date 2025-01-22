@@ -748,7 +748,6 @@ def support_member_tickets(request, member_id):
 
     return render(request, 'tickets/ticket_list.html', {'tickets': tickets, 'member': member})
 
-@login_required
 def all_tickets_list(request):
     operator = request.GET.get('operator', '=')
     filter_time = request.GET.get('filter_time', None)
