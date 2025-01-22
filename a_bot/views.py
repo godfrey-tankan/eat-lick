@@ -312,6 +312,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         if '#open' in response.lower() or support_member.user_status == OPEN_TICKETS_MODE:
             return get_all_open_tickets(support_member,response,wa_id,name)
         if '#taken' in response.lower() or support_member.user_status == ATTENDED_TICKETS_MODE:
+            print('pending tickts mode......')
             return get_attended_tickets(support_member,response)
         if '#relea' in response.lower():
             return release_ticket(support_member)
