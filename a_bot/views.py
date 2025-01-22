@@ -312,7 +312,6 @@ def generate_response(response, wa_id, name,message_type,message_id):
         if '#open' in response.lower() or support_member.user_status == OPEN_TICKETS_MODE:
             return get_all_open_tickets(support_member,response,wa_id,name)
         if '#taken' in response.lower() or support_member.user_status == ATTENDED_TICKETS_MODE:
-            print('pending tickts mode......')
             return get_attended_tickets(support_member,response)
         if '#relea' in response.lower():
             return release_ticket(support_member)
@@ -891,29 +890,56 @@ def get_all_open_tickets(support_member,response,wa_id,name):
         return 'Please provide a valid ticket number'
     return accept_ticket(wa_id,name, ticket_id)
         
-def get_attended_tickets(support_member,response):
+def get_attended_tickets(support_member, response):
     try:
         if '#taken' in response.lower():
-            attended_tickets= Ticket.objects.filter(status='pending').order_by('updated_at')
-            if not attended_tickets:
+            attended_tickets = Ticket.objects.filter(status='pending').order_by('updated_at')
+            if not attended_tickets.exists():
                 support_member.user_status = HELPING_MODE
                 support_member.user_mode = HELPING_MODE
                 support_member.save()
                 return '> There are no pending tickets at the moment.'
-            print('attended_tickets:',attended_tickets,attended_tickets.count())
-            message = '🟡 Tickets being attended:\n\n'
-            for i,ticket in enumerate(attended_tickets,start=1):
-                created =timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
+
+            try:
+                support_member.user_status = ATTENDED_TICKETS_MODE
+                support_member.save()
+                page_number = int(response)  # Extracts page number after '#taken'
+            except (IndexError, ValueError):
+                page_number = 1
+
+            paginator = Paginator(attended_tickets, 10)
+            
+            if page_number > paginator.num_pages or page_number < 1:
+                return f'> Invalid page number. Please choose a page between 1 and {paginator.num_pages}.'
+
+            tickets_page = paginator.get_page(page_number)
+
+            message = f'🟡 Tickets being attended (Page {page_number} of {paginator.num_pages}):\n\n'
+            for i, ticket in enumerate(tickets_page, start=1 + (page_number - 1) * paginator.per_page):
+                created = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
                 description = ticket.description[:40] + '...' if len(ticket.description) > 20 else ticket.description
-                message += f"*{i}*. Ticket Number: *{ticket.id}*\n- Attended by *{ticket.assigned_to.username}*\n- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {description}\n\n"
-            message += '\n> These are tickets being attended to.'
+                message += (
+                    f"*{i}*. Ticket Number: *{ticket.id}*\n"
+                    f"- Attended by *{ticket.assigned_to.username}*\n"
+                    f"- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n"
+                    f"- Description: {description}\n\n"
+                )
+
+            if tickets_page.has_previous():
+                message += f"> Previous page: ` {page_number - 1}`\n"
+            if tickets_page.has_next():
+                message += f"> Next page: `{page_number + 1}`\n"
+
+            message += '\n> Reply with 1,2,3 or 4 for more or #exit to exit.'
             return message
+
         if '#exit' in response.lower() or '#cancel' in response.lower():
             support_member.user_status = HELPING_MODE
             support_member.save()
-            return '> You`ve exited the view attended tickets mode.'
+            return '> You’ve exited the view attended tickets mode.'
+
     except Exception as e:
-        print('Error in getting attended tickets:',e)
+        print('Error in getting attended tickets:', e)
         return f'Error in getting attended tickets: {e}'
 
 def release_ticket(support_member):
