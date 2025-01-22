@@ -899,6 +899,7 @@ def get_attended_tickets(support_member,response):
                 support_member.user_mode = HELPING_MODE
                 support_member.save()
                 return '> There are no pending tickets at the moment.'
+            print('attended_tickets:',attended_tickets,attended_tickets.count())
             message = '🟡 Tickets being attended:\n\n'
             for i,ticket in enumerate(attended_tickets,start=1):
                 created =timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
@@ -911,6 +912,7 @@ def get_attended_tickets(support_member,response):
             support_member.save()
             return '> You`ve exited the view attended tickets mode.'
     except Exception as e:
+        print('Error in getting attended tickets:',e)
         return f'Error in getting attended tickets: {e}'
 
 def release_ticket(support_member):
