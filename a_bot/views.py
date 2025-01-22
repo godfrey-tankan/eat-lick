@@ -893,16 +893,16 @@ def get_all_open_tickets(support_member,response,wa_id,name):
 def get_attended_tickets(support_member, response):
     try:
         if '#taken' in response.lower():
-            attended_tickets = Ticket.objects.filter(status='pending').order_by('updated_at')
+            attended_tickets = Ticket.objects.filter(status='pending').order_by('-updated_at')
             if not attended_tickets.exists():
                 support_member.user_status = HELPING_MODE
                 support_member.user_mode = HELPING_MODE
                 support_member.save()
                 return '> There are no pending tickets at the moment.'
 
+            support_member.user_status = ATTENDED_TICKETS_MODE
+            support_member.save()
             try:
-                support_member.user_status = ATTENDED_TICKETS_MODE
-                support_member.save()
                 page_number = int(response)  # Extracts page number after '#taken'
             except (IndexError, ValueError):
                 page_number = 1
