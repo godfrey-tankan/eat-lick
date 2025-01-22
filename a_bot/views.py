@@ -897,17 +897,17 @@ def get_attended_tickets(support_member,response):
             support_member.user_status = HELPING_MODE
             support_member.user_mode = HELPING_MODE
             support_member.save()
-            return 'There are no tickets being attended to at the moment.'
+            return '> There are no pending tickets at the moment.'
         message = '🟡 Tickets being attended:\n\n'
         for i,ticket in enumerate(attended_tickets,start=1):
             created =timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
-            message += f"*{i}*. Ticket Number: *{ticket.id}*\n- Attended by *{ticket.assigned_to.username}*\n- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {ticket.description}\n\n"
+            message += f"*{i}*. Ticket Number: *{ticket.id}*\n- Attended by *{ticket.assigned_to.username}*\n- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {ticket.description[:20]}\n\n"
         message += '\n> These are tickets being attended to.'
         return message
     if '#exit' in response.lower() or '#cancel' in response.lower():
         support_member.user_status = HELPING_MODE
         support_member.save()
-        return 'You are now back to your previous mode, you can continue with what you were doing.'
+        return '> You`ve exited the view attended tickets mode.'
 
 def release_ticket(support_member):
     ticket = Ticket.objects.filter(status=PENDING_MODE,assigned_to=support_member,ticket_mode='other').first()
