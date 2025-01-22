@@ -901,7 +901,7 @@ def get_attended_tickets(support_member,response):
         message = '🟡 Tickets being attended:\n\n'
         for i,ticket in enumerate(attended_tickets,start=1):
             created =timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
-            description = ticket.description[:20] + '...' if len(ticket.description) > 20 else ticket.description
+            description = ticket.description[:40] + '...' if len(ticket.description) > 20 else ticket.description
             message += f"*{i}*. Ticket Number: *{ticket.id}*\n- Attended by *{ticket.assigned_to.username}*\n- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {description}\n\n"
         message += '\n> These are tickets being attended to.'
         return message
@@ -1358,7 +1358,7 @@ def get_dashboard(support_member,response):
         support_member.save()
         try:
             support_member_ob = SupportMember.objects.filter(id=member_id).first()
-            assigned_tickets = Ticket.objects.filter(assigned_to=support_member_ob).order_by('-created_at')[:20]
+            assigned_tickets = Ticket.objects.filter(assigned_to=support_member_ob).order_by('-created_at')[:40]
             attended_at =""
             detailed_info = f"username: {support_member_ob.username.title()}\n- phone_number: {support_member_ob.phone_number}\n\n"
             for i, ticket in enumerate(assigned_tickets, start=1):
@@ -1465,7 +1465,7 @@ def reopen_ticket(support_member,ticket_id):
                 ticket.status = PENDING_MODE
                 ticket.ticket_mode = 'other'
                 ticket.closed_at=None
-                short_description =  ticket.description[:20] + "..." if len(ticket.description) > 20 else ticket.description
+                short_description =  ticket.description[:40] + "..." if len(ticket.description) > 20 else ticket.description
                 ticket.save()
                 message_to_inquirer = f"Hello {ticket.created_by.username.title()}, your inquiry ({short_description}) has been re-opened, please wait for support message"
                 data = get_text_message_input(ticket.created_by.phone_number,message_to_inquirer,None)
@@ -1536,7 +1536,7 @@ def resolved_tickets(support_member, response):
         for i, ticket in enumerate(page_obj, start=1):
             day_resolved = ticket.resolved_at.strftime("%A") if ticket.resolved_at else "Unknown day"
             truncated_description = (
-                (ticket.description[:20] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
+                (ticket.description[:40] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
             )
             time_to_resolve = ticket.get_time_to_resolve()
             ticket_summaries += (
@@ -1577,7 +1577,7 @@ def closed_tickets(support_member,response):
         if page_obj:
             for i, ticket in enumerate(page_obj,start=1):
                 closed_at_formatted = ticket.closed_at.strftime("%B %d %Y %H:%M") if ticket.closed_at else "N/A"
-                truncated_description = (ticket.description[:20] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
+                truncated_description = (ticket.description[:40] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
                 if ticket.created_by and ticket.assigned_to:
                     ticket_summaries +=f"{i}. Ticket *#{ticket.id}* - *{ticket.branch_opened}* branch\n`type` : {ticket.inquiry_type}\n- Opened by: *{ticket.created_by.username.title()}* \n- Description: {truncated_description}\n- closed at: *{closed_at_formatted}*\n- assigned to *{ticket.assigned_to.username.title()}* \n\n"
             ticket_summaries += "\n> reply #exit to exit or 1,2,3 or 4 for more."
@@ -1694,13 +1694,13 @@ def accept_ticket(wa_id,name, ticket_id):
                 )
                 support_msg = f'You have accepted the ticket number #{ticket_id},it is now in the queue, please continue with your current task first or reply with #resume to take it from the queued list.'
             else:
-                description_preview = ticket.description[:20] + "..." if len(ticket.description) > 20 else ticket.description
+                description_preview = ticket.description[:40] + "..." if len(ticket.description) > 20 else ticket.description
                 message_to_send = (
                     f'Hey {ticket.created_by.username.title()}, your inquiry *({description_preview})* is now being attended to by *{ticket.assigned_to.username}*.'
                 )
                 support_msg = None
         else:
-            description_preview = ticket.description[:20] + "..." if len(ticket.description) > 20 else ticket.description
+            description_preview = ticket.description[:40] + "..." if len(ticket.description) > 20 else ticket.description
             message_to_send = (
                 f'Hey {ticket.created_by.username.title()}, your inquiry *({description_preview})* is now being attended to by *{ticket.assigned_to.username}*.'
             )
@@ -2011,7 +2011,7 @@ def mark_as_resolved( ticket_id,is_closed=False,by_inquirer=False):
     else:
         message=f"ticket *#{ticket.id}* is now resolved ✅ by {ticket.assigned_to.username}."
     ticket_description = ticket.description.split('Web:')[1] if 'Web:' in ticket.description else ticket.description
-    description_preview = ticket_description[:20] + "..." if len(ticket_description) > 20 else ticket_description
+    description_preview = ticket_description[:40] + "..." if len(ticket_description) > 20 else ticket_description
     reply = f'Your inquiry (*{description_preview}*) has been marked as resolved'
     data = get_text_message_input(ticket.created_by.phone_number, reply, None)
     send_message(data)
