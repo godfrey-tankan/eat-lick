@@ -904,11 +904,11 @@ def get_attended_tickets(support_member, response):
             support_member.save()
 
             try:
-                page_number = int(response.strip("'"))  # Remove quotes and convert to int
+                page_number = int(response)  # Remove quotes and convert to int
             except (ValueError, TypeError):
                 page_number = 1  # Default to page 1 if invalid or missing
 
-            paginator = Paginator(attended_tickets, 10)
+            paginator = Paginator(attended_tickets, 20)
 
             if page_number > paginator.num_pages or page_number < 1:
                 return f'> Invalid page number. Please choose a page between 1 and {paginator.num_pages}.'
@@ -918,7 +918,7 @@ def get_attended_tickets(support_member, response):
             message = f'🟡 Tickets being attended (Page {page_number} of {paginator.num_pages}):\n\n'
             for i, ticket in enumerate(tickets_page, start=1 + (page_number - 1) * paginator.per_page):
                 created = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
-                description = ticket.description[:40] + '...' if len(ticket.description) > 20 else ticket.description
+                description = ticket.description[:40] + '...' if len(ticket.description) > 40 else ticket.description
                 message += (
                     f"*{i}*. Ticket Number: *{ticket.id}*\n"
                     f"- Attended by *{ticket.assigned_to.username}*\n"
@@ -927,11 +927,11 @@ def get_attended_tickets(support_member, response):
                 )
 
             if tickets_page.has_previous():
-                message += f"> Previous page: `#taken {page_number - 1}`\n"
+                message += f"> Previous page: ` {page_number - 1}`\n"
             if tickets_page.has_next():
-                message += f"> Next page: `#taken {page_number + 1}`\n"
+                message += f"> Next page: ` {page_number + 1}`\n"
 
-            message += '\n> Reply with the page number in quotes (e.g., \'2\') for more or #exit to exit.'
+            message += '\n> Reply with 1,2,3 or 4 for more or #exit to exit.'
             return message
 
         if '#exit' in response.lower() or '#cancel' in response.lower():
