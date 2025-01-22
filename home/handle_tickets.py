@@ -31,8 +31,15 @@ def create_ticket(request):
             ticket = form.save(commit=False)
             ticket.status = 'pending'
             ticket.save()
-            TicketLog.objects.create(ticket=ticket, changed_by='Manually created ticket', status='pending') 
-            message = f" Hello {ticket.assigned_to.username.title()}, ticket #{ticket.id} ({ticket.description}) has been assigned to you, reply with #resume to assist!"
+            TicketLog.objects.create(ticket=ticket, changed_by='Manually created ticket', status='pending')
+            check_pending_tickets = Ticket.objects.filter(status='pending',ticket_mode='other').first()
+            if check_pending_tickets:
+                ticket.ticket_mode = 'queued'
+                ticket.queued_at = timezone.now()
+                ticket.save()
+                message = f"🚨 Hello {ticket.assigned_to.username.title()}, ticket #{ticket.id} ({ticket.description}) has been assigned to you, and it`s now in your queue."
+            else:
+                message = f"🚨 Hello {ticket.assigned_to.username.title()}, ticket #{ticket.id} - {ticket.branch_opened}\n Description: ({ticket.description}) \n Inquirer: {ticket.created_by.username.title()} \nhas been assigned to you, start assisting the inquirer now or mark it as resolved if the issue has been dealt with."
             alert_support_members(ticket.assigned_to.username,ticket,message)
             return JsonResponse({"success": True})
         else:
