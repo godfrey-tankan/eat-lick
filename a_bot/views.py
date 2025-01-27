@@ -339,7 +339,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
             support_member.user_status = REOPENING_TICKET_MODE
             support_member.save()
             return reopen_ticket(support_member,response)
-        if response.lower() in ["#summary","#dashboard"] or support_member.user_status in [DASHBOARD_MODE,DETAILED_TICKET_MODE,DETAILED_VIEW_MODE]:
+        if response.lower() in ["#summary","#dashboard","#summarymonth", "#summaryday", "#summaryall"] or support_member.user_status in [DASHBOARD_MODE,DETAILED_TICKET_MODE,DETAILED_VIEW_MODE]:
             if not "#" in response:
                 return get_dashboard(support_member,response)
             support_member.user_status = DASHBOARD_MODE
