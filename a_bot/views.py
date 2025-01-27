@@ -349,7 +349,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         if response.lower() in ['#commands','#codes']:
             extension_codes = ''
             if support_member.phone_number in ['263772428281','263779586059']:
-                extension_codes = '11. #summary or #dashboard - view Detailed Summary of each support person \n\n12. #green or #completed - view all weekly resolved tickets\n\n13. #current or #pending - Returns the ticket that you are currently working on.\n\n14. #take + ticketNo or #revoke + ticketNo - take or revoke a ticket from other member\n\n 15. #view or #ticket + ticketNo - view details of a ticket.'
+                extension_codes = '11. #summary or #dashboard - view Detailed Summary of each support person \n\n12. #green or #completed - view all weekly resolved tickets\n\n13. #current or #pending - Returns the ticket that you are currently working on.\n\n14. #take + ticketNo or #revoke + ticketNo - take or revoke a ticket from other member\n\n 15. #view or #ticket + ticketNo - view details of a ticket.\n\n 26. #summaryday This will return support members daily summary\n\n 27. #summarymonth This will return support members monthly summary\n\n 28. #summaryall This will return support members all time summary\n\n 29. #summaryweek This will return support member weekly summary'
             return COMMANDS.format(extension_codes)
         if response.lower() in ["#current","#pending"]:
             current_pending_ticket_ob = Ticket.objects.filter(assigned_to=support_member,status=PENDING_MODE,ticket_mode='other').first()
@@ -1360,126 +1360,6 @@ def broadcast_messages(name,ticket=None,message=None,phone_number=None,message_t
                     message += f'\n\n⚠️ You have a pending inquiry, if you accept this one, inquiry *#{pending_ticket.id}* will be set in queue.\n\n1. Skip this ticket\n2. Reply with this ticket id accept.\n> 🚨please choose an option.'
                 data = get_text_message_input(support_member.phone_number, message, None)
                 send_message(data)
-
-
-# def get_dashboard(support_member, response):
-#     # Support Member Summary
-#     support_member_summaries = SupportMember.objects.filter(is_deleted=False).annotate(
-#         resolved_tickets_count=Count('assigned_tickets', filter=Q(assigned_tickets__status='resolved')),
-#         pending_tickets_count=Count('assigned_tickets', filter=Q(assigned_tickets__status='pending')),
-#         closed_tickets_count=Count('assigned_tickets', filter=Q(assigned_tickets__status='closed')),
-#         total_tickets_count=Count('assigned_tickets')
-#     )
-
-#     try:
-#         member_id = int(response)
-#     except ValueError:
-#         member_id = None
-
-#     if "#exit" in response.lower() or "#cancel" in response.lower():
-#         support_member.user_status = HELPING_MODE
-#         support_member.save()
-#         return "> You are now back to main home mode"
-
-#     # Handle summary commands
-#     if response.lower() in ["#summarymonth", "#summaryday", "#summaryall"]:
-#         now = timezone.now()
-
-#         if response.lower() == "#summarymonth":
-#             summary_type = 'Monthly'
-#             start_date = now.replace(day=1)
-#         elif response.lower() == "#summaryday":
-#             summary_type = 'Daily'
-#             start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
-#         elif response.lower() == "#summaryweek":
-#             summary_type = 'Weekly'
-#             start_date = now - timedelta(days=7)
-#         else:
-#             summary_type = 'Overall'
-#             start_date = None  # No filter on date
-
-#         tickets_query = Ticket.objects.filter(status='resolved')
-#         if start_date:
-#             tickets_query = tickets_query.filter(resolved_at__gte=start_date)
-
-#         resolved_count = tickets_query.count()
-#         summary = f"> {summary_type} Tickets Summary \n"
-#         summary += f"Total resolved tickets: *{resolved_count}*\n\n"
-
-#         for ticket in tickets_query.order_by('-resolved_at')[:15]:  # Limit to 15 tickets for brevity
-#             resolved_at = ticket.resolved_at.strftime('%Y-%m-%d %H:%M') if ticket.resolved_at else "Unknown"
-#             truncated_description = (
-#                 (ticket.description[:40] + '...') if  len(ticket.description) > 40 else ticket.description
-#             )
-#             summary += (
-#                 f"Branch: {ticket.branch_opened.title()} | Opened by: {ticket.created_by.username.title()}\n"
-#                 f"Resolved at: {resolved_at} | Description: {truncated_description}\n\n"
-#             )
-#         summary += "> Reply #exit to exit or #summarymonth, #summaryday, #summaryall for summaries."
-#         return summary
-
-#     # Support Member Detailed View
-#     if not member_id:
-#         support_member.user_status = DETAILED_VIEW_MODE
-#         support_member.save()
-#         summary_data = "> Support Members Summary\n\n"
-#         for sm in support_member_summaries:
-#             summary_data += (
-#                 f"Support Member No: {sm.id}\n Name: *{sm.username.title()}* -> {sm.total_tickets_count} tickets\n"
-#                 f"- Resolved: *{sm.resolved_tickets_count}*\n- Pending: *{sm.pending_tickets_count}*\n"
-#                 f"- Closed: *{sm.closed_tickets_count}*\n\n"
-#             )
-#         summary_data += '\n> Reply with the support member number to view detailed information.'
-#         return summary_data
-
-#     if member_id and support_member.user_status == DETAILED_VIEW_MODE:
-#             support_member.user_status = DETAILED_TICKET_MODE
-#             support_member.save()
-#             try:
-#                 support_member_ob = SupportMember.objects.filter(id=member_id).first()
-#                 assigned_tickets = Ticket.objects.filter(assigned_to=support_member_ob).order_by('-created_at')[:40]
-#                 attended_at =""
-#                 detailed_info = f"username: {support_member_ob.username.title()}\n- phone_number: {support_member_ob.phone_number}\n\n"
-#                 for i, ticket in enumerate(assigned_tickets, start=1):
-#                     opened_at = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
-#                     try:
-#                         attended_at_ob = TicketLog.objects.filter(ticket=ticket, status__icontains='pending').first()
-#                         attended_at=timezone.localtime(attended_at_ob.timestamp).strftime('%Y-%m-%d %H:%M') if attended_at_ob else 'Not attended yet'
-#                     except Exception as e:
-#                         ...
-#                     inquiry_type = ticket.inquiry_type if ticket.inquiry_type else 'N/A'
-#                     messages_count = Message.objects.filter(ticket_id=ticket).all().count()
-#                     if ticket.status == 'closed':
-#                         closed_at = timezone.localtime(ticket.closed_at).strftime('%Y-%m-%d %H:%M') if ticket.closed_at else 'Not closed yet'
-#                         detailed_info += f"{i}. Branch: {ticket.branch_opened.title()} - {inquiry_type}\n- Ticket ID: *{ticket.id}*\n- Opened by: *{ticket.created_by.username.title()}* \n- Description: {ticket.description}\n- Date Opened: *{opened_at}*\n- Time attended: *{attended_at} \n- Time closed: *{closed_at}*\n- Messages count: *{messages_count}*\n\n"
-#                     elif ticket.status == 'pending':
-#                         detailed_info += f"Branch: {ticket.branch_opened.title()}\n- Ticket ID: *{ticket.id}* - {inquiry_type}\n- Opened by: *{ticket.created_by.username.title()}* \n- Description: {ticket.description}\n- Date Opened: *{opened_at}* \n- Time attended: *{attended_at}*\n- Messages count: *{messages_count}*\n\n"
-#                     else:
-#                         detailed_info += f"Branch: {ticket.branch_opened.title()}\n- Ticket ID: *{ticket.id}* - {inquiry_type}\n- Opened by: *{ticket.created_by.username.title()}* \n- Description: {ticket.description}\n- Date Opened: *{opened_at}* \n- Time attended: *{attended_at}* \n- Time taken to resolve: *{ticket.get_time_to_resolve()}*\n- Messages count: *{messages_count}*\n\n"
-#                 detailed_info += "\n\nReply with #exit to exit or ticket ID for detailed view."
-#                 return detailed_info
-#             except SupportMember.DoesNotExist:
-#                 return "Support member not found."
-#     if support_member.user_status == DETAILED_TICKET_MODE:
-#         if "#exit" in response.lower() or "#cancel" in response.lower():
-#             support_member.user_status = DETAILED_VIEW_MODE
-#             support_member.save()
-#             return "You are back to support member tickets view, send #exit to exit. to home or reply with support member number to view detailed information."
-#         try:
-#             ticket_ob = Ticket.objects.filter(id=member_id).first()
-#         except Ticket.DoesNotExist:
-#             return "Ticket not found"
-#         ticket_messages = Message.objects.filter(ticket_id=ticket_ob).all().order_by('created_at')
-#         messages_list = "Ticket Messages:\n\n"
-#         for i, message in enumerate(ticket_messages, start=1):
-#             message_time = timezone.localtime(message.created_at).strftime('%Y-%m-%d %H:%M')
-#             sender = message.support_member.username if message.support_member else message.inquirer.username
-#             messages_list += f"*{sender.title()}* - {message_time}\n- {message.content}\n\n"
-#         messages_list += "\n\nReply with #exit to exit or ticket ID for detailed view."
-#         return messages_list
-#     return "Summary view."
-
-
 
 def get_dashboard(support_member, response):
     now = timezone.now()
