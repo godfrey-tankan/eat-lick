@@ -1590,6 +1590,80 @@ def closed_tickets(support_member,response):
         support_member.user_status = HELPING_MODE
         support_member.save()
         return "> you have exited the closed tickets view "
+    
+    now = timezone.now()
+    start_of_week = now - timedelta(days=now.weekday())
+    last_seven_days = [start_of_week + timedelta(days=i) for i in range(7)]
+    
+    resolved_counts_weekly = []
+    try:
+        # Get the resolved ticket counts for each of the last 7 days
+        for day in last_seven_days:
+            day_start = timezone.make_aware(datetime.combine(day, datetime.min.time()))
+            day_end = day_start + timedelta(days=1)
+            resolved_counts_weekly.append(
+                Ticket.objects.filter(
+                    status=CLOSED_MODE,
+                    closed_at__range=(day_start, day_end)
+                ).count()
+            )
+    except Exception as e:
+        return f"something went wrong: {e}"
+
+    try:
+        # Create weekday labels (Mon-Sun)
+        weekday_labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        
+        # Prepare the weekday summary
+        weekday_summary = "".join(
+            f"`{weekday_labels[i]}: {resolved_counts_weekly[i]}` |\t"
+            for i in range(7)
+        )
+        
+        # Pagination for resolved tickets
+        tickets = Ticket.objects.filter(
+            status=CLOSED_MODE,
+            closed_at__gte=start_of_week
+        ).order_by('-created_at')
+        
+        paginator = Paginator(tickets, 15)  # 15 tickets per page
+        try:
+            page_number = int(response)
+        except ValueError:
+            page_number = 1  # Default to the first page if the input is invalid
+        
+        try:
+            page_obj = paginator.get_page(page_number)
+        except EmptyPage:
+            return "> No more tickets found."  # If the page number is out of range
+
+        # Build the summary for resolved tickets
+        total = sum(resolved_counts_weekly)
+        ticket_summaries = f"> ❌ CLOSED TICKETS- {total}\n\n" + weekday_summary + "\n"
+        
+        # Add ticket details to the summary
+        for i, ticket in enumerate(page_obj, start=1):
+            day_resolved = ticket.resolved_at.strftime("%A") if ticket.resolved_at else "Unknown day"
+            truncated_description = (
+                (ticket.description[:40] + '...') if ticket.description and len(ticket.description) > 20 else ticket.description
+            )
+            time_to_resolve = ticket.get_time_to_resolve()
+            ticket_summaries += (
+                f"\n{i}. *{ticket.branch_opened.title()}* - {ticket.inquiry_type} -> "
+                f"*{ticket.assigned_to.username.title()}*\n"
+                f"- Opened by: {ticket.created_by.username.title()} - ({truncated_description})\n"
+            )
+        
+        ticket_summaries += "\n> Reply #exit to exit or 1,2,3 or 4 for more."
+        return ticket_summaries
+    except Exception as e:
+        return f"something went wrong: {e}"
+    
+    if "#exit" in response.lower():
+        support_member.user_mode = HELPING_MODE
+        support_member.user_status = HELPING_MODE
+        support_member.save()
+        return "> you have exited the closed tickets view "
     else:
         seven_days_ago = timezone.now() - timedelta(days=7)
         all_closed_tickets = Ticket.objects.filter(
