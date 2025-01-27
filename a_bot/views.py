@@ -1386,10 +1386,16 @@ def get_dashboard(support_member, response):
         now = timezone.now()
 
         if response.lower() == "#summarymonth":
+            summary_type = 'Monthly'
             start_date = now.replace(day=1)
         elif response.lower() == "#summaryday":
+            summary_type = 'Daily'
             start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        else:  # #summaryall
+        elif response.lower() == "#summaryweek":
+            summary_type = 'Weekly'
+            start_date = now - timedelta(days=7)
+        else:
+            summary_type = 'Overall'
             start_date = None  # No filter on date
 
         tickets_query = Ticket.objects.filter(status='resolved')
@@ -1397,7 +1403,7 @@ def get_dashboard(support_member, response):
             tickets_query = tickets_query.filter(resolved_at__gte=start_date)
 
         resolved_count = tickets_query.count()
-        summary = f"> ✅ Resolved Tickets Summary ({response})\n"
+        summary = f"> {summary_type} Tickets Summary \n"
         summary += f"Total resolved tickets: *{resolved_count}*\n\n"
 
         for ticket in tickets_query.order_by('-resolved_at')[:15]:  # Limit to 15 tickets for brevity
