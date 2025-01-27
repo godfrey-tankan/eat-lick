@@ -1409,7 +1409,7 @@ def get_dashboard(support_member, response):
         for ticket in tickets_query.order_by('-resolved_at')[:15]:  # Limit to 15 tickets for brevity
             resolved_at = ticket.resolved_at.strftime('%Y-%m-%d %H:%M') if ticket.resolved_at else "Unknown"
             truncated_description = (
-                (ticket.description[:40] + '...') if ticket.description and len(ticket.description) > 40 else ticket.description
+                (ticket.description[:40] + '...') if  len(ticket.description) > 40 else ticket.description
             )
             summary += (
                 f"Branch: {ticket.branch_opened.title()} | Opened by: {ticket.created_by.username.title()}\n"
