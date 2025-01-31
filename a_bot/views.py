@@ -82,6 +82,58 @@ def get_interactive_message_input(recipient,details=None):
             )
         
         elif details and details.get('list',False):
+            if details.get('inquiry_rating',False):
+                return json.dumps(
+                    {
+                        "messaging_product": "whatsapp",
+                        "recipient_type": "individual",
+                        "to": recipient,
+                        "type": "interactive",
+                        "interactive": {
+                            "type": "list",
+                            "header": {
+                            "type": "text",
+                            "text": "Please rate this support"
+                            },
+                            "body": {
+                            "text": "Please rate the help you received from the maintenance team out of 5"
+                            },
+                            "footer": {
+                            "text": "choose one of the following options"
+                            },
+                            "action": {
+                            "button": "Choose Rating",
+                            "sections": [
+                                {
+                                "title": "Rating",
+                                "rows": [
+                                    {
+                                    "id": "1",
+                                    "title": "1/5"
+                                    },
+                                    {
+                                    "id": "2",
+                                    "title": "2/5"
+                                    },
+                                    {
+                                    "id": "3",
+                                    "title": "3/5"
+                                    },
+                                    {
+                                    "id": "4",
+                                    "title": "4/5"
+                                    },
+                                    {
+                                    "id": "5",
+                                    "title": "5/5"
+                                    }
+                                ]
+                                }
+                            ]
+                            }
+                        }
+                    }
+                )
             return json.dumps(
                 {
                     "messaging_product": "whatsapp",
@@ -381,15 +433,25 @@ def generate_response(response, wa_id, name,message_type,message_id):
     
     if check_ticket:
         if inquirer and inquirer.user_mode== CONFIRM_RESPONSE:
-            if response == '1' or response.lower()=='yes resolved':
+            if response.lower() in ['1','yes resolved']:
                 mark_as_resolved(check_ticket.id,False,True)
-                data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
-                return send_message(data)
-            elif response =='2' or response.lower() == "completed but unresolved":
+                details={
+                    "list":True,
+                    "inquiry_rating":True,
+                }
+                data =get_interactive_message_input(inquirer.phone_number,details=details)
+                send_message(data)
+                return ''
+            elif response.lower() in ["2","no close it"]:
                 mark_as_resolved(check_ticket.id,True,True)
-                data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
-                return send_message(data)
-            elif response=='3'or response.lower() == "continue conversation":
+                details={
+                    "list":True,
+                    "inquiry_rating":True,
+                }
+                data =get_interactive_message_input(inquirer.phone_number,details=details)
+                send_message(data)
+                return ''
+            elif response.lower() in ["3","continue chat"]:
                 last_msg = Message.objects.filter(ticket_id=check_ticket,inquirer=inquirer).last()
                 data= get_text_message_input(check_ticket.assigned_to.phone_number, last_msg.content, None)
                 send_message(data)
@@ -420,6 +482,13 @@ def generate_response(response, wa_id, name,message_type,message_id):
 
     if inquirer and inquirer.user_status == SUPPORT_RATING:
         if not '/' in response:
+            details={
+                "list":True,
+                "inquiry_rating":True,
+            }
+            data =get_interactive_message_input(inquirer.phone_number,details=details)
+            send_message(data)
+            return ''
             data = get_text_message_input(inquirer.phone_number, 'Hello', 'rate_support_user',True)
             return send_message(data)
         return inquirer_assistance_response(response, check_ticket, inquirer)
@@ -433,7 +502,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
         # for help_message in help_messages:
         #     if help_message in response.lower() or len(response) > :
         return handle_inquiry(wa_id, response, name)
-    return f"Golden greetings. How can i help you today?"    
+    return f"Golden greetings. How can i help you today?"   
 
 
 def get_text_message_input(recipient, text,name=None,template=False):
