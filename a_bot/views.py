@@ -113,7 +113,7 @@ def get_interactive_message_input(recipient,details=None):
                                     },
                                     {
                                     "id": "2",
-                                    "title": "2/5"
+                                    "title": "2/5",
                                     },
                                     {
                                     "id": "3",
@@ -185,7 +185,6 @@ def get_interactive_message_input(recipient,details=None):
                     }
                     }
             )
-        
 
     except Exception as e:
         return e
@@ -503,7 +502,6 @@ def generate_response(response, wa_id, name,message_type,message_id):
         #     if help_message in response.lower() or len(response) > :
         return handle_inquiry(wa_id, response, name)
     return f"Golden greetings. How can i help you today?"   
-
 
 def get_text_message_input(recipient, text,name=None,template=False):
 
@@ -1063,6 +1061,8 @@ def handle_inquiry(wa_id, response, name):
         Inquirer.objects.create(phone_number=wa_id[0],user_mode=NAMES_MODE)
         return f'Please provide your *first name* and *last name* (e.g *Batsirai Musabayana* )'
     else:
+        if response.lower() in ["golden morning","golden afternoon","golden evening"]:
+            return main_menu(response,wa_id,get_greeting())
         if inquirer_obj.user_mode == NAMES_MODE or inquirer_obj.user_mode == BRANCH_MODE:
             if inquirer_obj.user_mode == BRANCH_MODE:
                 if response.lower() == 'no':
@@ -1122,6 +1122,8 @@ def handle_inquiry(wa_id, response, name):
                     inquirer_obj.user_status = INQUIRY_MODE
                     inquirer_obj.save()
                     return '> Please wait for support team to attend to your issue.'
+        if response.lower() == open_inquiries.description.lower():
+            return 'You have already opened this inquiry, please wait for support team to attend to your issue.'
         
     except Ticket.DoesNotExist:
         ...
