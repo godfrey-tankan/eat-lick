@@ -601,7 +601,7 @@ def main_menu(response,wa_id,time_of_day):
             except Exception as e:
                 print('error in generate response:',e)
                 # return e
-            menu_option =f'''Golden {time_of_day} *{inquirer_ob.username.title()}*  — `{inquirer_ob.branch.title()}` branch.\nPlease Choose an option: 
+            menu_option =f'''Golden {time_of_day} *{inquirer_ob.username.split()[0].title()}*  — `{inquirer_ob.branch.title()}` branch.\nPlease Choose an option: 
             \n1. Update branch from *{inquirer_ob.branch}*
             \n2. ⁠New inquiry 
             \n3. Your inquiry status'''
