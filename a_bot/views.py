@@ -1159,9 +1159,9 @@ def handle_inquiry(wa_id, response, name):
         if len(response) < 15:
             return 'Please provide a detailed inquiry if you want to open an inquiry, at least `15 characters`'
         if "gentle reminder" in response.lower() or 'not assisted' in response.lower():
-            message_to_support_members= f'> {inquirer_obj.username.title()} has sent a gentle reminder on inquiry #{open_inquiries.id}'
+            message_to_support_members= f'> {inquirer_obj.username.title()} from {inquirer_obj.branch.title()} has sent a gentle reminder on inquiry #{open_inquiries.id}'
             broadcast_messages(name,ticket,message_to_support_members)
-            return "> Gentle reminder sent to support team."
+            return "> Gentle reminder sent to support team, Please wait for their response"
         ticket = Ticket.objects.create(
             title=f"Inquiry from {name}",
             description=response,
@@ -1186,7 +1186,7 @@ def handle_inquiry(wa_id, response, name):
     if "gentle reminder" in response.lower() or 'not assisted' in response.lower():
             message_to_support_members= f'> {inquirer_obj.username.title()} has sent a gentle reminder on inquiry #{open_inquiries.id}'
             broadcast_messages(name,ticket,message_to_support_members)
-            return "> Gentle reminder sent to support team."
+            return "> Gentle reminder sent to support team, Please wait for their response."
     ticket = Ticket.objects.create(
         title=f"Inquiry from {name}",
         description=response,
