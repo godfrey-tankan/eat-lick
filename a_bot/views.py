@@ -31,7 +31,6 @@ def get_greeting():
 
 
 def get_interactive_message_input(recipient,details=None):
-   
     try:
         if details and details.get('button',False):
             return json.dumps(
@@ -188,6 +187,7 @@ def get_interactive_message_input(recipient,details=None):
 
     except Exception as e:
         return e
+     
 
 def send_single_button_interactive(recipient,details=None):
    
@@ -578,8 +578,9 @@ def main_menu(response,wa_id,time_of_day):
                 return tickets_status
             return 'You have no pending inquiries at the moment.'
         else:
+            inquirer_name = inquirer_ob.username.split()[0]
             details = {
-                "heading":f"Golden  {time_of_day} {inquirer_ob.username.title()} — {inquirer_ob.branch.title()}",
+                "heading":f"Golden  {time_of_day} {inquirer_name} — {inquirer_ob.branch.title()}",
                 "body":f'How can I help you today?',
                 "footer":'choose one of the following options',
                 "first_id":'branch_update',
@@ -1126,6 +1127,7 @@ def handle_inquiry(wa_id, response, name):
             return 'You have already opened this inquiry, please wait for support team to attend to your issue.'
         
     except Ticket.DoesNotExist:
+        open_inquiries = None
         ...
     if inquirer_obj.user_status == NEW_TICKET_MODE:
         other_pending_issues = Ticket.objects.filter(status=PENDING_MODE,created_by=inquirer_obj,ticket_mode='other').first()
@@ -1156,6 +1158,10 @@ def handle_inquiry(wa_id, response, name):
             send_message(data)
         if len(response) < 15:
             return 'Please provide a detailed inquiry if you want to open an inquiry, at least `15 characters`'
+        if "gentle reminder" in response.lower() or 'not assisted' in response.lower():
+            message_to_support_members= f'> {inquirer_obj.username.title()} has sent a gentle reminder on inquiry #{open_inquiries.id}'
+            broadcast_messages(name,ticket,message_to_support_members)
+            return "> Gentle reminder sent to support team."
         ticket = Ticket.objects.create(
             title=f"Inquiry from {name}",
             description=response,
@@ -1176,7 +1182,11 @@ def handle_inquiry(wa_id, response, name):
     if len(response) < 15:
         return 'Please provide a detailed inquiry if you want to open an inquiry, at least `15 characters`'
     if response.lower() in ["thank you","ok","noted"]:
-        return ''
+        return '> pleasure!'
+    if "gentle reminder" in response.lower() or 'not assisted' in response.lower():
+            message_to_support_members= f'> {inquirer_obj.username.title()} has sent a gentle reminder on inquiry #{open_inquiries.id}'
+            broadcast_messages(name,ticket,message_to_support_members)
+            return "> Gentle reminder sent to support team."
     ticket = Ticket.objects.create(
         title=f"Inquiry from {name}",
         description=response,
@@ -1548,7 +1558,8 @@ def get_dashboard(support_member, response):
         messages_list += "\n\nReply with #exit to exit or ticket ID for detailed view."
         return messages_list
     return "Summary view."
-        
+    []    
+
 @csrf_exempt
 def testing(request):
     name ='tankan'
