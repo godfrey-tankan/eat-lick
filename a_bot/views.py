@@ -1123,9 +1123,9 @@ def handle_inquiry(wa_id, response, name):
                     inquirer_obj.user_status = INQUIRY_MODE
                     inquirer_obj.save()
                     return '> Please wait for support team to attend to your issue.'
-        if response.lower() == open_inquiries.description.lower():
-            return 'You have already opened this inquiry, please wait for support team to attend to your issue.'
-        
+            if response.lower() == open_inquiries.description.lower():
+                return 'You have already opened this inquiry, please wait for support team to attend to your issue.'
+            
     except Ticket.DoesNotExist:
         open_inquiries = None
         ...
