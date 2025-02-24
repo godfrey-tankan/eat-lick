@@ -1125,7 +1125,10 @@ def handle_inquiry(wa_id, response, name):
                     return '> Please wait for support team to attend to your issue.'
             for open_inquiry in open_inquiries:
                 if response.lower() == open_inquiry.description.lower():
-                    return 'You have already opened this inquiry, please wait for support team to attend to your issue.'
+                    message_to_support = f"> 🚨 {inquirer_obj.username.title()} wants help on inquiry #{open_inquiry.id}"
+                    broadcast_messages(name,open_inquiry,message_to_support)
+                    return '> You have already opened this inquiry, please wait for support team to attend to your issue.'
+                
             
     except Ticket.DoesNotExist:
         open_inquiries = None
