@@ -1116,15 +1116,16 @@ def handle_inquiry(wa_id, response, name):
                 return branches_list
             return '> No branches to choose from found!'
     try:
-        open_inquiries = Ticket.objects.filter(status__in=[OPEN_MODE,PENDING_MODE],created_by=inquirer_obj.id).first()
+        open_inquiries = Ticket.objects.filter(status__in=[OPEN_MODE,PENDING_MODE],created_by=inquirer_obj.id)
         if open_inquiries:
             for no_response in deny_open_new_ticket:
                 if no_response == response.lower():
                     inquirer_obj.user_status = INQUIRY_MODE
                     inquirer_obj.save()
                     return '> Please wait for support team to attend to your issue.'
-            if response.lower() == open_inquiries.description.lower():
-                return 'You have already opened this inquiry, please wait for support team to attend to your issue.'
+            for open_inquiry in open_inquiries:
+                if response.lower() == open_inquiry.description.lower():
+                    return 'You have already opened this inquiry, please wait for support team to attend to your issue.'
             
     except Ticket.DoesNotExist:
         open_inquiries = None
