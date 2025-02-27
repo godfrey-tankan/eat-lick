@@ -1116,6 +1116,8 @@ def handle_inquiry(wa_id, response, name):
                 return branches_list
             return '> No branches to choose from found!'
     try:
+        if 'golden' in response.lower() and len(response) < 15:
+            return main_menu('hi',wa_id,get_greeting())
         open_inquiries = Ticket.objects.filter(status__in=[OPEN_MODE,PENDING_MODE],created_by=inquirer_obj.id)
         if open_inquiries:
             for no_response in deny_open_new_ticket:
