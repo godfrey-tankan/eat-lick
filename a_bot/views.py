@@ -930,33 +930,91 @@ def get_audio_message_input(phone_number_id, audio_id):
         }
     )
 
-def get_all_open_tickets(support_member,response,wa_id,name):
+# def get_all_open_tickets(support_member,response,wa_id,name):
+#     if '#open' in response.lower():
+#         open_tickets= Ticket.objects.filter(status=OPEN_MODE).order_by('created_at')
+#         if not open_tickets:
+#             support_member.user_status = HELPING_MODE
+#             support_member.user_mode = HELPING_MODE
+#             support_member.save()
+#             return 'There are no open tickets at the moment.'
+#         support_member.user_status = OPEN_TICKETS_MODE
+#         support_member.save()
+#         message = '🟢 Open Tickets:\n\n'
+#         for i,ticket in enumerate(open_tickets,start=1):
+#             short_description = ticket.description[:30] + '...' if len(ticket.description) > 30 else ticket.description
+#             created = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
+#             message += f"*{i}*. Ticket Number: *{ticket.id}*\n- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {short_description}\n\n"
+#         message += '\nReply with *ticketNo* eg *4* to assign the ticket to yourself or *#exit* to exit'
+#         return message
+#     if '#exit' in response.lower() or '#cancel' in response.lower():
+#         support_member.user_status = HELPING_MODE
+#         support_member.user_mode = HELPING_MODE
+#         support_member.save()
+#         return 'You are now back to your previous mode, you can continue with what you were doing.'
+#     try:
+#         ticket_id = int(response)
+#     except ValueError:
+#         return 'Please provide a valid ticket number'
+#     return accept_ticket(wa_id,name, ticket_id)
+
+
+def get_all_open_tickets(support_member, response, wa_id, name):
+    TICKETS_PER_PAGE = 10
+    open_tickets = Ticket.objects.filter(status=OPEN_MODE).order_by('created_at')
     if '#open' in response.lower():
-        open_tickets= Ticket.objects.filter(status=OPEN_MODE).order_by('created_at')
+
         if not open_tickets:
             support_member.user_status = HELPING_MODE
             support_member.user_mode = HELPING_MODE
             support_member.save()
             return 'There are no open tickets at the moment.'
+
         support_member.user_status = OPEN_TICKETS_MODE
         support_member.save()
-        message = '🟢 Open Tickets:\n\n'
-        for i,ticket in enumerate(open_tickets,start=1):
-            short_description = ticket.description[:30] + '...' if len(ticket.description) > 30 else ticket.description
-            created = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
-            message += f"*{i}*. Ticket Number: *{ticket.id}*\n- Opened by: *{ticket.created_by.username.title()}* from *{ticket.branch_opened.title()}* branch at {created}\n- Description: {short_description}\n\n"
-        message += '\nReply with *ticketNo* eg *4* to assign the ticket to yourself or *#exit* to exit'
-        return message
-    if '#exit' in response.lower() or '#cancel' in response.lower():
-        support_member.user_status = HELPING_MODE
-        support_member.user_mode = HELPING_MODE
-        support_member.save()
-        return 'You are now back to your previous mode, you can continue with what you were doing.'
-    try:
-        ticket_id = int(response)
-    except ValueError:
-        return 'Please provide a valid ticket number'
-    return accept_ticket(wa_id,name, ticket_id)
+
+        # Start from page 1
+        page_number = 1
+
+    elif re.match(r'^#\d+$', response.strip()):  
+        # If response starts with # followed by a number, extract the page number
+        page_number = int(response.strip()[1:])  
+    else:
+        if response.lower() in ['#exit', '#cancel']:
+            support_member.user_status = HELPING_MODE
+            support_member.user_mode = HELPING_MODE
+            support_member.save()
+            return 'You are now back to your previous mode, you can continue with what you were doing.'
+
+        try:
+            ticket_id = int(response)  # If response is a ticket number, process it
+            return accept_ticket(wa_id, name, ticket_id)
+        except ValueError:
+            return 'Please provide a valid ticket number or page number'
+
+    paginator = Paginator(Ticket.objects.filter(status=OPEN_MODE).order_by('created_at'), TICKETS_PER_PAGE)
+
+    if page_number < 1:
+        page_number = 1
+    elif page_number > paginator.num_pages:
+        page_number = paginator.num_pages
+    current_page = paginator.page(page_number)
+
+    message = f'🟢 Open Tickets -{open_tickets.count()} (Page {page_number} of {paginator.num_pages}):\n\n'
+
+    for i, ticket in enumerate(current_page, start=1 + (page_number - 1) * TICKETS_PER_PAGE):
+        short_description = ticket.description[:50] + '...' if ticket.description and len(ticket.description) > 50 else ticket.description
+        created = timezone.localtime(ticket.created_at).strftime('%Y-%m-%d %H:%M')
+        branch = ticket.branch_opened.title() if ticket.branch_opened else 'N/A'
+        creator = ticket.created_by.username.title() if ticket.created_by else 'N/A'
+        message += f"*{i}*. Ticket Number: *{ticket.id}*\n- Opened by: *{creator}* from *{branch}* branch at {created}\n- Description: {short_description}\n\n"
+
+    if paginator.num_pages > 1:
+        message += "Reply with *#page_number* (e.g., *#2*) to navigate pages.\n"
+    
+    message += "Reply with *ticketNo* (e.g., *4*) to assign the ticket to yourself or *#exit* to exit."
+
+    return message
         
 def get_attended_tickets(support_member, response):
     try:
