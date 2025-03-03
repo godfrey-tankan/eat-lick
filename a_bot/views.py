@@ -297,7 +297,7 @@ def generate_response(response, wa_id, name,message_type,message_id):
             return handle_inquiry(wa_id, response, name)
     else:
         check_ticket = None
-    if 'tnqn' == response.lower():
+    if response.lower() in['tnqn', 'test'] :
         return tankan_self
     
     if support_member:
