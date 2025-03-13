@@ -2130,45 +2130,32 @@ def get_image_message(recipient, image_id):
         }
     )
     
-def forward_message(request):
+# def forward_message(request):
     
-    details = {
-        "heading":f"Golden morning...",
-        "body":f'How can I help you today?',
-        "footer":'choose one of the following options',
-        "first_id":'branch_update',
-        "first_reply":f"Update branch",
-        "second_id":"new_inquiry",
-        "second_reply":"⁠New inquiry ",
-        "third_id":"inquiry_status",
-        "third_reply":"My inquiry status",
-        "button":True,
+#     details = {
+#         "heading":f"Golden morning...",
+#         "body":f'How can I help you today?',
+#         "footer":'choose one of the following options',
+#         "first_id":'branch_update',
+#         "first_reply":f"Update branch",
+#         "second_id":"new_inquiry",
+#         "second_reply":"⁠New inquiry ",
+#         "third_id":"inquiry_status",
+#         "third_reply":"My inquiry status",
+#         "button":True,
         
-    }
-    try:
+#     }
+#     try:
         
-        data =get_interactive_message_input('263779586059',details=details)
-        send_message(data)
-    except Exception as e:
-        print('error in generate response:',e)
-    
-    # details = {
-    #     "heading":f"Do you want to change your branch?",
-    #     "body":f'Updating your branch from ....?',
-    #     "footer":'choose one of the following options',
-    #     "first_id":'branch_update',
-    #     "first_reply":f"Yes",
-    #     "second_id":"not_update",
-    #     "second_reply":"No",
-    #     "button":True,
-        
-    # }
-    # try:
-    #     data = send_single_button_interactive('263779586059',details=details)
-    #     send_message(data)
-    # except:
-    #     return '> an error occurred while changing branch..'
-    return JsonResponse({'response':'success'})
+#         data =get_interactive_message_input('263779586059',details=details)
+#         send_message(data)
+#     except Exception as e:
+#         print('error in generate response:',e)
+
+    #return JsonResponse({'response':'success'})
+def forward_message(message,number):
+    data =get_text_message_input(number, message, None)
+    return send_message(number)
 
 def get_document_message(recipient, document_id, caption='New document'):
     return json.dumps(
