@@ -37,7 +37,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY') or ''.join(random.choice( string.ascii
 DEBUG = str2bool(os.environ.get('DEBUG'))
 #print(' DEBUG -> ' + str(DEBUG) ) 
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['https://empyreanintegratedsolutions.com','https://www.empyreanintegratedsolutions.com']
 CSRF_TRUSTED_ORIGINS = ['https://empyreanintegratedsolutions.com', 'https://www.empyreanintegratedsolutions.com', 'http://localhost:3000', 'http://localhost:8000']
 CSRF_ALLOWED_ORIGINS = [
     'https://empyreanintegratedsolutions.com',
@@ -137,12 +137,12 @@ DB_NAME     = os.getenv('DB_NAME'     , None)
 # if DB_ENGINE and DB_NAME and DB_USERNAME:
 DATABASES = { 
     'default': {
-    'ENGINE'  : 'django.db.backends.mysql', 
-    'NAME'    : 'customer_support',
-    'USER'    : 'simon',
-    'PASSWORD': 'simonmusabayana',
-    'HOST'    : '198.12.221.104',
-    'PORT'    : '3306',
+    'ENGINE'  :DB_ENGINE, 
+    'NAME'    :DB_NAME,
+    'USER'    :DB_USERNAME,
+    'PASSWORD':DB_PASS,
+    'HOST'    :DB_HOST,
+    'PORT'    :DB_PORT,
     }, 
 }
 # else:
@@ -221,21 +221,12 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # LOGIN_REDIRECT_URL = '/enlsupport'
 LOGIN_REDIRECT_URL = '/smedco'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'godfreytantswakandeya@gmail.com'
-EMAIL_HOST_PASSWORD = 'ijst bamj jjra ckka'
-EMAIL_TIMEOUT = 10 
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER',)
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD',)
+EMAIL_TIMEOUT = 10
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'godfreytantswakandeya@gmail.com'
-EMAIL_HOST_PASSWORD = 'ijst bamj jjra ckka'
-EMAIL_TIMEOUT = 10 
