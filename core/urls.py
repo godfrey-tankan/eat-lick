@@ -31,13 +31,12 @@ from home.web_reports import *
 from core.custom_login import custom_login
  
 urlpatterns = [
-    path('', include('home.urls')),
     path('resolved/', resolved_tickets,name='resolved_tickets'),
     path('admins/logout/', logout_view),
     path('accounts/login/', custom_login, name='login'),
-    
+    path('', include('home.urls')),    
     path('tables/', support_users_list, name='support_users_list'),
-     path('smedco/', include('a_home.urls')),
+     path('homelink/', include('a_home.urls')),
     path('users/', users_list, name='user_list'),
     path('user/<int:id>/', edit_user, name='edit_user'),
     path('profile/', profile_view, name='profile'),

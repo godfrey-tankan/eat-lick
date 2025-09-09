@@ -26,23 +26,29 @@ class JobSatisfactionQuestion(models.Model):
     def __str__(self):
         return self.question_text
 
-
 class LikertScaleAnswer(models.Model):
     RESPONSE_CHOICES = [
-        (1, 'Disagree very much'),
-        (2, 'Disagree moderately'),
-        (3, 'Disagree slightly'),
-        (4, 'Agree slightly'),
-        (5, 'Agree moderately'),
-        (6, 'Agree very much'),
+        (6, 'Strongly Agree'),
+        (5, 'Agree'),
+        (4, "Don't Know"),
+        (3, 'Disagree'),
+        (2, 'Strongly Disagree'),
+    ]
+    
+    YES_NO_CHOICES = [
+        (1, 'Yes'),
+        (0, 'No'),
     ]
 
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     question = models.ForeignKey(JobSatisfactionQuestion, related_name='answers', on_delete=models.CASCADE)
-    response = models.IntegerField(choices=RESPONSE_CHOICES)
+    response = models.IntegerField(choices=RESPONSE_CHOICES, null=True, blank=True)
+    text_response = models.TextField(blank=True, null=True) 
     response_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        if self.text_response:
+            return f"Answer to {self.question.question_text}: {self.text_response[:50]}..."
         return f"Answer to {self.question.question_text}: {self.get_response_display()}"
 
 class DemographicData(models.Model):
@@ -52,57 +58,79 @@ class DemographicData(models.Model):
     ]
     
     AGE_GROUP_CHOICES = [
-        ('20_below', '20yrs and below'),
-        ('21_30', '21-30yrs'),
-        ('31_40', '31-40yrs'),
-        ('41_50', '41-50yrs'),
-        ('51_60', '51-60yrs')
+        ('before_1966', 'Before 1966'),
+        ('1966_1976', '1966-1976'),
+        ('1977_1994', '1977-1994'),
+        ('after_1994', 'After 1994'),
     ]
     
     EXPERIENCE_CHOICES = [
-        ('5_below', '5yrs and below'),
-        ('6_9', '6-9yrs'),
-        ('10_19', '10-19yrs'),
-        ('20_above', '20 and above')
+        ('less_than_1', 'Less than 1 year'),
+        ('1_to_5', '1 to 5 years'),
+        ('5_to_10', '5 to 10 years'),
+        ('10_to_15', '10 to 15 years'),
     ]
     
     QUALIFICATION_CHOICES = [
-        ('below_o', 'Below O’ level'),
-        ('o_level', 'O’ level'),
-        ('a_level', 'A’ level'),
-        ('diploma', 'Diploma'),
-        ('undergraduate', 'Undergraduate'),
-        ('postgraduate', 'Post-graduate')
+        ('o_level', 'O Level'),
+        ('a_level', 'A Level'),
+        ('diploma', 'Diploma/Professional Qualifications'),
+        ('degree', 'Degree'),
+        ('post_grad', 'Post Graduate'),
     ]
     
     DESIGNATION_CHOICES = [
-        ('senior_management', 'Senior Management'),
-        ('professional_employees', 'Professional Employees'),
-        ('middle_management', 'Middle Management'),
-        ('line_employees', 'Line Employees')
+        ('director', 'Director'),
+        ('manager', 'Manager'),
+        ('assistant_manager', 'Assistant Manager'),
+        ('non_managerial', 'Non-managerial'),
+    ]
+    
+    DEPARTMENT_CHOICES = [
+        ('money_transfers', 'Money Transfers'),
+        ('homelink_finance', 'Homelink Finance'),
+        ('compliance', 'Compliance'),
+        ('legal', 'Legal'),
+        ('finance', 'Finance'),
+        ('marketing', 'Marketing'),
+        ('projects', 'Projects'),
+        ('mortgages', 'Mortgages'),
+        ('security', 'Security'),
+        ('human_capital', 'Human Capital'),
+        ('ict', 'ICT'),
+    ]
+    
+    DIVISION_CHOICES = [
+        ('homelink_finance', 'Homelink Finance'),
+        ('money_transfers', 'Money Transfers'),
+        ('head_office', 'Head Office'),
     ]
     
     CONTRACT_CHOICES = [
-        ('fixed_term', 'Fixed –Term Contract'),
-        ('permanent', 'Permanent Contract')
+        ('permanent', 'Permanent'),
+        ('contract', 'Contract'),
+        ('relief', 'Relief'),
     ]
-    DEPARTMENT_CHOICES = [
-        ('HR', 'Human Resources'),
-        ('IT', 'Information Technology'),
-        ('FIN', 'Finance'),
-        ('MKT', 'Marketing'),
-        ('DEV', 'Development'),
+    
+    LOCATION_CHOICES = [
+        ('harare', 'Harare'),
+        ('kwekwe', 'Kwekwe'),
+        ('gweru', 'Gweru'),
+        ('bulawayo', 'Bulawayo'),
+        ('masvingo', 'Masvingo'),
     ]
     
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES, default='male')
-    age_group = models.CharField(max_length=10, choices=AGE_GROUP_CHOICES, default='20_below')
-    work_experience = models.CharField(max_length=10, choices=EXPERIENCE_CHOICES, default='5_below')
-    highest_qualification = models.CharField(max_length=20, choices=QUALIFICATION_CHOICES, default='o_level')
-    designation = models.CharField(max_length=30, choices=DESIGNATION_CHOICES, default='line_employees')
+    age_group = models.CharField(max_length=50, choices=AGE_GROUP_CHOICES, default='20_below')
+    work_experience = models.CharField(max_length=50, choices=EXPERIENCE_CHOICES, default='5_below')
+    highest_qualification = models.CharField(max_length=50, choices=QUALIFICATION_CHOICES, default='o_level')
+    designation = models.CharField(max_length=50, choices=DESIGNATION_CHOICES, default='line_employees')
     department = models.CharField(max_length=100, choices=DEPARTMENT_CHOICES, default='MKT')
-    contract_type = models.CharField(max_length=15, choices=CONTRACT_CHOICES, default='permanent')
+    contract_type = models.CharField(max_length=50, choices=CONTRACT_CHOICES, default='permanent')
     response_date = models.DateTimeField(auto_now_add=True)
+    division = models.CharField(max_length=50, choices=DIVISION_CHOICES, blank=True, null=True)
+    location = models.CharField(max_length=50, choices=LOCATION_CHOICES, blank=True, null=True)
 
     def __str__(self):
         return f"{self.gender}, {self.age_group}, {self.designation}"

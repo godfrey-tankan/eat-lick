@@ -13,9 +13,8 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os, random, string
 from pathlib import Path
 from dotenv import load_dotenv
-from str2bool import str2bool
 
-load_dotenv()  # take environment variables from .env.
+load_dotenv(override=True)  # take environment variables from .env.
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -34,10 +33,11 @@ PHONE_NUMBER_ID = os.getenv('PHONE_NUMBER_ID')
 SECRET_KEY = os.environ.get('SECRET_KEY') or ''.join(random.choice( string.ascii_lowercase  ) for i in range( 32 ))
 
 # Enable/Disable DEBUG Mode
-DEBUG = str2bool(os.environ.get('DEBUG'))
+DEBUG = bool( os.getenv('DEBUG', 'False').lower() in ('true', '1', 't') )
 #print(' DEBUG -> ' + str(DEBUG) ) 
 
-ALLOWED_HOSTS = ['https://empyreanintegratedsolutions.com','https://www.empyreanintegratedsolutions.com']
+ALLOWED_HOSTS = ['https://empyreanintegratedsolutions.com','https://www.empyreanintegratedsolutions.com','http://localhost:3000','http://127.0.0.1:8000']
+ALLOWED_HOSTS=["*"]
 CSRF_TRUSTED_ORIGINS = ['https://empyreanintegratedsolutions.com', 'https://www.empyreanintegratedsolutions.com', 'http://localhost:3000', 'http://localhost:8000']
 CSRF_ALLOWED_ORIGINS = [
     'https://empyreanintegratedsolutions.com',
@@ -220,7 +220,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # LOGIN_REDIRECT_URL = '/enlsupport'
-LOGIN_REDIRECT_URL = '/smedco'
+LOGIN_REDIRECT_URL = '/homelink/staff'
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER',)
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD',)

@@ -2,253 +2,529 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Full Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homelink - Full Survey Report</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --homelink-primary: #003366;
+            --homelink-primary-light: #004080;
+            --homelink-secondary: #FF6600;
+            --homelink-light: #f8f9fa;
+            --homelink-dark: #2c3e50;
+            --homelink-gray: #6c757d;
+            --homelink-success: #28a745;
+            --homelink-warning: #ffc107;
+            --homelink-danger: #dc3545;
+            --homelink-border: #dee2e6;
+            --homelink-shadow: 0 4px 20px rgba(0, 51, 102, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--homelink-dark);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
         }
-        h2 {
-            color: #2C3E50;
+
+        .report-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--homelink-shadow);
+            overflow: hidden;
         }
+
+        .report-header {
+            background: linear-gradient(135deg, var(--homelink-primary) 0%, var(--homelink-primary-light) 100%);
+            color: white;
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        .report-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .report-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .report-meta {
+            background: var(--homelink-light);
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--homelink-border);
+        }
+
+        .report-content {
+            padding: 2rem;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--homelink-primary);
+        }
+
+        .section-icon {
+            font-size: 1.8rem;
+            color: var(--homelink-primary);
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--homelink-primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--homelink-light);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 4px solid var(--homelink-primary);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--homelink-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--homelink-gray);
+            font-weight: 500;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 2rem;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--homelink-shadow);
         }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
+
         th, td {
-            padding: 10px;
+            padding: 1rem;
             text-align: left;
+            border-bottom: 1px solid var(--homelink-border);
         }
+
         th {
-            background-color: #f4f6f9;
+            background: var(--homelink-primary);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .section {
-            margin-top: 40px;
+
+        tr:hover {
+            background: #f8f9fa;
         }
-        .btn-container {
-            margin: 20px 0;
+
+        .positive {
+            color: var(--homelink-success);
+            font-weight: 600;
+        }
+
+        .negative {
+            color: var(--homelink-danger);
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--homelink-primary) 0%, var(--homelink-primary-light) 100%);
+            border-radius: 4px;
+        }
+
+        .action-buttons {
             display: flex;
-            gap: 10px;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+            flex-wrap: wrap;
         }
-        button {
-            padding: 10px 15px;
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
-        @media print {
-            .btn-container {
-                display: none;
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--homelink-primary) 0%, var(--homelink-primary-light) 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--homelink-gray);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .report-footer {
+            background: var(--homelink-light);
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid var(--homelink-border);
+        }
+
+        @media (max-width: 768px) {
+            .report-header h1 {
+                font-size: 2rem;
             }
             
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            th, td {
+                padding: 0.75rem;
+            }
         }
-        .view-more-button {
-            margin: 20px 0;
-            display: block;
-            text-align: center;
-            padding: 10px 20px;
-            background-color: #555; /* Primary button color */
-            color: white; /* White text */
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 18px;
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .report-container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            
+            .action-buttons {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="report-container">
+        <div class="report-header">
+            <h1><i class="fas fa-chart-line"></i> Homelink Employee Engagement Report</h1>
+            <p>Comprehensive Analysis of Survey Results</p>
+        </div>
 
-    <a href="#" class="view-more-button">Full Report - {{date}}</a>
+        <div class="report-meta">
+            <p>Generated on: <strong>{{ date|date:"F j, Y, g:i a" }}</strong></p>
+            <p>Total Responses: <strong>{{ report_data.feedback_by_department|length }} departments analyzed</strong></p>
+        </div>
 
+        <div class="report-content">
+            <!-- Department Analysis -->
+            <div class="section">
+                <div class="section-header">
+                    <i class="fas fa-building section-icon"></i>
+                    <h2 class="section-title">Department Performance Analysis</h2>
+                </div>
 
-    <div class="btn-container">
-        <button onclick="exportToExcel()">Export to Excel</button>
-        <button onclick="window.print()">Print Report</button>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Total Responses</th>
+                                <th>Positive Feedback</th>
+                                <th>Negative Feedback</th>
+                                <th>Positivity Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in report_data.feedback_by_department %}
+                            <tr>
+                                <td><strong>{{ item.department }}</strong></td>
+                                <td>{{ item.total_responses }}</td>
+                                <td class="positive">{{ item.positive_feedback_count }}</td>
+                                <td class="negative">{{ item.negative_feedback_count }}</td>
+                                <td>
+                                    {% widthratio item.positive_feedback_count item.total_responses 100 %}%
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {% widthratio item.positive_feedback_count item.total_responses 100 %}%;"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Qualification Analysis -->
+            <div class="section">
+                <div class="section-header">
+                    <i class="fas fa-graduation-cap section-icon"></i>
+                    <h2 class="section-title">Qualification-based Analysis</h2>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Qualification Level</th>
+                                <th>Total Responses</th>
+                                <th>Positive Feedback</th>
+                                <th>Negative Feedback</th>
+                                <th>Positivity Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in report_data.feedback_by_qualification %}
+                            <tr>
+                                <td><strong>{{ item.highest_qualification }}</strong></td>
+                                <td>{{ item.total_responses }}</td>
+                                <td class="positive">{{ item.positive_feedback_count }}</td>
+                                <td class="negative">{{ item.negative_feedback_count }}</td>
+                                <td>
+                                    {% widthratio item.positive_feedback_count item.total_responses 100 %}%
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {% widthratio item.positive_feedback_count item.total_responses 100 %}%;"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Age Group Analysis -->
+            <div class="section">
+                <div class="section-header">
+                    <i class="fas fa-users section-icon"></i>
+                    <h2 class="section-title">Age Group Analysis</h2>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Age Group</th>
+                                <th>Total Responses</th>
+                                <th>Positive Feedback</th>
+                                <th>Negative Feedback</th>
+                                <th>Positivity Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in report_data.feedback_by_age_group %}
+                            <tr>
+                                <td><strong>{{ item.age_group }}</strong></td>
+                                <td>{{ item.total_responses }}</td>
+                                <td class="positive">{{ item.positive_feedback_count }}</td>
+                                <td class="negative">{{ item.negative_feedback_count }}</td>
+                                <td>
+                                    {% widthratio item.positive_feedback_count item.total_responses 100 %}%
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {% widthratio item.positive_feedback_count item.total_responses 100 %}%;"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Designation Analysis -->
+            <div class="section">
+                <div class="section-header">
+                    <i class="fas fa-briefcase section-icon"></i>
+                    <h2 class="section-title">Designation Analysis</h2>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Designation</th>
+                                <th>Total Responses</th>
+                                <th>Positive Feedback</th>
+                                <th>Negative Feedback</th>
+                                <th>Positivity Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in report_data.feedback_by_designation %}
+                            <tr>
+                                <td><strong>{{ item.designation }}</strong></td>
+                                <td>{{ item.total_responses }}</td>
+                                <td class="positive">{{ item.positive_feedback_count }}</td>
+                                <td class="negative">{{ item.negative_feedback_count }}</td>
+                                <td>
+                                    {% widthratio item.positive_feedback_count item.total_responses 100 %}%
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {% widthratio item.positive_feedback_count item.total_responses 100 %}%;"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Question Analysis -->
+            <div class="section">
+                <div class="section-header">
+                    <i class="fas fa-question-circle section-icon"></i>
+                    <h2 class="section-title">Question Performance Analysis</h2>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Question Category</th>
+                                <th>Question Text</th>
+                                <th>Total Responses</th>
+                                <th>Positive Feedback</th>
+                                <th>Negative Feedback</th>
+                                <th>Positivity Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in report_data.feedback_by_question %}
+                            <tr>
+                                <td><strong>{{ item.category }}</strong></td>
+                                <td>{{ item.question_text }}</td>
+                                <td>{{ item.response_counts }}</td>
+                                <td class="positive">{{ item.positive_feedback_count }}</td>
+                                <td class="negative">{{ item.negative_feedback_count }}</td>
+                                <td>
+                                    {% widthratio item.positive_feedback_count item.response_counts 100 %}%
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {% widthratio item.positive_feedback_count item.response_counts 100 %}%;"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="window.print()">
+                <i class="fas fa-print"></i> Print Report
+            </button>
+            <a href="{% url 'staff_dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="report-footer">
+            <p>© 2024 Homelink Employee Engagement Survey | Generated by Empyrean Integrated Solutions</p>
+            <p>Confidential - For internal use only</p>
+        </div>
     </div>
 
-    <div id="reportContent">
+    <script>
+        // Add some interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add row highlighting
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                row.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+            });
 
-        {% comment %} <div class="section">
-            <h2>Feedback by Department</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Department</th>
-                        <th>Total Responses</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in report_data.feedback_by_department %}
-                        <tr>
-                            <td>{{ item.department }}</td>
-                            <td>{{ item.total_responses }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div> {% endcomment %}
-        <div class="section">
-            <h2>Feedback by Department</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Department</th>
-                        <th>Total Responses</th>
-                        <th>Positive Feedback</th>
-                        <th>Negative Feedback</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in report_data.feedback_by_department %}
-                        <tr>
-                            <td>{{ item.department }}</td>
-                            <td>{{ item.total_responses }}</td>
-                            <td>{{ item.positive_feedback_count }}</td>
-                            <td>{{ item.negative_feedback_count }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        
+            // Add search functionality
+            const addSearch = (tableId) => {
+                const table = document.getElementById(tableId);
+                if (table) {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.placeholder = 'Search...';
+                    input.style.cssText = 'margin-bottom: 1rem; padding: 0.5rem; width: 100%; border: 1px solid #ddd; border-radius: 4px;';
+                    table.parentElement.insertBefore(input, table);
+                    
+                    input.addEventListener('keyup', function() {
+                        const filter = this.value.toLowerCase();
+                        const rows = table.querySelectorAll('tbody tr');
+                        
+                        rows.forEach(row => {
+                            const text = row.textContent.toLowerCase();
+                            row.style.display = text.includes(filter) ? '' : 'none';
+                        });
+                    });
+                }
+            };
 
-        <div class="section">
-            <h2>Feedback by Highest Qualification</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Qualification</th>
-                        <th>Total Responses</th>
-                        <th>Positive Feedback</th>
-                        <th>Negative Feedback</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in report_data.feedback_by_qualification %}
-                        <tr>
-                            <td>{{ item.highest_qualification }}</td>
-                            <td>{{ item.total_responses }}</td>
-                            <td>{{ item.positive_feedback_count }}</td>
-                            <td>{{ item.negative_feedback_count }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="section">
-            <h2>Feedback by Age Group</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Age Group</th>
-                        <th>Total Responses</th>
-                        <th>Positive Feedback</th>
-                        <th>Negative Feedback</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in report_data.feedback_by_age_group %}
-                        <tr>
-                            <td>{{ item.age_group }}</td>
-                            <td>{{ item.total_responses }}</td>
-                            <td>{{ item.positive_feedback_count }}</td>
-                            <td>{{ item.negative_feedback_count }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="section">
-            <h2>Feedback by Designation</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Designation</th>
-                        <th>Total Responses</th>
-                        <th>Positive Feedback</th>
-                        <th>Negative Feedback</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in report_data.feedback_by_designation %}
-                        <tr>
-                            <td>{{ item.designation }}</td>
-                            <td>{{ item.total_responses }}</td>
-                            <td>{{ item.positive_feedback_count }}</td>
-                            <td>{{ item.negative_feedback_count }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="section">
-            <h2>Feedback by Question</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Category</th>
-                        <th>Question Text</th>
-                        <th>Response Count</th>
-                        <th>Positive Feedback</th>
-                        <th>Negative Feedback</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in report_data.feedback_by_question %}
-                        <tr>
-                            <td>{{ item.category }}</td>
-                            <td>{{ item.question_text }}</td>
-                            <td>{{ item.response_counts }}</td>
-                            <td>{{ item.positive_feedback_count }}</td>
-                            <td>{{ item.negative_feedback_count }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-       
-    {% comment %} <script>
-        function exportToExcel() {
-            const reportContent = document.getElementById("reportContent");
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.table_to_sheet(reportContent);
-    
-            XLSX.utils.book_append_sheet(wb, ws, "Feedback Report");
-    
-            XLSX.writeFile(wb, "Feedback_Report.xlsx");
-        }
+            // Initialize search for all tables
+            document.querySelectorAll('table').forEach((table, index) => {
+                table.id = `table-${index}`;
+                addSearch(`table-${index}`);
+            });
+        });
     </script>
-     {% endcomment %}
- <script>
-        function exportToExcel() {
-            const reportContent = document.getElementById("reportContent").innerHTML;
-            const tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-                <head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
-                <x:Name>Sheet 1</x:Name><x:WorksheetOptions><x:Panes></x:Panes></x:WorksheetOptions></x:ExcelWorksheet>
-                </x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
-                </head><body>${reportContent}</body></html>`;
-            
-            const blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "Feedback_Report.xlsx";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-    </script> 
-
-
 </body>
 </html>

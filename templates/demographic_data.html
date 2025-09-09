@@ -5,8 +5,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demographic Data Form</title>
+    <title>Homelink - Demographic Data Form</title>
     <link rel="stylesheet" href="{% static 'css/form_styles.css' %}">
+    <style>
+        .homelink-header {
+            text-align: center;
+            background-color: #003366;
+            color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .homelink-header h2 {
+            margin: 0;
+        }
+        .section-title {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #003366;
+            font-weight: bold;
+        }
+    </style>
     <script>
         // Generate a random 10-digit username
         function generateRandomUsername() {
@@ -15,10 +34,10 @@
 
         // Save username to localStorage if not already present
         function saveUsernameToLocalStorage() {
-            let username = localStorage.getItem('smedco_username');
+            let username = localStorage.getItem('homelink_username');
             if (!username) {
                 username = generateRandomUsername();
-                localStorage.setItem('smedco_username', username);
+                localStorage.setItem('homelink_username', username);
             }
             return username;
         }
@@ -35,7 +54,7 @@
 
         // Append the username to the form data before submission
         function appendUsernameToForm() {
-            const username = localStorage.getItem('smedco_username');
+            const username = localStorage.getItem('homelink_username');
             if (username) {
                 const form = document.querySelector('form');
                 const input = document.createElement('input');
@@ -57,40 +76,36 @@
     </script>
 </head>
 <body>
+    <div class="homelink-header">
+        <h2>Homelink Employee Engagement Survey</h2>
+        <p>SECTION 1: Demographic Information</p>
+    </div>
+
     <form method="post">
         {% csrf_token %}
-        <h2>Demographic Data Form</h2>
-        <p class="info-icon">Please fill in the following details accordingly:
-            <span class='icon-icon'>ℹ️</span>
-        </p>
-        <div class="tooltip">
-            Your responses will remain anonymous and confidential.<br>
-            We value your privacy and ensure that your data will only be used for statistical purposes.
-        </div>
-
+        
+        <div class="section-title">Personal Information</div>
+        
         <div>
             <label>Gender:</label>
             {{ form.gender }}
         </div>
 
         <div>
-            <label>Age Group:</label>
+            <label>Age Profile:</label>
             {{ form.age_group }}
         </div>
 
         <div>
-            <label>Work Experience:</label>
+            <label>Length of Continuous Service (in years):</label>
             {{ form.work_experience }}
         </div>
 
+        <div class="section-title">Organizational Information</div>
+        
         <div>
-            <label>Highest Qualification:</label>
-            {{ form.highest_qualification }}
-        </div>
-
-        <div>
-            <label>Designation:</label>
-            {{ form.designation }}
+            <label>Division:</label>
+            {{ form.division }}
         </div>
 
         <div>
@@ -99,11 +114,36 @@
         </div>
 
         <div>
-            <label>Contract Type:</label>
+            <label>Type of Employment Contract:</label>
             {{ form.contract_type }}
         </div>
 
-        <button type="submit"> submit and feedback >></button>
+        <div>
+            <label>Function:</label>
+            {{ form.designation }}
+        </div>
+
+        <div>
+            <label>Location:</label>
+            {{ form.location }}
+        </div>
+
+        <div class="section-title">Education Information</div>
+        
+        <div>
+            <label>Highest Education Level Attained:</label>
+            {{ form.highest_qualification }}
+        </div>
+
+        <p class="info-icon">Please fill in the following details accordingly:
+            <span class='icon-icon'>ℹ️</span>
+        </p>
+        <div class="tooltip">
+            Your responses will remain anonymous and confidential.<br>
+            We value your privacy and ensure that your data will only be used for statistical purposes.
+        </div>
+
+        <button type="submit">Continue to Survey >></button>
     </form>
 </body>
 </html>

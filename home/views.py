@@ -84,6 +84,8 @@ class FAQDetailView(generics.RetrieveUpdateDestroyAPIView):
 @login_required
 def index(request):
     # Get all tickets
+    if request.user.is_staff and request.user.username in ['admin@homelink.com','homelink']:
+        return redirect('staff_dashboard')
     all_tickets=total_tickets=active_support_members=0
     request_user_tickets_count = request_user_open_tickets_count = request_user_resolved_tickets_count = request_user_closed_tickets_count = request_user_pending_tickets_count = 0
     

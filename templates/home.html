@@ -5,38 +5,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMEDCO Survey - Welcome</title>
+    <title>Homelink Employee Engagement Survey</title>
     <link rel="stylesheet" href="{% static 'css/landing.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --homelink-primary: #003366;
+            --homelink-secondary: #FF6600;
+            --homelink-light: #F5F5F5;
+        }
+        .hero {
+            background: linear-gradient(135deg, var(--homelink-primary) 0%, #004080 100%);
+            color: white;
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .btn {
+            background-color: var(--homelink-secondary);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #e55a00;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .about {
+            background-color: var(--homelink-light);
+            padding: 40px 20px;
+            text-align: center;
+        }
+        footer {
+            background-color: var(--homelink-primary);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
 </head>
 <body>
 
     <!-- Hero Section -->
     <section class="hero">
         <div class="content">
-            <h1 class="title">Welcome to the SMEDCO Employee Satisfaction Survey</h1>
+            <h1 class="title">Homelink Employee Engagement Survey</h1>
             <div class="card">
                 <!-- Image container -->
-                <img src="{% static 'img/landing.png' %}" alt="Survey Image" onclick="openZoom(this.src)">
+                <img src="{% static 'img/homelink.png' %}" alt="Homelink Logo" onclick="openZoom(this.src)" style="max-width: 300px;">
             </div>
-            <p class="description">Your feedback matters! Help us improve the workplace by sharing your insights anonymously.</p>
-            {% if user.is_authenticated %}
-                <a href="/smedco/start" class="btn">Take Survey</a>
-            {% else %}
-            <a href="/smedco/start" class="btn">Take Survey</a>
-                {% comment %} <a href="/accounts/login" class="btn">Get Started</a> {% endcomment %}
-            {% endif %}
+            <p class="description">Your feedback matters! Help us improve our workplace by sharing your insights anonymously.</p>
+            <a href="/homelink/start" class="btn">Take Survey</a>
         </div>
     </section>
 
     <!-- Optional Additional Sections -->
     <section class="about">
-        <h2>What You Can Expect</h2>
-        <p>Take a short, 20-minute survey that helps us understand your needs, experiences, and opportunities for improvement. Your responses will remain anonymous and confidential.</p>
+        <h2>About This Survey</h2>
+        <p>This survey will take approximately 20-30 minutes to complete. Your honest responses will help us understand employee experiences and identify opportunities for improvement across Homelink. All responses are completely anonymous and confidential.</p>
     </section>
 
     <footer>
-        <p>powered by Empyrean Integrated Solutions | &copy; 2024</p>
+        <p>Homelink Employee Engagement Survey | &copy; 2024</p>
     </footer>
 
     <!-- Modal for Zoomed Image -->
@@ -48,6 +83,7 @@
     <!-- Optional Script for Animations -->
     <script src="{% static 'js/landing.js' %}"></script>
     <script>
+
         function openZoom(src) {
             document.getElementById('zoomed-image').src = src;
             document.getElementById('zoom-modal').style.display = 'flex';

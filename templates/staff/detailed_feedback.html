@@ -3,15 +3,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Detailed Feedback</title>
+    <title>Detailed Feedback - Homelink</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
+        :root {
+            --homelink-primary: #003366;
+            --homelink-secondary: #FF6600;
+        }
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f9f9f9; /* Light gray background */
-            color: #333; /* Dark text color for readability */
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .header {
+            background: var(--homelink-primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
         .feedback-list {
             list-style-type: none;
@@ -20,53 +32,116 @@
         .feedback-item {
             background: white;
             border-radius: 10px;
-            padding: 15px;
-            margin: 10px 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--homelink-primary);
         }
         .feedback-item:hover {
-            transform: scale(1.02);
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
+        .feedback-meta {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .popup-content {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .response-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .response-score {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .score-high { background-color: #4CAF50; color: white; }
+        .score-medium { background-color: #FFC107; color: black; }
+        .score-low { background-color: #F44336; color: white; }
     </style>
 </head>
 <body>
-    <h1>Detailed Feedback</h1>
-    <ul class="feedback-list">
-        {% for feedback in feedback_list %}
-            <li class="feedback-item" onclick="showFeedbackDetails('{{ feedback.id }}')">
-                Feedback #{{ forloop.counter }}: Click to view details
-            </li>
-        {% empty %}
-            <li>No feedback available.</li>
-        {% endfor %}
-    </ul>
+    <div class="header">
+        <h1>Homelink Employee Feedback</h1>
+        <p>Detailed Response Analysis</p>
+    </div>
+
+    {% if feedback_list %}
+        <ul class="feedback-list">
+            {% for feedback in feedback_list %}
+                <li class="feedback-item" onclick="showFeedbackDetails({{ feedback.user_id.id }})">
+                    <div class="feedback-meta">
+                        User #{{ feedback.user_id.id }} | 
+                        {{ feedback.response_date|date:"M d, Y" }}
+                    </div>
+                    <strong>View detailed responses →</strong>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div style="text-align: center; padding: 40px;">
+            <h3>No feedback available yet.</h3>
+            <p>Survey responses will appear here once employees complete the survey.</p>
+        </div>
+    {% endif %}
 
     <!-- Popup for feedback details -->
-    <div id="feedbackPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center;">
-        <div style="background:white; padding:20px; border-radius:10px; max-width:600px; width:80%;">
-            <span style="cursor:pointer; float:right;" onclick="closePopup()">✖</span>
+    <div id="feedbackPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000;">
+        <div style="background:white; padding:30px; border-radius:15px; max-width:800px; width:90%; max-height:80vh; overflow:hidden;">
+            <span style="cursor:pointer; float:right; font-size:24px; font-weight:bold;" onclick="closePopup()">✖</span>
             <h2>Feedback Details</h2>
-            <div id="feedbackContent"></div>
+            <div id="feedbackContent" class="popup-content"></div>
         </div>
     </div>
 
     <script>
-        function showFeedbackDetails(feedbackId) {
-            // Fetch the feedback details via AJAX (example function)
-            fetch(`/feedback/${feedbackId}/details/`)
+        function showFeedbackDetails(userId) {
+            fetch(`/homelink/feedback/${userId}/details/`)
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('feedbackContent').innerHTML = data.details; // Populate popup with feedback
-                    document.getElementById('feedbackPopup').style.display = 'flex'; // Show popup
+                    let content = '<div class="response-list">';
+                    data.feedbacks.forEach((feedback, index) => {
+                        const scoreClass = feedback.response >= 4 ? 'score-high' : 
+                                         feedback.response >= 3 ? 'score-medium' : 'score-low';
+                        content += `
+                            <div class="response-item">
+                                <strong>${index + 1}. ${feedback.question_text}</strong>
+                                <div>
+                                    <span class="response-score ${scoreClass}">${feedback.response}/6</span>
+                                    ${feedback.response}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    content += '</div>';
+                    document.getElementById('feedbackContent').innerHTML = content;
+                    document.getElementById('feedbackPopup').style.display = 'flex';
                 })
-                .catch(error => console.error('Error fetching feedback details:', error));
+                .catch(error => {
+                    console.error('Error fetching feedback details:', error);
+                    document.getElementById('feedbackContent').innerHTML = 
+                        '<p style="color: red;">Error loading feedback details. Please try again.</p>';
+                });
         }
 
         function closePopup() {
-            document.getElementById('feedbackPopup').style.display = 'none'; // Hide popup
+            document.getElementById('feedbackPopup').style.display = 'none';
         }
+
+        // Close popup when clicking outside
+        document.getElementById('feedbackPopup').addEventListener('click', function(e) {
+            if (e.target === this) closePopup();
+        });
     </script>
 </body>
 </html>
