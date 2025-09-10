@@ -1,3 +1,4 @@
+#a_home/reports.py
 from django.shortcuts import render
 from django.http import JsonResponse
 from .models import JobSatisfactionQuestion, LikertScaleAnswer, DemographicData
@@ -6,6 +7,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.timezone import now
 import datetime
 def generate_full_report(request):
+    # Update thresholds for 6-point scale
+    POSITIVE_THRESHOLD = 4
+    NEGATIVE_THRESHOLD = 3
+    
     report_data = {
         "feedback_by_department": [],
         "feedback_by_qualification": [],
@@ -14,43 +19,40 @@ def generate_full_report(request):
         "feedback_by_question": []
     }
 
-    # Fetching feedback data based on department
+    # Fetching feedback data with updated thresholds
     feedback_by_department = DemographicData.objects.values('department').annotate(
         total_responses=Count('user_id', distinct=True),
-        positive_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__gte=4)),
-        negative_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__lt=4)),
+        positive_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__gte=POSITIVE_THRESHOLD)),
+        negative_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__lte=NEGATIVE_THRESHOLD)),
     )
     report_data["feedback_by_department"] = list(feedback_by_department)
 
-    # Fetching feedback data based on highest qualification
     feedback_by_qualification = DemographicData.objects.values('highest_qualification').annotate(
         total_responses=Count('user_id', distinct=True),
-        positive_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__gte=4)),
-        negative_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__lt=4)),
+        positive_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__gte=POSITIVE_THRESHOLD)),
+        negative_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__lte=NEGATIVE_THRESHOLD)),
     )
     report_data["feedback_by_qualification"] = list(feedback_by_qualification)
 
-    # Fetching feedback data based on age group
     feedback_by_age_group = DemographicData.objects.values('age_group').annotate(
         total_responses=Count('user_id', distinct=True),
-        positive_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__gte=4)),
-        negative_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__lt=4)),
+        positive_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__gte=POSITIVE_THRESHOLD)),
+        negative_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__lte=NEGATIVE_THRESHOLD)),
     )
     report_data["feedback_by_age_group"] = list(feedback_by_age_group)
 
-    # Fetching feedback data based on designation
     feedback_by_designation = DemographicData.objects.values('designation').annotate(
         total_responses=Count('user_id', distinct=True),
-        positive_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__gte=4)),
-        negative_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__lt=4)),
+        positive_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__gte=POSITIVE_THRESHOLD)),
+        negative_feedback_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__lte=NEGATIVE_THRESHOLD)),
     )
     report_data["feedback_by_designation"] = list(feedback_by_designation)
 
-    # Question-based analysis
+    # Question-based analysis with updated thresholds
     questions = JobSatisfactionQuestion.objects.prefetch_related('answers').annotate(
         response_counts=Count('answers'),
-        positive_feedback_count=Count('answers', filter=Q(answers__response__gte=4)),
-        negative_feedback_count=Count('answers', filter=Q(answers__response__lt=4)),
+        positive_feedback_count=Count('answers', filter=Q(answers__response__gte=POSITIVE_THRESHOLD)),
+        negative_feedback_count=Count('answers', filter=Q(answers__response__lte=NEGATIVE_THRESHOLD)),
     )
 
     for question in questions:
@@ -63,29 +65,38 @@ def generate_full_report(request):
         })
 
     return render(request, 'staff/full_report.html', {'report_data': report_data, 'date': now()})
+
+# Update other report functions similarly with the new thresholds
 @csrf_exempt
 def generate_department_report(request):
     if request.method == 'GET':
         department_name = request.GET.get('department')
         
         if not department_name:
-            # Show department selection page
             departments = DemographicData.objects.values_list('department', flat=True).distinct()
             return render(request, 'reports/department_select.html', {'departments': departments})
         
+        # Update thresholds
+        POSITIVE_THRESHOLD = 4
+        NEGATIVE_THRESHOLD = 3
+        
         demographic_data = DemographicData.objects.filter(department=department_name)
 
-        # Get department statistics
         department_stats = demographic_data.aggregate(
             total_employees=Count('user_id', distinct=True),
             avg_feedback=Avg('user_id__likertscaleanswer__response'),
-            total_responses=Count('user_id__likertscaleanswer')
+            total_responses=Count('user_id__likertscaleanswer'),
+            positive_responses=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__gte=POSITIVE_THRESHOLD)),
+            negative_responses=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__lte=NEGATIVE_THRESHOLD))
         )
 
-        # Get question analysis for this department
         questions = JobSatisfactionQuestion.objects.annotate(
             dept_response_count=Count('answers', filter=Q(answers__user_id__demographicdata__department=department_name)),
-            dept_avg_score=Avg('answers__response', filter=Q(answers__user_id__demographicdata__department=department_name))
+            dept_avg_score=Avg('answers__response', filter=Q(answers__user_id__demographicdata__department=department_name)),
+            dept_positive_count=Count('answers', filter=Q(answers__user_id__demographicdata__department=department_name, 
+                                                        answers__response__gte=POSITIVE_THRESHOLD)),
+            dept_negative_count=Count('answers', filter=Q(answers__user_id__demographicdata__department=department_name, 
+                                                        answers__response__lte=NEGATIVE_THRESHOLD))
         ).filter(dept_response_count__gt=0)
 
         context = {
@@ -98,6 +109,7 @@ def generate_department_report(request):
         return render(request, 'reports/department_report.html', context)
     
     return render(request, 'reports/error.html', {'error': 'Invalid request method'})
+
 
 @csrf_exempt
 def generate_designation_report(request):

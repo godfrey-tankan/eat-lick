@@ -28,27 +28,21 @@ class JobSatisfactionQuestion(models.Model):
 
 class LikertScaleAnswer(models.Model):
     RESPONSE_CHOICES = [
-        (6, 'Strongly Agree'),
-        (5, 'Agree'),
-        (4, "Don't Know"),
-        (3, 'Disagree'),
-        (2, 'Strongly Disagree'),
+        (1, 'Disagree very much'),
+        (2, 'Disagree moderately'),
+        (3, 'Disagree slightly'),
+        (4, 'Agree slightly'),
+        (5, 'Agree moderately'),
+        (6, 'Agree very much'),
     ]
     
-    YES_NO_CHOICES = [
-        (1, 'Yes'),
-        (0, 'No'),
-    ]
 
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     question = models.ForeignKey(JobSatisfactionQuestion, related_name='answers', on_delete=models.CASCADE)
     response = models.IntegerField(choices=RESPONSE_CHOICES, null=True, blank=True)
-    text_response = models.TextField(blank=True, null=True) 
     response_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        if self.text_response:
-            return f"Answer to {self.question.question_text}: {self.text_response[:50]}..."
         return f"Answer to {self.question.question_text}: {self.get_response_display()}"
 
 class DemographicData(models.Model):

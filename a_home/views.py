@@ -1,3 +1,4 @@
+# a_home/views.py
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -8,9 +9,10 @@ from django.views.decorators.csrf import csrf_exempt
 from a_bot.views import get_text_message_input,send_message
 from django.contrib.auth.decorators import login_required
 from .models import *
-from django.db.models import Count, Avg, OuterRef, Subquery,When, IntegerField, Case, Q
+from django.db.models import Count, Avg, OuterRef, Subquery, When, IntegerField, Case, Q, Prefetch
 from .decorators import check_user_feedback
 from django.utils.timezone import now
+import time
 
 
 # Create your views here.
@@ -24,16 +26,11 @@ def staff_dashboard_view(request):
     if not request.user.is_staff:
         return HttpResponse('You are not authorized to view this page', status=403)
 
-    # Update qualification mapping to match Homelink choices
-    QUALIFICATION_VALUE_MAP = {
-        'o_level': 1,
-        'a_level': 2,
-        'diploma': 3,
-        'degree': 4,
-        'post_grad': 5,
-    }
+    # Update positive/negative thresholds for 6-point scale (4-6 positive, 1-3 negative)
+    POSITIVE_THRESHOLD = 4
+    NEGATIVE_THRESHOLD = 3
 
-    # Get total participants (users who have submitted answers)
+    # Get total participants
     total_participants = LikertScaleAnswer.objects.values('user_id').distinct().count()
 
     # Calculate average feedback for each department
@@ -42,8 +39,9 @@ def staff_dashboard_view(request):
     ).order_by('-avg_feedback')
 
     most_proper_department = department_feedback.first() if department_feedback else None
+    critical_department = department_feedback.last() if department_feedback else None
 
-    # Calculate average qualification (convert text values to numeric scores)
+    # Calculate average qualification
     qualification_scores = {
         'o_level': 1,
         'a_level': 2, 
@@ -52,62 +50,50 @@ def staff_dashboard_view(request):
         'post_grad': 5,
     }
     
-    # Get all qualifications and convert to scores
     qualifications = DemographicData.objects.values_list('highest_qualification', flat=True)
     qualification_scores_list = [qualification_scores.get(q, 0) for q in qualifications if q in qualification_scores]
-    
-    # Calculate average
     average_qualification_score = sum(qualification_scores_list) / len(qualification_scores_list) if qualification_scores_list else 0
     
-    # Convert back to text representation
     average_qualification_str = None
     if average_qualification_score is not None:
-        # Find the closest qualification level
         rounded_score = round(average_qualification_score)
         average_qualification_str = next(
             (key for key, value in qualification_scores.items() if value == rounded_score),
-            'o_level'  # default
+            'o_level'
         )
 
-    # Determine critical department needing attention (lowest average feedback)
-    critical_department = department_feedback.last() if department_feedback else None
-
-    # Get the top 3 complaints (questions with lowest average scores)
+    # Get top complaints
     top_complaints = LikertScaleAnswer.objects.values('question__question_text').annotate(
         avg_score=Avg('response'),
         response_count=Count('id')
     ).filter(response_count__gte=3).order_by('avg_score')[:3]
 
-    # Format complaints for display
-    top_complaints_list = [f"{complaint['question__question_text'][:50]}... (Avg: {complaint['avg_score']:.1f})" 
-                        for complaint in top_complaints]
+    top_complaints_list = [f"{complaint['question__question_text'][:50]}... (Avg: {complaint['avg_score']:.1f}/6)" 
+                    for complaint in top_complaints]
 
-    # Prepare data for charts - feedback distribution by department
+    # Prepare data for charts
     feedback_distribution_by_department = DemographicData.objects.values('department').annotate(
         total_responses=Count('user_id__likertscaleanswer'),
-        positive_feedback=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__gte=4)),
-        negative_feedback=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__lt=4))
+        positive_feedback=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__gte=POSITIVE_THRESHOLD)),
+        negative_feedback=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__lte=NEGATIVE_THRESHOLD))
     )
 
-    # Average feedback by department
     average_feedback_by_department = DemographicData.objects.values('department').annotate(
         avg_feedback=Avg('user_id__likertscaleanswer__response')
     )
 
-    # Prepare data for the template
     chart_data = {
         'feedback_distribution_by_department': list(feedback_distribution_by_department),
         'average_feedback_by_department': list(average_feedback_by_department),
     }
 
-    # Pass the new context variables
     context = {
         'total_participants': total_participants,
         'most_proper_department': most_proper_department,
         'average_qualification': average_qualification_str,
         'critical_department': critical_department,
         'top_complaints': top_complaints_list,
-        'chart_data': json.dumps(chart_data),  # Serialize to JSON for JavaScript
+        'chart_data': json.dumps(chart_data),
     }
 
     return render(request, 'staff/staff_dashboard.html', context)
@@ -118,110 +104,120 @@ def aggregated_feedback_view(request):
     if not request.user.is_staff:
         return HttpResponse('You are not authorized to view this page', status=403)
     
-    # Get total responses count
-    total_responses = LikertScaleAnswer.objects.count()
+    start_time = time.time()
     
-    # Get total number of participants (unique users)
+    # Update thresholds for 6-point scale
+    POSITIVE_THRESHOLD = 4
+    NEGATIVE_THRESHOLD = 3
+    
+    questions = JobSatisfactionQuestion.objects.prefetch_related(
+        Prefetch('answers', queryset=LikertScaleAnswer.objects.select_related('user_id'))
+    )
+    
+    total_responses = LikertScaleAnswer.objects.count()
     total_participants = LikertScaleAnswer.objects.values('user_id').distinct().count()
-
+    
     question_summary = {}
-    questions = JobSatisfactionQuestion.objects.all()
-
+    
+    # Precompute response distributions
+    response_distributions = {}
+    for i in range(1, 7):  # Changed to 1-6 range
+        response_distributions[i] = LikertScaleAnswer.objects.filter(response=i) \
+            .values('question') \
+            .annotate(count=Count('id'))
+    
+    dist_dict = {}
+    for i in range(1, 7):
+        dist_dict[i] = {item['question']: item['count'] for item in response_distributions[i]}
+    
+    question_avgs = LikertScaleAnswer.objects.values('question') \
+        .annotate(
+            avg_response=Avg('response'),
+            total_count=Count('id'),
+            positive_count=Count('id', filter=Q(response__gte=POSITIVE_THRESHOLD)),
+            negative_count=Count('id', filter=Q(response__lte=NEGATIVE_THRESHOLD))
+        )
+    
+    avg_dict = {item['question']: item for item in question_avgs}
+    
     for question in questions:
-        responses = LikertScaleAnswer.objects.filter(question=question)
-        count_responses = responses.count()
+        question_data = avg_dict.get(question.id)
         
-        if count_responses > 0:
-            avg_response = responses.aggregate(Avg('response'))['response__avg']
+        if question_data and question_data['total_count'] > 0:
+            distribution = {}
+            for i in range(1, 7):
+                distribution[i] = dist_dict[i].get(question.id, 0)
             
-            # For Yes/No questions, adjust the positive threshold
-            if any(phrase in question.question_text.lower() for phrase in ['yes/no', 'have you', 'are you', 'is the', 'does the']):
-                percentage_positive = responses.filter(response=1).count() / count_responses * 100
-            else:
-                # For Likert scale questions (1-6), consider 4-6 as positive
-                percentage_positive = responses.filter(response__gte=4).count() / count_responses * 100
-            # Calculate response distribution for better insights
-            response_distribution = {}
-            for i in range(1, 7):  # For Likert scale 1-6
-                response_distribution[i] = responses.filter(response=i).count()
+            percentage_positive = (question_data['positive_count'] / question_data['total_count']) * 100
             
             question_summary[question] = {
-                'average': avg_response,
+                'average': question_data['avg_response'],
                 'percentage_positive': percentage_positive,
-                'count': count_responses,
-                'distribution': response_distribution
+                'count': question_data['total_count'],
+                'distribution': distribution
             }
-
-    # Department feedback analysis - improved query
-    departments_feedback = DemographicData.objects.values('department').annotate(
-        total_employees=Count('user_id', distinct=True),
-        avg_feedback=Avg('user_id__likertscaleanswer__response'),
-        response_count=Count('user_id__likertscaleanswer'),
-        positive_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__gte=4)),
-        negative_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__lte=3))
-    ).filter(response_count__gt=0).order_by('avg_feedback')
-
-    # Get worst and best departments
-    worst_department = departments_feedback.first() if departments_feedback else None
-    best_department = departments_feedback.last() if departments_feedback else None
-
-    # Salary complaints - more accurate calculation
-    # Get all pay-related questions
-    pay_questions = JobSatisfactionQuestion.objects.filter(category='pay')
-    salary_complaints = LikertScaleAnswer.objects.filter(
-        question__in=pay_questions,
-        response__lte=3  # Scores 1-3 are considered complaints
-    ).count()
-    # print("Salary complaints count:", salary_complaints)
-    # print("Total pay-related responses:", LikertScaleAnswer.objects.filter(question__in=pay_questions).count())
-    # print("percentage_positive:", question_summary)
     
-    # Calculate salary satisfaction percentage
-    total_pay_responses = LikertScaleAnswer.objects.filter(question__in=pay_questions).count()
-    salary_satisfaction_percentage = 0
-    if total_pay_responses > 0:
-        positive_pay_responses = LikertScaleAnswer.objects.filter(
-            question__in=pay_questions,
-            response__gte=4
-        ).count()
-        salary_satisfaction_percentage = (positive_pay_responses / total_pay_responses) * 100
-
-    # Get top concerns (questions with lowest average scores)
+    # Optimize department feedback analysis with new thresholds
+    departments_feedback = DemographicData.objects.values('department') \
+        .annotate(
+            total_employees=Count('user_id', distinct=True),
+            avg_feedback=Avg('user_id__likertscaleanswer__response'),
+            response_count=Count('user_id__likertscaleanswer'),
+            positive_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__gte=POSITIVE_THRESHOLD)),
+            negative_count=Count('user_id__likertscaleanswer', filter=Q(user_id__likertscaleanswer__response__lte=NEGATIVE_THRESHOLD))
+        ) \
+        .filter(response_count__gt=0) \
+        .order_by('avg_feedback')
+    
+    worst_department = departments_feedback.first()
+    best_department = departments_feedback.last()
+    
+    # Update salary complaints calculation
+    pay_data = LikertScaleAnswer.objects.filter(question__category='pay') \
+        .aggregate(
+            total=Count('id'),
+            complaints=Count('id', filter=Q(response__lte=NEGATIVE_THRESHOLD)),
+            positive=Count('id', filter=Q(response__gte=POSITIVE_THRESHOLD))
+        )
+    
+    salary_complaints = pay_data['complaints'] or 0
+    total_pay_responses = pay_data['total'] or 0
+    salary_satisfaction_percentage = (pay_data['positive'] / total_pay_responses * 100) if total_pay_responses > 0 else 0
+    
+    # Top concerns
     top_concerns = []
     for question, summary in question_summary.items():
-        if summary['count'] >= 5:  # Only include questions with sufficient responses
+        if summary['count'] >= 5:
             top_concerns.append({
                 'question': question,
                 'average': summary['average'],
                 'count': summary['count']
             })
     
-    # Sort by average score (lowest first) and take top 5
     top_concerns = sorted(top_concerns, key=lambda x: x['average'])[:5]
-
-    # Get overall satisfaction metrics
-    overall_avg_score = LikertScaleAnswer.objects.aggregate(avg=Avg('response'))['avg'] or 0
-    overall_positive_percentage = 0
-    if total_responses > 0:
-        overall_positive_responses = LikertScaleAnswer.objects.filter(response__gte=4).count()
-        overall_positive_percentage = (overall_positive_responses / total_responses) * 100
-
-    # Get response rate by department
+    
+    # Overall satisfaction metrics
+    overall_stats = LikertScaleAnswer.objects.aggregate(
+        avg_score=Avg('response'),
+        total=Count('id'),
+        positive=Count('id', filter=Q(response__gte=POSITIVE_THRESHOLD))
+    )
+    
+    overall_avg_score = overall_stats['avg_score'] or 0
+    overall_positive_percentage = (overall_stats['positive'] / overall_stats['total'] * 100) if overall_stats['total'] > 0 else 0
+    
+    # Department response rates
     department_response_rates = []
     for dept in departments_feedback:
-        total_employees_in_dept = DemographicData.objects.filter(
-            department=dept['department']
-        ).values('user_id').distinct().count()
-        
-        if total_employees_in_dept > 0:
-            response_rate = (dept['response_count'] / total_employees_in_dept) * 100
-            department_response_rates.append({
-                'department': dept['department'],
-                'response_rate': response_rate,
-                'total_employees': total_employees_in_dept,
-                'responses': dept['response_count']
-            })
-
+        department_response_rates.append({
+            'department': dept['department'],
+            'response_rate': (dept['response_count'] / dept['total_employees'] * 100) if dept['total_employees'] > 0 else 0,
+            'total_employees': dept['total_employees'],
+            'responses': dept['response_count']
+        })
+    
+    end_time = time.time()
+    
     context = {
         'total_responses': total_responses,
         'total_participants': total_participants,
@@ -236,9 +232,10 @@ def aggregated_feedback_view(request):
         'overall_avg_score': overall_avg_score,
         'overall_positive_percentage': overall_positive_percentage,
         'department_response_rates': department_response_rates,
-        'now': now()
+        'now': now(),
+        'execution_time': end_time - start_time
     }
-
+    
     return render(request, 'feedbacks/aggregated_feedback.html', context)
 
 # @check_user_feedback
@@ -303,8 +300,8 @@ def job_satisfaction_view(request):
                 print(f"Found user: {user.username}")
                 
                 # Check if user already submitted answers
-                demographic_ob = LikertScaleAnswer.objects.filter(user_id=user)
-                if demographic_ob.exists():
+                existing_answers = LikertScaleAnswer.objects.filter(user_id=user)
+                if existing_answers.exists():
                     print("User already submitted job satisfaction answers")
                     return render(request, 'review_submited.html')
                     
@@ -313,6 +310,7 @@ def job_satisfaction_view(request):
                 return render(request, 'demographic_data.html', {'form': DemographicDataForm(), 'error': 'User not found. Please start over.'})
             except Exception as e:
                 print('Exception -> ', e)
+                return render(request, 'demographic_data.html', {'form': DemographicDataForm(), 'error': 'An error occurred. Please try again.'})
                 
             # Process form data
             for field_name, response in form.cleaned_data.items():
@@ -321,21 +319,13 @@ def job_satisfaction_view(request):
                     try:
                         question = JobSatisfactionQuestion.objects.get(id=question_id)
                         
-                        if isinstance(response, str):  # Text field (open-ended)
-                            LikertScaleAnswer.objects.create(
-                                user_id=user,
-                                question=question, 
-                                response=0,
-                                text_response=response 
-                            )
-                            print(f"Saved text response for question {question_id}")
-                        else:
-                            LikertScaleAnswer.objects.create(
-                                user_id=user,
-                                question=question, 
-                                response=response
-                            )
-                            print(f"Saved response {response} for question {question_id}")
+                        # Save the response (all questions use the 6-point scale)
+                        LikertScaleAnswer.objects.create(
+                            user_id=user,
+                            question=question, 
+                            response=response
+                        )
+                        print(f"Saved response {response} for question {question_id}")
                     except JobSatisfactionQuestion.DoesNotExist:
                         print(f"Question with ID {question_id} does not exist")
                     except Exception as e:
@@ -351,7 +341,6 @@ def job_satisfaction_view(request):
         print("GET request, rendering empty form")
 
     return render(request, 'job_satisfaction.html', {'form': form})
-
 def thank_you(request):
     return render(request, 'thank_you.html')
 
@@ -364,32 +353,25 @@ def feedback_details(request, user_id):
     feedbacks = LikertScaleAnswer.objects.filter(user_id=user).select_related('question')
     
     feedback_details = []
+    # Updated response choices to match the 6-point scale
     RESPONSE_CHOICES = {
-        6: 'Strongly Agree',
-        5: 'Agree',
-        4: "Don't Know",
-        3: 'Disagree',
-        2: 'Strongly Disagree',
+        1: 'Disagree very much',
+        2: 'Disagree moderately',
+        3: 'Disagree slightly',
+        4: 'Agree slightly',
+        5: 'Agree moderately',
+        6: 'Agree very much',
     }
 
     for feedback in feedbacks:
-        try:
-            text_response_int = int(feedback.text_response)
-        except (TypeError, ValueError):
-            text_response_int = None
-        if text_response_int :
-            response_text = RESPONSE_CHOICES.get(text_response_int, 'No response')
-        elif feedback.text_response =='0':
-            response_text = "No"
-        else:
-            response_text = 'Yes' if feedback.text_response == '1' else feedback.text_response or 'No response'
         details = {
             'question_text': feedback.question.question_text,
             'response': feedback.response,
-            'response_text': response_text,
+            'response_text': RESPONSE_CHOICES.get(feedback.response, 'No response'),
             'response_date': feedback.response_date.strftime("%Y-%m-%d %H:%M")
         }
         feedback_details.append(details)
+
 
     return JsonResponse({'feedbacks': feedback_details})
 

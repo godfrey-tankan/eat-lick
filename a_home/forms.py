@@ -115,17 +115,14 @@ class DemographicDataForm(forms.ModelForm):
 
 
 class JobSatisfactionForm(forms.Form):
+    # Updated to match the 6-point scale from the document
     RESPONSE_CHOICES = [
-        (6, 'Strongly Agree'),
-        (5, 'Agree'),
-        (4, "Don't Know"),
-        (3, 'Disagree'),
-        (2, 'Strongly Disagree'),
-    ]
-    
-    YES_NO_CHOICES = [
-        (1, 'Yes'),
-        (0, 'No'),
+        (1, 'Disagree very much'),
+        (2, 'Disagree moderately'),
+        (3, 'Disagree slightly'),
+        (4, 'Agree slightly'),
+        (5, 'Agree moderately'),
+        (6, 'Agree very much'),
     ]
 
     def __init__(self, *args, **kwargs):
@@ -135,28 +132,11 @@ class JobSatisfactionForm(forms.Form):
         for question in questions:
             field_name = f'question_{question.id}'
             
-            # Check if this is a Yes/No question
-            if any(phrase in question.question_text.lower() for phrase in ['yes/no', 'have you', 'are you', 'is the', 'does the']):
-                self.fields[field_name] = forms.ChoiceField(
-                    choices=self.YES_NO_CHOICES,
-                    label=question.question_text,
-                    widget=forms.RadioSelect, 
-                    required=question.required,
-                    error_messages={'required': 'Please answer this question'}
-                )
-            # Check if this is an open-ended question
-            elif any(phrase in question.question_text.lower() for phrase in ['what do you', 'what are some', 'what would make']):
-                self.fields[field_name] = forms.CharField(
-                    label=question.question_text,
-                    widget=forms.Textarea(attrs={'rows': 4, 'placeholder': 'Please share your thoughts...'}),
-                    required=question.required,
-                    error_messages={'required': 'Please answer this question'}
-                )
-            else:
-                self.fields[field_name] = forms.ChoiceField(
-                    choices=self.RESPONSE_CHOICES,
-                    label=question.question_text,
-                    widget=forms.RadioSelect, 
-                    required=question.required,
-                    error_messages={'required': 'Please answer this question'}
-                )
+            # All questions use the 6-point Likert scale
+            self.fields[field_name] = forms.ChoiceField(
+                choices=self.RESPONSE_CHOICES,
+                label=question.question_text,
+                widget=forms.RadioSelect, 
+                required=question.required,
+                error_messages={'required': 'Please answer this question'}
+            )

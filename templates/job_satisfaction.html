@@ -52,6 +52,13 @@
             margin-bottom: 20px;
             border-left: 4px solid #c62828;
         }
+        .category-title {
+            background-color: #e6f2ff;
+            padding: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #0066cc;
+            font-weight: bold;
+        }
     </style>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -88,7 +95,7 @@
 <body>
     <div class="homelink-header">
         <h1>Homelink Employee Engagement Survey</h1>
-        <p>SECTIONS 2 & 3: Job Satisfaction Survey</p>
+        <p>JOB SATISFACTION AND ENGAGEMENT SURVEY</p>
     </div>
 
     <form method="post">
@@ -120,17 +127,18 @@
         </div>
         
         <div class="response-options">
-            <div class="response-option"><strong>Strongly Agree</strong></div>
-            <div class="response-option"><strong>Agree</strong></div>
-            <div class="response-option"><strong>Don't Know</strong></div>
-            <div class="response-option"><strong>Disagree</strong></div>
-            <div class="response-option"><strong>Strongly Disagree</strong></div>
+            <div class="response-option"><strong>Disagree very much</strong></div>
+            <div class="response-option"><strong>Disagree moderately</strong></div>
+            <div class="response-option"><strong>Disagree slightly</strong></div>
+            <div class="response-option"><strong>Agree slightly</strong></div>
+            <div class="response-option"><strong>Agree moderately</strong></div>
+            <div class="response-option"><strong>Agree very much</strong></div>
         </div>
 
-        <div class="section-title">Section 2: Job Satisfaction Questions (1-54)</div>
+        <div class="section-title">SECTION B: JOB SATISFACTION</div>
         
         {% for field in form %}
-            {% if forloop.counter <= 54 %}
+            {% if forloop.counter <= 30 %}
             <div class="question-container">
                 <h3>{{ forloop.counter }}. {{ field.label }}</h3>
                 {{ field }}
@@ -145,28 +153,10 @@
             {% endif %}
         {% endfor %}
         
-        <div class="section-title">Section 3: Organizational Culture Questions (55-79)</div>
+        <div class="section-title">SECTION C: JOB ENGAGEMENT</div>
         
         {% for field in form %}
-            {% if forloop.counter > 54 and forloop.counter <= 79 %}
-            <div class="question-container">
-                <h3>{{ forloop.counter }}. {{ field.label }}</h3>
-                {{ field }}
-                {% if field.errors %}
-                    <div style="color: red; margin-top: 5px;">
-                        {% for error in field.errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-            {% endif %}
-        {% endfor %}
-
-        <div class="section-title">Additional Questions (80-127)</div>
-        
-        {% for field in form %}
-            {% if forloop.counter > 79 %}
+            {% if forloop.counter > 30 and forloop.counter <= 39 %}
             <div class="question-container">
                 <h3>{{ forloop.counter }}. {{ field.label }}</h3>
                 {{ field }}

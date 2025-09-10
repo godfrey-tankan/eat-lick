@@ -194,6 +194,7 @@
             margin-bottom: 15px;
             border-radius: 8px;
             border-left: 4px solid #dee2e6;
+            transition: all 0.3s ease;
         }
 
         .response-score {
@@ -205,49 +206,47 @@
             margin-right: 10px;
         }
 
-        .score-high { 
-            background-color: #28a745; 
-            color: white; 
-            border-left-color: #28a745;
-        }
-        .score-medium { 
-            background-color: #ffc107; 
-            color: #212529; 
-            border-left-color: #ffc107;
-        }
-        .response-strongly-agree {
-            background-color: #28a745; /* Green */
+        /* 6-point Likert scale color coding */
+        .response-disagree-very-much {
+            background-color: #dc3545; /* Dark red */
             color: white;
+            border-left-color: #dc3545;
         }
 
-        .response-agree {
-            background-color: #90ee90; /* Light green */
-            color: #000;
-        }
-
-        .response-dont-know {
-            background-color: #ffc107; /* Amber */
-            color: #000;
-        }
-
-        .response-disagree {
+        .response-disagree-moderately {
             background-color: #fd7e14; /* Orange */
             color: white;
+            border-left-color: #fd7e14;
         }
 
-        .response-strongly-disagree {
-            background-color: #dc3545; /* Red */
+        .response-disagree-slightly {
+            background-color: #ffc107; /* Yellow/Amber */
+            color: #212529;
+            border-left-color: #ffc107;
+        }
+
+        .response-agree-slightly {
+            background-color: #90ee90; /* Light green */
+            color: #212529;
+            border-left-color: #90ee90;
+        }
+
+        .response-agree-moderately {
+            background-color: #28a745; /* Medium green */
             color: white;
+            border-left-color: #28a745;
         }
 
-        .response-none {
-            background-color: #ced4da; /* Gray */
-            color: #000;
+        .response-agree-very-much {
+            background-color: #155724; /* Dark green */
+            color: white;
+            border-left-color: #155724;
         }
-        .score-low { 
-            background-color: #dc3545; 
-            color: white; 
-            border-left-color: #dc3545;
+
+        .response-no-response {
+            background-color: #ced4da; /* Gray */
+            color: #495057;
+            border-left-color: #ced4da;
         }
 
         .unique-report-popup-overlay {
@@ -365,88 +364,190 @@
             color: var(--homelink-primary);
             margin-bottom: 15px;
         }
+
+        /* Enhanced Print Styles */
         @media print {
-    body {
-        background-color: white !important;
-        color: black !important;
-        padding: 0;
-        margin: 0;
-        font-size: 12px;
-        line-height: 1.4;
-    }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
 
-    .header,
-    .generate-report-button,
-    .unique-report-popup-overlay,
-    .popup,
-    .export-buttons,
-    .btn-generate,
-    .btn-cancel,
-    button {
-        display: none !important;
-    }
+            body {
+                background-color: white !important;
+                color: black !important;
+                padding: 10px;
+                margin: 0;
+                font-size: 11px;
+                line-height: 1.3;
+            }
 
-    .feedback-list {
-        display: block !important;
-        grid-template-columns: none !important;
-        margin: 0;
-    }
+            .header {
+                background: #003366 !important;
+                color: white !important;
+                padding: 15px;
+                margin-bottom: 15px;
+                border-radius: 5px;
+                page-break-after: avoid;
+            }
 
-    .feedback-item {
-        page-break-inside: avoid;
-        background-color: transparent !important;
-        border: 1px solid #000 !important;
-        border-left: none !important;
-        box-shadow: none !important;
-        margin-bottom: 10px;
-        padding: 10px;
-        font-size: 12px;
-        color: black !important;
-    }
+            .header h2 {
+                font-size: 18px;
+                margin: 0;
+            }
 
-    .feedback-item:hover {
-        transform: none !important;
-        box-shadow: none !important;
-        border-color: #000 !important;
-    }
+            .header p {
+                font-size: 12px;
+                margin: 5px 0 0 0;
+            }
 
-    .feedback-item strong {
-        color: black !important;
-    }
+            .generate-report-button,
+            .unique-report-popup-overlay,
+            .popup,
+            .export-buttons,
+            .btn-generate,
+            .btn-cancel,
+            .close,
+            button {
+                display: none !important;
+            }
 
-    .response-item {
-        border-left: 3px solid #333 !important;
-        padding: 10px !important;
-        color: black !important;
-        background-color: transparent !important;
-    }
+            .feedback-list {
+                display: block !important;
+                grid-template-columns: none !important;
+                margin: 0;
+                columns: 2;
+                column-gap: 15px;
+            }
 
-    .response-score {
-        background-color: #ccc !important;
-        color: black !important;
-        padding: 3px 6px;
-        border-radius: 4px;
-        font-size: 10px;
-    }
+            .feedback-item {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                background-color: #f8f9fa !important;
+                border: 1px solid #333 !important;
+                border-left: 4px solid #003366 !important;
+                box-shadow: none !important;
+                margin-bottom: 8px;
+                padding: 8px;
+                font-size: 10px;
+                color: black !important;
+                border-radius: 3px;
+            }
 
-    .report,
-    .popup-content {
-        box-shadow: none !important;
-        border: none !important;
-        background-color: white !important;
-        padding: 0 !important;
-    }
+            .feedback-item:hover {
+                transform: none !important;
+                box-shadow: none !important;
+            }
 
-    .export-buttons {
-        display: none !important;
-    }
+            .feedback-item strong {
+                color: #003366 !important;
+                font-weight: bold;
+            }
 
-    /* Avoid page breaks inside feedbacks */
-    .feedback-item,
-    .response-item {
-        page-break-inside: avoid;
-    }
-}
+            .popup-content {
+                position: static !important;
+                background-color: white !important;
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: none !important;
+                max-height: none !important;
+                overflow: visible !important;
+                border-radius: 0 !important;
+            }
+
+            .popup-content h3 {
+                color: #003366 !important;
+                font-size: 16px;
+                margin-bottom: 10px;
+                page-break-after: avoid;
+            }
+
+            .response-list {
+                columns: 1;
+                column-gap: 0;
+            }
+
+            .response-item {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                border: 1px solid #ccc !important;
+                border-radius: 3px !important;
+                padding: 8px !important;
+                margin-bottom: 6px !important;
+                color: black !important;
+                font-size: 10px;
+                line-height: 1.2;
+            }
+
+            /* Print colors for 6-point scale */
+            .response-disagree-very-much {
+                background-color: #ffebee !important;
+                border-left: 4px solid #dc3545 !important;
+            }
+
+            .response-disagree-moderately {
+                background-color: #fff3e0 !important;
+                border-left: 4px solid #fd7e14 !important;
+            }
+
+            .response-disagree-slightly {
+                background-color: #fffbf0 !important;
+                border-left: 4px solid #ffc107 !important;
+            }
+
+            .response-agree-slightly {
+                background-color: #f0fff0 !important;
+                border-left: 4px solid #90ee90 !important;
+            }
+
+            .response-agree-moderately {
+                background-color: #e8f5e8 !important;
+                border-left: 4px solid #28a745 !important;
+            }
+
+            .response-agree-very-much {
+                background-color: #e0f2e0 !important;
+                border-left: 4px solid #155724 !important;
+            }
+
+            .response-no-response {
+                background-color: #f8f9fa !important;
+                border-left: 4px solid #ced4da !important;
+            }
+
+            .response-score {
+                background-color: transparent !important;
+                color: black !important;
+                padding: 2px 6px;
+                border: 1px solid #333;
+                border-radius: 3px;
+                font-size: 9px;
+                font-weight: bold;
+            }
+
+            /* Optimize space usage */
+            .response-item strong {
+                display: block;
+                margin-bottom: 3px;
+                color: black !important;
+                font-size: 10px;
+            }
+
+            .empty-state {
+                text-align: center;
+                color: #666 !important;
+            }
+
+            /* Page break controls */
+            h3, .response-item strong {
+                page-break-after: avoid;
+            }
+
+            .response-item:nth-child(15n) {
+                page-break-after: always;
+            }
+        }
     </style>
 </head>
 <body>
@@ -590,28 +691,32 @@
                         let content = '<div class="response-list">';
                         data.feedbacks.forEach((feedback, index) => {
                             // Determine score class based on response value
-                        let scoreClass = 'response-none';
-                        let scoreText = feedback.response_text || 'No response';
+                            let scoreClass = 'response-no-response';
+                            let scoreText = feedback.response_text || 'No response';
 
-                        switch (scoreText) {
-                            case 'Strongly Agree':
-                                scoreClass = 'response-strongly-agree';
-                                break;
-                            case 'Agree':
-                                scoreClass = 'response-agree';
-                                break;
-                            case "Don't Know":
-                                scoreClass = 'response-dont-know';
-                                break;
-                            case 'Disagree':
-                                scoreClass = 'response-disagree';
-                                break;
-                            case 'Strongly Disagree':
-                                scoreClass = 'response-strongly-disagree';
-                                break;
-                        }
+                            switch (scoreText) {
+                                case 'Disagree very much':
+                                    scoreClass = 'response-disagree-very-much';
+                                    break;
+                                case 'Disagree moderately':
+                                    scoreClass = 'response-disagree-moderately';
+                                    break;
+                                case 'Disagree slightly':
+                                    scoreClass = 'response-disagree-slightly';
+                                    break;
+                                case 'Agree slightly':
+                                    scoreClass = 'response-agree-slightly';
+                                    break;
+                                case 'Agree moderately':
+                                    scoreClass = 'response-agree-moderately';
+                                    break;
+                                case 'Agree very much':
+                                    scoreClass = 'response-agree-very-much';
+                                    break;
+                                default:
+                                    scoreClass = 'response-no-response';
+                            }
 
-                            
                             content += `
                                 <div class="response-item ${scoreClass}">
                                     <strong>${index + 1}. ${feedback.question_text}</strong>
@@ -658,24 +763,62 @@
                     <head>
                         <title>Homelink Feedback Report</title>
                         <style>
-                            body { font-family: Arial, sans-serif; margin: 20px; }
-                            .response-item { margin-bottom: 15px; padding: 10px; border-left: 4px solid #ddd; }
-                            .score-high { border-left-color: #28a745; }
-                            .score-medium { border-left-color: #ffc107; }
-                            .score-low { border-left-color: #dc3545; }
+                            body { 
+                                font-family: Arial, sans-serif; 
+                                margin: 15px; 
+                                font-size: 12px; 
+                                line-height: 1.4;
+                            }
+                            .response-item { 
+                                margin-bottom: 12px; 
+                                padding: 8px; 
+                                border-left: 4px solid #ddd; 
+                                border-radius: 3px;
+                                page-break-inside: avoid;
+                            }
+                            .response-disagree-very-much { 
+                                background-color: #ffebee; 
+                                border-left-color: #dc3545; 
+                            }
+                            .response-disagree-moderately { 
+                                background-color: #fff3e0; 
+                                border-left-color: #fd7e14; 
+                            }
+                            .response-disagree-slightly { 
+                                background-color: #fffbf0; 
+                                border-left-color: #ffc107; 
+                            }
+                            .response-agree-slightly { 
+                                background-color: #f0fff0; 
+                                border-left-color: #90ee90; 
+                            }
+                            .response-agree-moderately { 
+                                background-color: #e8f5e8; 
+                                border-left-color: #28a745; 
+                            }
+                            .response-agree-very-much { 
+                                background-color: #e0f2e0; 
+                                border-left-color: #155724; 
+                            }
                             .response-score { 
                                 display: inline-block; 
-                                padding: 2px 8px; 
+                                padding: 3px 8px; 
                                 border-radius: 12px; 
-                                font-size: 12px; 
+                                font-size: 10px; 
                                 font-weight: bold; 
                                 margin-right: 10px; 
-                                color: white; 
+                                border: 1px solid #333;
                             }
-                            .score-high .response-score { background-color: #28a745; }
-                            .score-medium .response-score { background-color: #ffc107; color: black; }
-                            .score-low .response-score { background-color: #dc3545; }
-                            @media print { .content { page-break-after: always; } }
+                            h2 {
+                                color: #003366;
+                                font-size: 18px;
+                                margin-bottom: 15px;
+                            }
+                            strong {
+                                color: #003366;
+                                display: block;
+                                margin-bottom: 5px;
+                            }
                         </style>
                     </head>
                     <body>
