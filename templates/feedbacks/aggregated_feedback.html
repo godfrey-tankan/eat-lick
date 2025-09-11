@@ -1,3 +1,4 @@
+{% load tz %} 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -676,7 +677,7 @@
         </div>
 
         <div class="footer">
-            <p>© 2024 Homelink Employee Engagement Survey | Generated on {{ now|date:"F j, Y, g:i a" }}</p>
+            <p>© {% now "Y" %} Homelink Employee Engagement Survey | Generated on {{ now|date:"F j, Y, g:i a" }}</p>
             <p>Confidential - For management use only</p>
         </div>
     </div>

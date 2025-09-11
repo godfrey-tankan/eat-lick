@@ -1,5 +1,5 @@
 {% load static %}
-
+{% load tz %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -71,7 +71,7 @@
     </section>
 
     <footer>
-        <p>Homelink Employee Engagement Survey | &copy; 2024</p>
+        <p>Homelink Employee Engagement Survey | &copy; {% now "Y" %}</p>
     </footer>
 
     <!-- Modal for Zoomed Image -->
