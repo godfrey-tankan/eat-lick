@@ -63,6 +63,7 @@ class DemographicData(models.Model):
         ('1_to_5', '1 to 5 years'),
         ('5_to_10', '5 to 10 years'),
         ('10_to_15', '10 to 15 years'),
+        ('over_15', 'Over 15 years'),
     ]
     
     QUALIFICATION_CHOICES = [
@@ -81,17 +82,12 @@ class DemographicData(models.Model):
     ]
     
     DEPARTMENT_CHOICES = [
-        ('money_transfers', 'Money Transfers'),
+        ('home_link_money_transfers', 'Homelink Money Transfers'),
         ('homelink_finance', 'Homelink Finance'),
-        ('compliance', 'Compliance'),
-        ('legal', 'Legal'),
-        ('finance', 'Finance'),
-        ('marketing', 'Marketing'),
-        ('projects', 'Projects'),
-        ('mortgages', 'Mortgages'),
+        ('projects_and_mortgages', 'Projects And Mortgages'),
+        ('finance_and_investments', 'Finance And Investments'),
+        ('support_services', 'Support Services'),
         ('security', 'Security'),
-        ('human_capital', 'Human Capital'),
-        ('ict', 'ICT'),
     ]
     
     DIVISION_CHOICES = [
@@ -111,7 +107,7 @@ class DemographicData(models.Model):
         ('kwekwe', 'Kwekwe'),
         ('gweru', 'Gweru'),
         ('bulawayo', 'Bulawayo'),
-        ('masvingo', 'Masvingo'),
+        ('mutare_and_rusape', 'Mutare and Rusape'),
     ]
     
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)

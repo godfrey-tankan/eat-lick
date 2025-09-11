@@ -47,7 +47,7 @@
 
         .feedback-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
             gap: 25px;
             margin-bottom: 30px;
         }
@@ -603,8 +603,12 @@
                 <div class="feedback-item" onclick="showUserFeedback({{ feedback.user_id.id }})">
                     <p><strong>User ID:</strong> {{ feedback.user_id.id }}</p>
                     <p><strong>Gender:</strong> {{ feedback.get_gender_display }}</p>
+                    <p><strong>Location:</strong> {{ feedback.get_location_display }}</p>
+                    <p><strong>Qualification:</strong> {{ feedback.get_highest_qualification_display }}</p>
                     <p><strong>Designation:</strong> {{ feedback.get_designation_display }}</p>
                     <p><strong>Department:</strong> {{ feedback.get_department_display }}</p>
+                    <p><strong>Experience:</strong> {{ feedback.get_work_experience_display }}</p>
+                    <p><strong>Age:</strong> {{ feedback.get_age_group_display }}</p>
                     <p><strong>Date Submitted:</strong> {{ feedback.response_date|date:"M d, Y H:i" }}</p>
                 </div>
             {% endfor %}
