@@ -129,3 +129,38 @@ class ChartDataSerializer(serializers.Serializer):
     open_counts_monthly = serializers.ListField(child=serializers.IntegerField())
     closed_counts_monthly = serializers.ListField(child=serializers.IntegerField())
     pending_counts_monthly = serializers.ListField(child=serializers.IntegerField())
+
+class ReportSerializer(serializers.Serializer):
+    metadata = serializers.DictField()
+    total_tickets = serializers.IntegerField(required=False)
+    resolved_tickets = serializers.IntegerField(required=False)
+    resolution_rate = serializers.FloatField(required=False)
+    average_resolution_time = serializers.FloatField(required=False)
+    daily_stats = serializers.ListField(required=False)
+    weekly_stats = serializers.ListField(required=False)
+    support_member_stats = serializers.ListField(required=False)
+    branch_stats = serializers.ListField(required=False)
+    status_distribution = serializers.DictField(required=False)
+    resolution_time_analysis = serializers.DictField(required=False)
+    busiest_day = serializers.DictField(required=False)
+    top_performers = serializers.ListField(required=False)
+    
+    def to_representation(self, instance):
+        # Convert timedelta fields to readable format
+        representation = super().to_representation(instance)
+        
+        # Format average resolution time
+        if 'average_resolution_time' in representation and representation['average_resolution_time']:
+            hours = representation['average_resolution_time']
+            representation['average_resolution_time_formatted'] = f"{hours:.2f} hours"
+        
+        # Format resolution time analysis
+        if 'resolution_time_analysis' in representation:
+            for key in representation['resolution_time_analysis']:
+                representation['resolution_time_analysis'][key] = {
+                    'count': representation['resolution_time_analysis'][key],
+                    'percentage': (representation['resolution_time_analysis'][key] / representation['total_tickets'] * 100) 
+                    if representation.get('total_tickets', 0) > 0 else 0
+                }
+        
+        return representation

@@ -7,7 +7,7 @@ from .views import (
     BranchViewSet, TicketViewSet, TicketLogViewSet,
     CommentViewSet, FAQViewSet, MessageViewSet,
     dashboard_stats, chart_data, support_member_suggestions,
-    create_ticket, handle_branches
+    create_ticket, handle_branches, ReportViewSet
 )
 
 router = DefaultRouter()
@@ -20,6 +20,7 @@ router.register(r'ticket-logs', TicketLogViewSet)
 router.register(r'comments', CommentViewSet)
 router.register(r'faqs', FAQViewSet)
 router.register(r'messages', MessageViewSet)
+router.register(r'reports', ReportViewSet, basename='report')
 
 urlpatterns = [
     # Authentication

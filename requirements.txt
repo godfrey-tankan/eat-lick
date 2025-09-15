@@ -87,5 +87,5 @@ xhtml2pdf==0.2.16
 zopfli==0.2.3
 django-allauth
 WeasyPrint
-
+google-generativeai
 
