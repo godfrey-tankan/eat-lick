@@ -31,6 +31,7 @@ from home.web_reports import *
 from core.custom_login import custom_login
  
 urlpatterns = [
+    path('api/v2/', include('support_v2.urls')),
     path('resolved/', resolved_tickets,name='resolved_tickets'),
     path('admins/logout/', logout_view),
     path('accounts/login/', custom_login, name='login'),

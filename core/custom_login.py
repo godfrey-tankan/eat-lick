@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate, login
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import AuthenticationForm
@@ -18,7 +18,7 @@ def custom_login(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return HttpResponseRedirect('/enlsupport/') 
+                return JsonResponse({'status': 'success', 'redirect_url': '/'}, status=200)
             else:
                 messages.error(request, "Invalid username or password.")
         else:

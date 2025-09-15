@@ -89,6 +89,8 @@ INSTALLED_APPS = [
     "a_bot",
     "a_home",
     "rest_framework",
+    "rest_framework.authtoken",
+    "support_v2"
 ]
 
 MIDDLEWARE = [
@@ -96,6 +98,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "corsheaders.middleware.CorsMiddleware", 
     "django.middleware.common.CommonMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -172,6 +175,21 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Add REST Framework configuration
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20
+}
+
+
+
 # Optional - set task soft and hard time limits to avoid long-running tasks:
 CELERY_TASK_SOFT_TIME_LIMIT = 300  # 5 minutes
 CELERY_TASK_TIME_LIMIT = 600  # 10 minutes
@@ -219,6 +237,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 
+CORS_ALLOW_ALL_ORIGINS = True  # For development only, restrict in production
+CORS_ALLOW_CREDENTIALS = True
 
 # LOGIN_REDIRECT_URL = '/enlsupport'
 LOGIN_REDIRECT_URL = '/homelink/staff'
