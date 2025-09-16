@@ -18,7 +18,9 @@ def custom_login(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return JsonResponse({'status': 'success', 'redirect_url': '/'}, status=200)
+                if user.email.endswith('@homelink.com'):
+                    return HttpResponseRedirect('/homelink/staff/') 
+                return HttpResponseRedirect('/enlsupport/')
             else:
                 messages.error(request, "Invalid username or password.")
         else:
