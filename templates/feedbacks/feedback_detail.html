@@ -550,7 +550,7 @@
         }
     </style>
 </head>
-<body>
+<body> 
     <div class="header">
         <h2>Homelink Employee Feedback</h2>
         <p>Comprehensive Survey Response Analysis</p>
@@ -762,10 +762,34 @@
             const content = document.getElementById('popup-details').innerHTML;
             const printWindow = window.open('', '_blank');
             
+            // Create a version with numeric values for PDF
+            let numericContent = '';
+            const responseItems = document.querySelectorAll('.response-item');
+            
+            responseItems.forEach(item => {
+                const questionEl = item.querySelector('strong');
+                const scoreEl = item.querySelector('.response-score');
+                
+                const question = questionEl ? questionEl.textContent.replace(/^\d+\.\s*/, '').trim() : 'Unknown Question';
+                const responseText = scoreEl ? scoreEl.textContent.trim() : 'No response';
+                
+                // Map text responses to numeric values
+                const numericValue = getNumericValue(responseText);
+                
+                numericContent += `
+                    <div class="response-item">
+                        <strong>${question}</strong>
+                        <div style="margin-top: 8px;">
+                            <span class="response-score">${numericValue}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
             printWindow.document.write(`
                 <html>
                     <head>
-                        <title>Homelink Feedback Report</title>
+                        <title>Homelink Feedback Report - Numeric Values</title>
                         <style>
                             body { 
                                 font-family: Arial, sans-serif; 
@@ -776,33 +800,10 @@
                             .response-item { 
                                 margin-bottom: 12px; 
                                 padding: 8px; 
-                                border-left: 4px solid #ddd; 
+                                border-left: 4px solid #003366; 
                                 border-radius: 3px;
                                 page-break-inside: avoid;
-                            }
-                            .response-disagree-very-much { 
-                                background-color: #ffebee; 
-                                border-left-color: #dc3545; 
-                            }
-                            .response-disagree-moderately { 
-                                background-color: #fff3e0; 
-                                border-left-color: #fd7e14; 
-                            }
-                            .response-disagree-slightly { 
-                                background-color: #fffbf0; 
-                                border-left-color: #ffc107; 
-                            }
-                            .response-agree-slightly { 
-                                background-color: #f0fff0; 
-                                border-left-color: #90ee90; 
-                            }
-                            .response-agree-moderately { 
-                                background-color: #e8f5e8; 
-                                border-left-color: #28a745; 
-                            }
-                            .response-agree-very-much { 
-                                background-color: #e0f2e0; 
-                                border-left-color: #155724; 
+                                background-color: #f8f9fa;
                             }
                             .response-score { 
                                 display: inline-block; 
@@ -811,7 +812,9 @@
                                 font-size: 10px; 
                                 font-weight: bold; 
                                 margin-right: 10px; 
-                                border: 1px solid #333;
+                                background-color: #003366;
+                                color: white;
+                                border: 1px solid #002244;
                             }
                             h2 {
                                 color: #003366;
@@ -823,11 +826,38 @@
                                 display: block;
                                 margin-bottom: 5px;
                             }
+                            .legend {
+                                margin-bottom: 20px;
+                                padding: 10px;
+                                background-color: #f0f0f0;
+                                border-radius: 5px;
+                                font-size: 11px;
+                            }
+                            .legend h3 {
+                                margin: 0 0 8px 0;
+                                color: #003366;
+                                font-size: 12px;
+                            }
+                            .legend-item {
+                                margin: 3px 0;
+                            }
                         </style>
                     </head>
                     <body>
-                        <h2>Homelink Employee Feedback Report</h2>
-                        <div>${content}</div>
+                        <h2>Homelink Employee Feedback Report - Numeric Values</h2>
+                        
+                        <div class="legend">
+                            <h3>Response Scale Legend:</h3>
+                            <div class="legend-item"><strong>1</strong> = Disagree very much</div>
+                            <div class="legend-item"><strong>2</strong> = Disagree moderately</div>
+                            <div class="legend-item"><strong>3</strong> = Disagree slightly</div>
+                            <div class="legend-item"><strong>4</strong> = Agree slightly</div>
+                            <div class="legend-item"><strong>5</strong> = Agree moderately</div>
+                            <div class="legend-item"><strong>6</strong> = Agree very much</div>
+                            <div class="legend-item"><strong>0</strong> = No response</div>
+                        </div>
+                        
+                        <div>${numericContent}</div>
                     </body>
                 </html>
             `);
@@ -840,27 +870,44 @@
 
         function exportToExcel() {
             const responses = document.querySelectorAll('.response-item');
-            let csvContent = "data:text/csv;charset=utf-8,Question,Response\n";
+            let csvContent = "data:text/csv;charset=utf-8,Question Number,Question,Response Value\n";
 
-            responses.forEach(response => {
+            responses.forEach((response, index) => {
                 const questionEl = response.querySelector('strong');
                 const scoreEl = response.querySelector('.response-score');
 
                 const question = questionEl ? questionEl.textContent.replace(/^\d+\.\s*/, '').trim() : 'Unknown Question';
                 const responseText = scoreEl ? scoreEl.textContent.trim() : 'No response';
-
-                csvContent += `"${question}","${responseText}"\n`;
+                
+                // Get numeric value
+                const numericValue = getNumericValue(responseText);
+                
+                csvContent += `${index + 1},"${question}",${numericValue}\n`;
             });
 
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "homelink_feedback_report.csv");
+            link.setAttribute("download", "homelink_feedback_report_numeric.csv");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
+        // Helper function to map text responses to numeric values
+        function getNumericValue(responseText) {
+            const responseMap = {
+                'Disagree very much': 1,
+                'Disagree moderately': 2,
+                'Disagree slightly': 3,
+                'Agree slightly': 4,
+                'Agree moderately': 5,
+                'Agree very much': 6,
+                'No response': 0
+            };
+            
+            return responseMap[responseText] !== undefined ? responseMap[responseText] : 0;
+        }
         // Close popup when clicking outside
         document.getElementById('popup').addEventListener('click', function(e) {
             if (e.target === this) closePopup(e);
