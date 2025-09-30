@@ -774,117 +774,149 @@
             document.getElementById('report').style.display = 'none';
             document.getElementById('feedbackList').style.display = 'grid';
         }
+function exportToPDF() {
+    const printWindow = window.open('', '_blank');
 
-        // Export functions
-        function exportToPDF() {
-            const content = document.getElementById('popup-details').innerHTML;
-            const printWindow = window.open('', '_blank');
-            
-            // Create a version with numeric values for PDF
-            let numericContent = '';
-            const responseItems = document.querySelectorAll('.response-item');
-            
-            responseItems.forEach(item => {
-                const questionEl = item.querySelector('strong');
-                const scoreEl = item.querySelector('.response-score');
-                
-                const question = questionEl ? questionEl.textContent.replace(/^\d+\.\s*/, '').trim() : 'Unknown Question';
-                const responseText = scoreEl ? scoreEl.textContent.trim() : 'No response';
-                
-                // Map text responses to numeric values
-                const numericValue = getNumericValue(responseText);
-                
-                numericContent += `
-                    <div class="response-item">
-                        <strong>${question}</strong>
-                        <div style="margin-top: 8px;">
-                            <span class="response-score">${numericValue}</span>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            printWindow.document.write(`
-                <html>
-                    <head>
-                        <title>Homelink Feedback Report - Numeric Values</title>
-                        <style>
-                            body { 
-                                font-family: Arial, sans-serif; 
-                                margin: 15px; 
-                                font-size: 12px; 
-                                line-height: 1.4;
-                            }
-                            .response-item { 
-                                margin-bottom: 12px; 
-                                padding: 8px; 
-                                border-left: 4px solid #003366; 
-                                border-radius: 3px;
-                                page-break-inside: avoid;
-                                background-color: #f8f9fa;
-                            }
-                            .response-score { 
-                                display: inline-block; 
-                                padding: 3px 8px; 
-                                border-radius: 12px; 
-                                font-size: 10px; 
-                                font-weight: bold; 
-                                margin-right: 10px; 
-                                background-color: #003366;
-                                color: white;
-                                border: 1px solid #002244;
-                            }
-                            h2 {
-                                color: #003366;
-                                font-size: 18px;
-                                margin-bottom: 15px;
-                            }
-                            strong {
-                                color: #003366;
-                                display: block;
-                                margin-bottom: 5px;
-                            }
-                            .legend {
-                                margin-bottom: 20px;
-                                padding: 10px;
-                                background-color: #f0f0f0;
-                                border-radius: 5px;
-                                font-size: 11px;
-                            }
-                            .legend h3 {
-                                margin: 0 0 8px 0;
-                                color: #003366;
-                                font-size: 12px;
-                            }
-                            .legend-item {
-                                margin: 3px 0;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <h2>Homelink Employee Feedback Report - Numeric Values</h2>
-                        
-                        <div class="legend">
-                            <h3>Response Scale Legend:</h3>
-                            <div class="legend-item"><strong>1</strong> = Disagree very much</div>
-                            <div class="legend-item"><strong>2</strong> = Disagree moderately</div>
-                            <div class="legend-item"><strong>3</strong> = Disagree slightly</div>
-                            <div class="legend-item"><strong>4</strong> = Agree slightly</div>
-                            <div class="legend-item"><strong>5</strong> = Agree moderately</div>
-                            <div class="legend-item"><strong>6</strong> = Agree very much</div>
-                            <div class="legend-item"><strong>0</strong> = No response</div>
-                        </div>
-                        
-                        <div>${numericContent}</div>
-                    </body>
-                </html>
-            `);
-            
-            printWindow.document.close();
-            printWindow.onload = function() {
-                printWindow.print();
-            };
-        }
+    // 1. Get user details (assumes they're inside .user-info div in popup)
+    const userInfoHTML = document.querySelector('.user-info')?.innerHTML || '<p><em>User info not available</em></p>';
+
+    // 2. Build the response legend as a table
+    const legendTableHTML = `
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px;">
+            <thead>
+                <tr style="background-color: #003366; color: white;">
+                    <th style="padding: 6px; border: 1px solid #ccc;">Value</th>
+                    <th style="padding: 6px; border: 1px solid #ccc;">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td style="padding: 6px; border: 1px solid #ccc;">1</td><td style="padding: 6px; border: 1px solid #ccc;">Disagree very much</td></tr>
+                <tr><td style="padding: 6px; border: 1px solid #ccc;">2</td><td style="padding: 6px; border: 1px solid #ccc;">Disagree moderately</td></tr>
+                <tr><td style="padding: 6px; border: 1px solid #ccc;">3</td><td style="padding: 6px; border: 1px solid #ccc;">Disagree slightly</td></tr>
+                <tr><td style="padding: 6px; border: 1px solid #ccc;">4</td><td style="padding: 6px; border: 1px solid #ccc;">Agree slightly</td></tr>
+                <tr><td style="padding: 6px; border: 1px solid #ccc;">5</td><td style="padding: 6px; border: 1px solid #ccc;">Agree moderately</td></tr>
+                <tr><td style="padding: 6px; border: 1px solid #ccc;">6</td><td style="padding: 6px; border: 1px solid #ccc;">Agree very much</td></tr>
+                <tr><td style="padding: 6px; border: 1px solid #ccc;">0</td><td style="padding: 6px; border: 1px solid #ccc;">No response</td></tr>
+            </tbody>
+        </table>
+    `;
+
+    // 3. Build the numeric answers section
+    let responseHTML = '';
+    const responseItems = document.querySelectorAll('.response-item');
+
+    responseItems.forEach((item, index) => {
+        const questionEl = item.querySelector('strong');
+        const scoreEl = item.querySelector('.response-score');
+
+        const question = questionEl ? questionEl.textContent.replace(/^\d+\.\s*/, '').trim() : 'Unknown Question';
+        const responseText = scoreEl ? scoreEl.textContent.trim() : 'No response';
+
+        const numericValue = getNumericValue(responseText);
+
+        responseHTML += `
+            <tr>
+                <td style="padding: 6px; border: 1px solid #ccc;">${index + 1}</td>
+                <td style="padding: 6px; border: 1px solid #ccc;">${question}</td>
+                <td style="padding: 6px; border: 1px solid #ccc; text-align: center;">${numericValue}</td>
+            </tr>
+        `;
+    });
+
+    const responseTableHTML = `
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead>
+                <tr style="background-color: #003366; color: white;">
+                    <th style="padding: 6px; border: 1px solid #ccc;">#</th>
+                    <th style="padding: 6px; border: 1px solid #ccc;">Question</th>
+                    <th style="padding: 6px; border: 1px solid #ccc;">Response</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${responseHTML}
+            </tbody>
+        </table>
+    `;
+
+    // 4. Open new window and write all content
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Homelink Feedback Report</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        padding: 20px;
+                        font-size: 12px;
+                        color: #000;
+                    }
+
+                    h2 {
+                        color: #003366;
+                        margin-bottom: 10px;
+                    }
+
+                    .user-info {
+                        background-color: #f8f9fa;
+                        border: 1px solid #003366;
+                        padding: 10px;
+                        border-radius: 5px;
+                        margin-bottom: 20px;
+                        font-size: 12px;
+                    }
+
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 20px;
+                    }
+
+                    th, td {
+                        border: 1px solid #ccc;
+                        padding: 6px;
+                        text-align: left;
+                    }
+
+                    th {
+                        background-color: #003366;
+                        color: white;
+                    }
+
+                    tr:nth-child(even) {
+                        background-color: #f2f2f2;
+                    }
+
+                    @media print {
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            font-size: 10px;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <h2>Homelink Employee Feedback Report</h2>
+
+                <div class="user-info">
+                    ${userInfoHTML}
+                </div>
+
+                <h3>Response Scale Legend</h3>
+                ${legendTableHTML}
+
+                <h3>Feedback Responses</h3>
+                ${responseTableHTML}
+            </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+
+    printWindow.onload = function () {
+        printWindow.print();
+    };
+}
 
         function exportToExcel() {
             const responses = document.querySelectorAll('.response-item');
