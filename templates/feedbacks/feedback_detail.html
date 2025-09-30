@@ -917,32 +917,48 @@ function exportToPDF() {
         printWindow.print();
     };
 }
+function exportToExcel() {
+    const userInfoDiv = document.querySelector('.user-info');
+    let csvContent = "data:text/csv;charset=utf-8,";
 
-        function exportToExcel() {
-            const responses = document.querySelectorAll('.response-item');
-            let csvContent = "data:text/csv;charset=utf-8,Question Number,Question,Response Value\n";
+    // Add user info section
+    if (userInfoDiv) {
+        csvContent += "User Information\n";
+        const userInfoLines = userInfoDiv.querySelectorAll('p');
+        userInfoLines.forEach((line) => {
+            const text = line.textContent.replace(/\s+/g, ' ').trim();
+            csvContent += `${text}\n`;
+        });
+        csvContent += "\n";
+    }
 
-            responses.forEach((response, index) => {
-                const questionEl = response.querySelector('strong');
-                const scoreEl = response.querySelector('.response-score');
+    // Add response header
+    csvContent += "Question Number,Question,Response Value\n";
 
-                const question = questionEl ? questionEl.textContent.replace(/^\d+\.\s*/, '').trim() : 'Unknown Question';
-                const responseText = scoreEl ? scoreEl.textContent.trim() : 'No response';
-                
-                // Get numeric value
-                const numericValue = getNumericValue(responseText);
-                
-                csvContent += `${index + 1},"${question}",${numericValue}\n`;
-            });
+    // Add responses
+    const responses = document.querySelectorAll('.response-item');
+    responses.forEach((response, index) => {
+        const questionEl = response.querySelector('strong');
+        const scoreEl = response.querySelector('.response-score');
 
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "homelink_feedback_report_numeric.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+        const question = questionEl ? questionEl.textContent.replace(/^\d+\.\s*/, '').trim() : 'Unknown Question';
+        const responseText = scoreEl ? scoreEl.textContent.trim() : 'No response';
+        
+        // Get numeric value
+        const numericValue = getNumericValue(responseText);
+        
+        csvContent += `${index + 1},"${question}",${numericValue}\n`;
+    });
+
+    // Trigger download
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "homelink_feedback_report_numeric.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 
         // Helper function to map text responses to numeric values
         function getNumericValue(responseText) {
