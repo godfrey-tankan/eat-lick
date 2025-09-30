@@ -693,6 +693,24 @@
                 .then(data => {
                     if (data.feedbacks && data.feedbacks.length > 0) {
                         let content = '<div class="response-list">';
+                        console.log("this is the user data:", data.user);
+                                if (data.user) {
+                                    content += `
+                                        <div class="user-info">
+                                            <h4>User Information</h4>
+                                            <p><strong>User ID:</strong> ${data.user.id || 'N/A'}</p>
+                                            <p><strong>Gender:</strong> ${data.user.gender || 'N/A'}</p>
+                                            <p><strong>Location:</strong> ${data.user.location || 'N/A'}</p>
+                                            <p><strong>Qualification:</strong> ${data.user.qualification || 'N/A'}</p>
+                                            <p><strong>Designation:</strong> ${data.user.designation || 'N/A'}</p>
+                                            <p><strong>Department:</strong> ${data.user.department || 'N/A'}</p>
+                                            <p><strong>Experience:</strong> ${data.user.experience || 'N/A'}</p>
+                                            <p><strong>Age:</strong> ${data.user.age || 'N/A'}</p>
+                                            <p><strong>Date Submitted:</strong> ${data.user.response_date || 'N/A'}</p>
+                                        </div>
+                                        <hr>
+                                    `;
+                                }
                         data.feedbacks.forEach((feedback, index) => {
                             // Determine score class based on response value
                             let scoreClass = 'response-no-response';

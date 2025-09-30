@@ -15,70 +15,82 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv(override=True)  # take environment variables from .env.
-print("DB_HOST from .env:", os.getenv('DB_HOST'))
-print("DB_ENGINE:", os.getenv('DB_ENGINE'))
+print("DB_HOST from .env:", os.getenv("DB_HOST"))
+print("DB_ENGINE:", os.getenv("DB_ENGINE"))
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
-VERIFY_TOKEN = os.getenv('VERIFY_TOKEN')
-APP_SECRET = os.getenv('APP_SECRET')
-APP_ID = os.getenv('APP_ID')
-VERSION = os.getenv('VERSION')
-PHONE_NUMBER_ID = os.getenv('PHONE_NUMBER_ID')
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
+VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
+APP_SECRET = os.getenv("APP_SECRET")
+APP_ID = os.getenv("APP_ID")
+VERSION = os.getenv("VERSION")
+PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY') or ''.join(random.choice( string.ascii_lowercase  ) for i in range( 32 ))
+SECRET_KEY = os.environ.get("SECRET_KEY") or "".join(
+    random.choice(string.ascii_lowercase) for i in range(32)
+)
 
 # Enable/Disable DEBUG Mode
-DEBUG = bool( os.getenv('DEBUG', 'False').lower() in ('true', '1', 't') )
-#print(' DEBUG -> ' + str(DEBUG) ) 
+DEBUG = bool(os.getenv("DEBUG", "False").lower() in ("true", "1", "t"))
+# print(' DEBUG -> ' + str(DEBUG) )
 
-ALLOWED_HOSTS = ['https://empyreanintegratedsolutions.com','https://www.empyreanintegratedsolutions.com','http://localhost:3000','http://127.0.0.1:8000']
-ALLOWED_HOSTS=["*"]
-CSRF_TRUSTED_ORIGINS = ['https://empyreanintegratedsolutions.com', 'https://www.empyreanintegratedsolutions.com', 'http://localhost:3000', 'http://localhost:8000']
+ALLOWED_HOSTS = [
+    "https://empyreanintegratedsolutions.com",
+    "https://www.empyreanintegratedsolutions.com",
+    "http://localhost:3000",
+    "http://127.0.0.1:8000",
+]
+ALLOWED_HOSTS = ["*"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://empyreanintegratedsolutions.com",
+    "https://www.empyreanintegratedsolutions.com",
+    "http://localhost:3000",
+    "http://localhost:8000",
+]
 CSRF_ALLOWED_ORIGINS = [
-    'https://empyreanintegratedsolutions.com',
-    'https://www.empyreanintegratedsolutions.com',
-    'https://empyreanintegratedsolutions.com/accounts/login',
-    'http://localhost:3000',
-    'http://localhost:8000',
+    "https://empyreanintegratedsolutions.com",
+    "https://www.empyreanintegratedsolutions.com",
+    "https://empyreanintegratedsolutions.com/accounts/login",
+    "http://localhost:3000",
+    "http://localhost:8000",
 ]
 CORS_ORIGINS_WHITELIST = [
-    'https://empyreanintegratedsolutions.com',
-    'https://www.empyreanintegratedsolutions.com',
-    'https://empyreanintegratedsolutions.com/accounts/login',
-    'http://localhost:3000',
-    'http://localhost:8000',
+    "https://empyreanintegratedsolutions.com",
+    "https://www.empyreanintegratedsolutions.com",
+    "https://empyreanintegratedsolutions.com/accounts/login",
+    "http://localhost:3000",
+    "http://localhost:8000",
 ]
 CORS_ALLOWED_ORIGINS = [
-    'https://empyreanintegratedsolutions.com',
-    'https://www.empyreanintegratedsolutions.com',
-    'https://empyreanintegratedsolutions.com/accounts/login',
-    'http://localhost:3000',
-    'http://localhost:8000',
+    "https://empyreanintegratedsolutions.com",
+    "https://www.empyreanintegratedsolutions.com",
+    "https://empyreanintegratedsolutions.com/accounts/login",
+    "http://localhost:3000",
+    "http://localhost:8000",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://empyreanintegratedsolutions.com',
-    'https://www.empyreanintegratedsolutions.com',
-    'https://empyreanintegratedsolutions.com/accounts/login',
-    'http://localhost:3000',
-    'http://localhost:8000',
+    "https://empyreanintegratedsolutions.com",
+    "https://www.empyreanintegratedsolutions.com",
+    "https://empyreanintegratedsolutions.com/accounts/login",
+    "http://localhost:3000",
+    "http://localhost:8000",
 ]
-CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
+CSRF_FAILURE_VIEW = "django.views.csrf.csrf_failure"
 
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME:    
+RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 # Application definition
 
 INSTALLED_APPS = [
-    'admin_soft.apps.AdminSoftDashboardConfig',
+    "admin_soft.apps.AdminSoftDashboardConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -90,7 +102,7 @@ INSTALLED_APPS = [
     "a_home",
     "rest_framework",
     "rest_framework.authtoken",
-    "support_v2"
+    "support_v2",
 ]
 
 MIDDLEWARE = [
@@ -98,7 +110,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "corsheaders.middleware.CorsMiddleware", 
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -107,7 +119,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "core.urls"
 
-HOME_TEMPLATES = os.path.join(BASE_DIR, 'templates')
+HOME_TEMPLATES = os.path.join(BASE_DIR, "templates")
 
 TEMPLATES = [
     {
@@ -131,23 +143,23 @@ WSGI_APPLICATION = "core.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DB_ENGINE   = os.getenv('DB_ENGINE'   , None)
-DB_USERNAME = os.getenv('DB_USERNAME' , None)
-DB_PASS     = os.getenv('DB_PASS'     , None)
-DB_HOST     = os.getenv('DB_HOST'     , None)
-DB_PORT     = os.getenv('DB_PORT'     , None)
-DB_NAME     = os.getenv('DB_NAME'     , None)
+DB_ENGINE = os.getenv("DB_ENGINE", None)
+DB_USERNAME = os.getenv("DB_USERNAME", None)
+DB_PASS = os.getenv("DB_PASS", None)
+DB_HOST = os.getenv("DB_HOST", None)
+DB_PORT = os.getenv("DB_PORT", None)
+DB_NAME = os.getenv("DB_NAME", None)
 
 # if DB_ENGINE and DB_NAME and DB_USERNAME:
-DATABASES = { 
-    'default': {
-    'ENGINE'  : DB_ENGINE, 
-    'NAME'    : DB_NAME,
-    'USER'    : DB_USERNAME,
-    'PASSWORD': DB_PASS,
-    'HOST'    : DB_HOST,
-    'PORT'    : DB_PORT,
-    }, 
+DATABASES = {
+    "default": {
+        "ENGINE": DB_ENGINE,
+        "NAME": DB_NAME,
+        "USER": DB_USERNAME,
+        "PASSWORD": DB_PASS,
+        "HOST": DB_HOST,
+        "PORT": DB_PORT,
+    },
 }
 # else:
 # DATABASES = {
@@ -177,17 +189,17 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Add REST Framework configuration
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
 }
-GEMINI_API_KEY=os.getenv('GEMINI_API_KEY', None)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", None)
 
 
 # Optional - set task soft and hard time limits to avoid long-running tasks:
@@ -205,13 +217,13 @@ TIME_ZONE = "Africa/Harare"
 USE_I18N = True
 
 USE_TZ = True
-MEDIA_URL = 'media/'
+MEDIA_URL = "media/"
 # DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-MEDIA_ROOT = BASE_DIR / 'media' 
-    
+MEDIA_ROOT = BASE_DIR / "media"
+
 
 # cloudinary_storage.storage.MediaCloudinaryStorage
-# cloudinary_storage.storage.RawMediaCloudinaryStorage 
+# cloudinary_storage.storage.RawMediaCloudinaryStorage
 # cloudinary_storage.storage.VideoMediaCloudinaryStorage
 # CLOUDINARY_STORAGE = {
 #     'CLOUD_NAME': os.getenv('CLOUD_NAME'),
@@ -223,15 +235,13 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-) 
+STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-#if not DEBUG:
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# if not DEBUG:
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -241,13 +251,17 @@ CORS_ALLOW_ALL_ORIGINS = True  # For development only, restrict in production
 CORS_ALLOW_CREDENTIALS = True
 
 # LOGIN_REDIRECT_URL = '/enlsupport'
-LOGIN_REDIRECT_URL = '/homelink/staff'
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER',)
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD',)
+LOGIN_REDIRECT_URL = "/homelink/staff"
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+EMAIL_HOST_USER = os.getenv(
+    "EMAIL_HOST_USER",
+)
+EMAIL_HOST_PASSWORD = os.getenv(
+    "EMAIL_HOST_PASSWORD",
+)
 EMAIL_TIMEOUT = 10
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
