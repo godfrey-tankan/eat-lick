@@ -591,6 +591,7 @@ def download_all_responses(request):
         "DESIGNATION",
         "DEPARTMENT",
         "EXPERIENCE",
+        "CONTRACT TYPE",
         "AGE",
     ]
 
@@ -662,6 +663,7 @@ def download_all_responses(request):
             demo.get_designation_display(),
             demo.get_department_display(),
             demo.get_work_experience_display(),
+            demo.get_contract_type_display(),
             demo.get_age_group_display(),
         ]
 
