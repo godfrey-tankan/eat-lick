@@ -523,3 +523,219 @@ def get_user_feedback(request, user_id):
         for feedback in feedbacks
     ]
     return JsonResponse({"feedbacks": feedback_details})
+
+
+def download_all_responses(request):
+    import csv
+    import pandas as pd
+    from django.http import HttpResponse
+    from django.db.models import Prefetch
+    from django.utils import timezone
+    from a_home.models import (
+        DemographicData,
+        LikertScaleAnswer,
+        JobSatisfactionQuestion,
+    )
+
+    # Get all demographic data with prefetched answers
+    demographics = (
+        DemographicData.objects.select_related("user_id")
+        .prefetch_related(
+            Prefetch(
+                "user_id__likertscaleanswer_set",
+                queryset=LikertScaleAnswer.objects.select_related("question"),
+                to_attr="answers",
+            )
+        )
+        .all()
+    )
+
+    # Create response with CSV content
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = (
+        f'attachment; filename="homelink_all_responses_{timezone.now().strftime("%Y%m%d_%H%M")}.csv"'
+    )
+
+    # Get all questions organized by ALL categories
+    categories_order = [
+        "pay",
+        "promotion",
+        "supervision",
+        "fringe_benefits",
+        "contingent_rewards",
+        "operating_conditions",
+        "coworkers",
+        "nature_of_work",
+        "communication",
+        "health_and_safety",
+        "vigour_energy",
+        "dedication",
+        "absorption",
+    ]
+
+    # Get questions in the order they should appear
+    questions_by_category = {}
+    for category in categories_order:
+        questions_by_category[category] = JobSatisfactionQuestion.objects.filter(
+            category=category
+        ).order_by("id")
+
+    writer = csv.writer(response)
+
+    # Write headers based on the Excel template structure
+    headers = [
+        "USER ID",
+        "GENDER",
+        "LOCATION",
+        "QUALIFICATION",
+        "DESIGNATION",
+        "DEPARTMENT",
+        "EXPERIENCE",
+        "AGE",
+    ]
+
+    pay_questions = list(questions_by_category["pay"])
+    headers.extend([f"PAY {i+1}" for i in range(len(pay_questions))])
+
+    # Add PROMOTION section - main header and sub-columns
+    promotion_questions = list(questions_by_category["promotion"])
+    headers.extend([f"PROMOTION {i+1}" for i in range(len(promotion_questions))])
+
+    supervision_questions = list(questions_by_category["supervision"])
+    headers.extend([f"SUPERVISION {i+1}" for i in range(len(supervision_questions))])
+
+    fringe_questions = list(questions_by_category["fringe_benefits"])
+    headers.extend([f"FRINGE BENEFITS {i+1}" for i in range(len(fringe_questions))])
+
+    # Add CONTIGENT REWARDS section - main header and sub-columns
+    contingent_questions = list(questions_by_category["contingent_rewards"])
+    headers.extend(
+        [f"CONTIGENT REWARDS {i+1}" for i in range(len(contingent_questions))]
+    )
+
+    # Add OPERATING CONDITIONS section - main header and sub-columns
+    operating_questions = list(questions_by_category["operating_conditions"])
+    headers.extend(
+        [f"OPERATING CONDITIONS {i+1}" for i in range(len(operating_questions))]
+    )
+
+    coworkers_questions = list(questions_by_category["coworkers"])
+    headers.extend([f"CORE WORKERS {i+1}" for i in range(len(coworkers_questions))])
+
+    # Add NATURE OF WORK section - main header and sub-columns
+    nature_questions = list(questions_by_category["nature_of_work"])
+    headers.extend([f"NATURE OF WORK {i+1}" for i in range(len(nature_questions))])
+
+    # Add COMMUNICATION section - main header and sub-columns
+    communication_questions = list(questions_by_category["communication"])
+    headers.extend(
+        [f"COMMUNICATION {i+1}" for i in range(len(communication_questions))]
+    )
+
+    # Add HEALTH AND SAFETY section - main header and sub-columns
+    health_questions = list(questions_by_category["health_and_safety"])
+    headers.extend([f"HEALTH AND SAFETY {i+1}" for i in range(len(health_questions))])
+
+    # Add VIGOUR AND ENERGY section - main header and sub-columns
+    vigour_questions = list(questions_by_category["vigour_energy"])
+    headers.extend([f"VIGOUR AND ENERGY {i+1}" for i in range(len(vigour_questions))])
+
+    # Add DEDICATION section - main header and sub-columns
+    dedication_questions = list(questions_by_category["dedication"])
+    headers.extend([f"DEDICATION {i+1}" for i in range(len(dedication_questions))])
+
+    # Add ABSORPTION section - main header and sub-columns
+    absorption_questions = list(questions_by_category["absorption"])
+    headers.extend([f"ABSORPTION {i+1}" for i in range(len(absorption_questions))])
+
+    # Write headers
+    writer.writerow(headers)
+
+    # Write data rows
+    for demo in demographics:
+        # Start with demographic data
+        row = [
+            demo.user_id.id,
+            demo.get_gender_display(),
+            demo.get_location_display() if demo.location else "",
+            demo.get_highest_qualification_display(),
+            demo.get_designation_display(),
+            demo.get_department_display(),
+            demo.get_work_experience_display(),
+            demo.get_age_group_display(),
+        ]
+
+        # Helper function to get answer for a question
+        def get_answer_value(question):
+            for answer in getattr(demo.user_id, "answers", []):
+                if answer.question_id == question.id:
+                    return answer.response if answer.response else 0
+            return 0
+
+        # Add pay section - main column (empty) and answers
+        for question in pay_questions:
+            row.append(get_answer_value(question))
+
+        # Add promotion section - main column (empty) and answers
+        # row.append("")  # PROMOTTION main header column (empty)
+        for question in promotion_questions:
+            row.append(get_answer_value(question))
+
+        # Add supervision section - main column (empty) and answers
+        # row.append("")  # SUPERVISION main header column (empty)
+        for question in supervision_questions:
+            row.append(get_answer_value(question))
+
+        # Add fringe benefits section - main column (empty) and answers
+        # row.append("")  # FRINGE BENEFITS main header column (empty)
+        for question in fringe_questions:
+            row.append(get_answer_value(question))
+
+        # Add contingent rewards section - main column (empty) and answers
+        # row.append("")  # CONTIGENT REWARDS main header column (empty)
+        for question in contingent_questions:
+            row.append(get_answer_value(question))
+
+        # Add operating conditions section - main column (empty) and answers
+        # row.append("")  # OPERATING CONDITIONS main header column (empty)
+        for question in operating_questions:
+            row.append(get_answer_value(question))
+
+        # Add core workers section - main column (empty) and answers
+        # row.append("")  # CORE WORKERS main header column (empty)
+        for question in coworkers_questions:
+            row.append(get_answer_value(question))
+
+        # Add nature of work section - main column (empty) and answers
+        # row.append("")  # NATURE OF WORK main header column (empty)
+        for question in nature_questions:
+            row.append(get_answer_value(question))
+
+        # Add communication section - main column (empty) and answers
+        # row.append("")  # COMMUNICATION main header column (empty)
+        for question in communication_questions:
+            row.append(get_answer_value(question))
+
+        # Add health and safety section - main column (empty) and answers
+        # row.append("")  # HEALTH AND SAFETY main header column (empty)
+        for question in health_questions:
+            row.append(get_answer_value(question))
+
+        # Add vigour and energy section - main column (empty) and answers
+        # row.append("")  # VIGOUR AND ENERGY main header column (empty)
+        for question in vigour_questions:
+            row.append(get_answer_value(question))
+
+        # Add dedication section - main column (empty) and answers
+        # row.append("")  # DEDICATION main header column (empty)
+        for question in dedication_questions:
+            row.append(get_answer_value(question))
+
+        # Add absorption section - main column (empty) and answers
+        # row.append("")  # ABSORPTION main header column (empty)
+        for question in absorption_questions:
+            row.append(get_answer_value(question))
+
+        writer.writerow(row)
+
+    return response

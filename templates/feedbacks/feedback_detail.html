@@ -558,6 +558,9 @@
 
     <div class="generate-report-button">
         <button onclick="showReportPopup()">Generate Report</button>
+        <button onclick="downloadAllResponses()" style="margin-left: 10px; background-color: #28a745;">
+            Download All Responses (CSV)
+        </button>
     </div>
 
     <div class="unique-report-popup-overlay" id="uniqueReportPopup">
@@ -647,6 +650,28 @@
         // CSRF Token function
         function getCSRFToken() {
             return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+        function downloadAllResponses() {
+            // Show loading indicator
+            const originalText = event.target.textContent;
+            event.target.textContent = 'Downloading...';
+            event.target.disabled = true;
+
+            // Create download link
+            const link = document.createElement('a');
+            link.href = '/homelink/download-all-responses/';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            
+            // Trigger download
+            link.click();
+            document.body.removeChild(link);
+            
+            // Reset button after a short delay
+            setTimeout(() => {
+                event.target.textContent = originalText;
+                event.target.disabled = false;
+            }, 2000);
         }
 
         // Report popup functions
