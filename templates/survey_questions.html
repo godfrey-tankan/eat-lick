@@ -1,0 +1,883 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company.name }} - Survey Questions</title>
+    <style>
+        :root {
+            --primary-color: {{ company.primary_color }};
+            --secondary-color: {{ company.secondary_color }};
+            --primary-light: {{ company.primary_color }}22;
+            --secondary-light: {{ company.secondary_color }}22;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+            color: #333;
+            padding-top: 140px; /* Space for sticky header */
+        }
+
+        .company-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color)dd 100%);
+            color: black;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .company-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+        }
+
+        .company-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .company-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+        }
+
+        .survey-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Sticky Progress Bar */
+        .sticky-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            z-index: 1000;
+            padding: 1rem;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .sticky-progress.compact {
+            padding: 0.5rem 1rem;
+        }
+
+        .progress-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-title {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+
+        .progress-percentage {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 6px;
+            transition: width 0.5s ease;
+            width: 0%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .survey-form {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+            margin-top: 1rem;
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary-light));
+            padding: 1.5rem;
+            margin: 2rem 0 1.5rem 0;
+            border-radius: 12px;
+            border-left: 5px solid var(--primary-color);
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .question-container {
+            margin-bottom: 2.5rem;
+            padding: 1.5rem;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background: #fafafa;
+            position: relative;
+        }
+
+        .question-container.unanswered {
+            border-color: #e74c3c;
+            background: #ffeaea;
+            animation: pulseWarning 2s ease-in-out;
+        }
+
+        .question-container.answered {
+            border-color: #27ae60;
+            background: #e8f6ef;
+        }
+
+        @keyframes pulseWarning {
+            0%, 100% { border-color: #e74c3c; }
+            50% { border-color: #ff7979; }
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            line-height: 1.5;
+        }
+
+        .response-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .response-option {
+            position: relative;
+        }
+
+        .response-option input[type="radio"] {
+            opacity: 0;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .response-label {
+            display: block;
+            padding: 1rem 1.5rem;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #666;
+            position: relative;
+            z-index: 1;
+        }
+
+        .response-label:hover {
+            border-color: var(--primary-color);
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .response-option input[type="radio"]:checked + .response-label {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .response-scale {
+            display: flex;
+            justify-content: space-between;
+            margin: 1rem 0;
+            padding: 0 0.5rem;
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 1.2rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 3rem auto 1rem;
+            min-width: 200px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .required-marker {
+            color: #e74c3c;
+            margin-left: 4px;
+        }
+
+        .error-message {
+            background: #ffeaea;
+            color: #c0392b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #e74c3c;
+            font-weight: 500;
+        }
+
+        .form-errors {
+            background: #ffeaea;
+            color: #c0392b;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border-left: 5px solid #e74c3c;
+        }
+
+        .form-errors h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .form-errors ul {
+            margin-left: 1.5rem;
+        }
+
+        /* Sticky notification */
+        .sticky-notification {
+            position: fixed;
+            top: 120px;
+            right: 20px;
+            background: #e74c3c;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 999;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .sticky-notification.show {
+            transform: translateX(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 120px;
+            }
+
+            .company-header h1 {
+                font-size: 2rem;
+            }
+
+            .company-header p {
+                font-size: 1.1rem;
+            }
+
+            .sticky-progress {
+                padding: 0.8rem;
+            }
+
+            .progress-title {
+                font-size: 1rem;
+            }
+
+            .progress-percentage {
+                font-size: 1.1rem;
+            }
+
+            .survey-container {
+                margin: 1rem auto;
+            }
+
+            .response-options {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+            }
+
+            .response-label {
+                padding: 1rem;
+                font-size: 0.95rem;
+            }
+
+            .question-container {
+                padding: 1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .category-header {
+                padding: 1rem;
+                font-size: 1.1rem;
+                margin: 1.5rem 0 1rem 0;
+            }
+
+            .submit-btn {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .sticky-notification {
+                top: 100px;
+                right: 10px;
+                left: 10px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-top: 100px;
+            }
+
+            .company-header {
+                padding: 1.5rem 1rem;
+            }
+
+            .company-header h1 {
+                font-size: 1.7rem;
+            }
+
+            .sticky-progress {
+                padding: 0.5rem;
+            }
+
+            .progress-header {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+
+            .survey-form {
+                padding: 1rem;
+            }
+
+            .question-text {
+                font-size: 1rem;
+            }
+
+            .response-scale {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-direction: column;
+        }
+
+        .loading.show {
+            display: flex;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Accessibility */
+        .response-option input[type="radio"]:focus + .response-label {
+            outline: 3px solid var(--secondary-color);
+            outline-offset: 2px;
+        }
+
+        /* Animation for question appearance */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-container {
+            animation: fadeInUp 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="company-header">
+        <h1>{{ company.name }}</h1>
+        <p>{% if company.code == 'NHS' %}Client/Stakeholder Satisfaction Survey{% else %}Employee Satisfaction and Engagement Survey{% endif %}</p>
+    </div>
+
+    <!-- Sticky Progress Bar -->
+    <div class="sticky-progress" id="stickyProgress">
+        <div class="progress-container">
+            <div class="progress-header">
+                <div class="progress-title">Survey Progress</div>
+                <div class="progress-percentage" id="progressPercentage">0%</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-stats">
+                <span id="answeredCount">0 answered</span>
+                <span id="totalCount">0 total</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sticky Notification -->
+    <div class="sticky-notification" id="stickyNotification">
+        Please complete all questions before submitting
+    </div>
+
+    <div class="survey-container">
+        {% if form.errors %}
+        <div class="form-errors">
+            <h3>Please correct the following errors:</h3>
+            <ul>
+            {% for field in form %}
+                {% if field.errors %}
+                    <li><strong>{{ field.label }}:</strong> 
+                        {% for error in field.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </li>
+                {% endif %}
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="post" id="surveyForm" class="survey-form">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                {% if field.name|slice:":7" == "header_" %}
+                    <div class="category-header">
+                        {{ field.value }}
+                    </div>
+                {% else %}
+                    <div class="question-container" id="container_{{ field.name }}">
+                        <div class="question-text">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="required-marker">*</span>{% endif %}
+                        </div>
+                        
+                        <div class="response-scale">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                        
+                        <div class="response-options">
+                            {% for choice in field.field.choices %}
+                            <div class="response-option">
+                                <input type="radio" 
+                                       name="{{ field.name }}" 
+                                       value="{{ choice.0 }}" 
+                                       id="{{ field.name }}_{{ forloop.counter }}"
+                                       {% if field.value == choice.0 %}checked{% endif %}
+                                       {% if field.field.required %}required{% endif %}>
+                                <label for="{{ field.name }}_{{ forloop.counter }}" class="response-label">
+                                    {{ choice.1 }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        {% if field.errors %}
+                        <div class="error-message">
+                            {% for error in field.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                Complete Survey
+            </button>
+        </form>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading" id="loadingOverlay">
+        <div class="spinner"></div>
+        <span>Submitting your responses...</span>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('surveyForm');
+        const progressFill = document.getElementById('progressFill');
+        const progressPercentage = document.getElementById('progressPercentage');
+        const answeredCount = document.getElementById('answeredCount');
+        const totalCount = document.getElementById('totalCount');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const submitBtn = document.getElementById('submitBtn');
+        const stickyProgress = document.getElementById('stickyProgress');
+        const stickyNotification = document.getElementById('stickyNotification');
+
+        let unansweredQuestions = [];
+
+        // Get all actual question fields
+        function getQuestionFields() {
+            return Array.from(form.elements).filter(field => 
+                field.type === 'radio' && field.name.startsWith('question_')
+            );
+        }
+
+        // Get unique question names
+        function getQuestionNames() {
+            const names = new Set();
+            getQuestionFields().forEach(field => names.add(field.name));
+            return Array.from(names);
+        }
+
+        // Calculate and update progress
+        function updateProgress() {
+            const questionNames = getQuestionNames();
+            const totalQuestions = questionNames.length;
+            let answeredQuestions = 0;
+
+            questionNames.forEach(name => {
+                const answered = document.querySelectorAll(`input[name="${name}"]:checked`).length > 0;
+                if (answered) answeredQuestions++;
+            });
+
+            const progress = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
+            
+            // Update progress bar
+            progressFill.style.width = `${progress}%`;
+            progressPercentage.textContent = `${Math.round(progress)}%`;
+            answeredCount.textContent = `${answeredQuestions} answered`;
+            totalCount.textContent = `${totalQuestions} total`;
+            
+            // Update progress bar color
+            if (progress >= 100) {
+                progressFill.style.background = 'linear-gradient(90deg, #27ae60, #2ecc71)';
+                stickyProgress.style.borderBottomColor = '#27ae60';
+            } else if (progress >= 75) {
+                progressFill.style.background = 'linear-gradient(90deg, #f39c12, #f1c40f)';
+                stickyProgress.style.borderBottomColor = '#f39c12';
+            } else if (progress >= 50) {
+                progressFill.style.background = 'linear-gradient(90deg, #e67e22, #f39c12)';
+                stickyProgress.style.borderBottomColor = '#e67e22';
+            } else {
+                progressFill.style.background = 'linear-gradient(90deg, var(--primary-color), var(--secondary-color))';
+                stickyProgress.style.borderBottomColor = 'var(--primary-color)';
+            }
+
+            // Update question container states
+            updateQuestionStates();
+
+            return { totalQuestions, answeredQuestions, progress };
+        }
+
+        // Update visual state of question containers
+        function updateQuestionStates() {
+            const questionNames = getQuestionNames();
+            
+            questionNames.forEach(name => {
+                const container = document.getElementById(`container_${name}`);
+                if (container) {
+                    const isAnswered = document.querySelectorAll(`input[name="${name}"]:checked`).length > 0;
+                    
+                    container.classList.remove('answered', 'unanswered');
+                    if (isAnswered) {
+                        container.classList.add('answered');
+                    } else {
+                        container.classList.add('unanswered');
+                    }
+                }
+            });
+        }
+
+        // Find unanswered questions
+        function findUnansweredQuestions() {
+            const questionNames = getQuestionNames();
+            unansweredQuestions = [];
+            
+            questionNames.forEach(questionName => {
+                const isAnswered = document.querySelectorAll(`input[name="${questionName}"]:checked`).length > 0;
+                if (!isAnswered) {
+                    unansweredQuestions.push(questionName);
+                }
+            });
+
+            return unansweredQuestions;
+        }
+
+        // Highlight unanswered questions with animation
+        function highlightUnansweredQuestions() {
+            // Reset all highlights first
+            document.querySelectorAll('.question-container').forEach(container => {
+                container.style.animation = 'none';
+            });
+
+            // Highlight unanswered questions
+            unansweredQuestions.forEach(questionName => {
+                const container = document.getElementById(`container_${questionName}`);
+                if (container) {
+                    container.style.animation = 'pulseWarning 2s ease-in-out';
+                    
+                    // Scroll to first unanswered question
+                    if (questionName === unansweredQuestions[0]) {
+                        setTimeout(() => {
+                            container.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                            });
+                        }, 500);
+                    }
+                }
+            });
+
+            // Show sticky notification
+            stickyNotification.classList.add('show');
+            setTimeout(() => {
+                stickyNotification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Update progress when answers are selected
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                updateProgress();
+                
+                // Update the specific question container
+                const container = document.getElementById(`container_${this.name}`);
+                if (container) {
+                    const isAnswered = document.querySelectorAll(`input[name="${this.name}"]:checked`).length > 0;
+                    container.classList.remove('answered', 'unanswered');
+                    if (isAnswered) {
+                        container.classList.add('answered');
+                    } else {
+                        container.classList.add('unanswered');
+                    }
+                }
+            });
+        });
+
+        // Make sticky progress bar compact on scroll
+        let lastScrollTop = 0;
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Scrolling down
+                stickyProgress.classList.add('compact');
+            } else {
+                // Scrolling up
+                stickyProgress.classList.remove('compact');
+            }
+            
+            lastScrollTop = scrollTop;
+        });
+
+        // Form submission handling
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const unanswered = findUnansweredQuestions();
+            
+            if (unanswered.length > 0) {
+                // Show error and highlight unanswered questions
+                highlightUnansweredQuestions();
+                
+                // Create error message
+                let errorDiv = document.getElementById('validationError');
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.id = 'validationError';
+                    errorDiv.className = 'error-message';
+                    form.insertBefore(errorDiv, form.firstChild);
+                }
+                errorDiv.innerHTML = `<strong>Survey Incomplete:</strong> Please answer ${unanswered.length} remaining question${unanswered.length > 1 ? 's' : ''} before submitting.`;
+                
+            } else {
+                // All questions answered - proceed with submission
+                console.log('All questions answered, submitting form...');
+                
+                // Remove any existing error message
+                const errorDiv = document.getElementById('validationError');
+                if (errorDiv) {
+                    errorDiv.remove();
+                }
+                
+                // Show loading state
+                loadingOverlay.classList.add('show');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+                
+                // Submit the form
+                setTimeout(() => {
+                    form.submit();
+                }, 500);
+            }
+        });
+
+        // Enhanced answer selection with visual feedback
+        document.querySelectorAll('.response-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const radio = this.querySelector('input[type="radio"]');
+                if (radio) {
+                    radio.checked = true;
+                    radio.dispatchEvent(new Event('change', { bubbles: true }));
+                    
+                    // Visual feedback
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                }
+            });
+        });
+
+        // Keyboard navigation for better accessibility
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.type !== 'radio') {
+                e.preventDefault();
+            }
+        });
+
+        // Initialize progress
+        const progressInfo = updateProgress();
+        console.log('Initial progress:', progressInfo);
+
+        // Auto-save progress every 10 seconds (optional)
+        setInterval(() => {
+            const progress = updateProgress();
+            console.log('Auto-save progress:', progress);
+            // You could add localStorage saving here
+        }, 10000);
+
+        // Touch device optimizations
+        if ('ontouchstart' in window) {
+            document.querySelectorAll('.question-container').forEach(container => {
+                container.addEventListener('touchstart', function() {
+                    this.style.background = 'var(--primary-light)';
+                });
+                
+                container.addEventListener('touchend', function() {
+                    this.style.background = '';
+                });
+            });
+        }
+    });
+    </script>
+</body>
+</html>

@@ -6,21 +6,22 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from home.forms import CustomLoginForm
 
+
 @csrf_exempt
 def custom_login(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = CustomLoginForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
+            username = form.cleaned_data["username"]
+            password = form.cleaned_data["password"]
 
             # Authenticate the user
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                if user.email.endswith('@homelink.com'):
-                    return HttpResponseRedirect('/homelink/staff/') 
-                return HttpResponseRedirect('/enlsupport/')
+                if user.email in ["admin@nhs.com", "admin@hit.com"]:
+                    return HttpResponseRedirect("/surveys/company/dashboard/")
+                return HttpResponseRedirect("/enlsupport/")
             else:
                 messages.error(request, "Invalid username or password.")
         else:
@@ -29,6 +30,4 @@ def custom_login(request):
     else:
         form = CustomLoginForm()
 
-    return render(request, 'accounts/login.html', {'form': form})
-
-
+    return render(request, "accounts/login.html", {"form": form})

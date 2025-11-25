@@ -1,149 +1,463 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homelink - Demographic Data Form</title>
-    <link rel="stylesheet" href="{% static 'css/form_styles.css' %}">
+    <title>{{ company.name }} - Demographic Data</title>
     <style>
-        .homelink-header {
-            text-align: center;
-            background-color: #003366;
-            color: white;
-            padding: 15px;
-            margin-bottom: 20px;
+        :root {
+            --primary-color: {{ company.primary_color }};
+            --secondary-color: {{ company.secondary_color }};
+            --primary-light: {{ company.primary_color }}22;
+            --secondary-light: {{ company.secondary_color }}22;
         }
-        .homelink-header h2 {
+
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .company-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color)dd 100%);
+            color: black;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .company-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+        }
+
+        .company-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .company-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
         .section-title {
-            background-color: #f0f0f0;
-            padding: 10px;
-            margin-top: 20px;
-            border-left: 4px solid #003366;
-            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary-light));
+            padding: 1.5rem;
+            margin: 2rem 0 1.5rem 0;
+            border-radius: 12px;
+            border-left: 5px solid var(--primary-color);
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--primary-color);
+        }
+
+        .form-field {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .form-field:hover {
+            border-color: var(--primary-light);
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .form-field label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        /* Radio and Select Styling */
+        .radio-group, .select-group {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .radio-option {
+            position: relative;
+        }
+
+        .radio-option input[type="radio"] {
+    opacity: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 2;
+}
+
+        .radio-label {
+            display: block;
+            padding: 1.2rem 1.5rem;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .radio-label:hover {
+            border-color: var(--primary-color);
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .radio-option input[type="radio"]:checked + .radio-label {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        select.form-select {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1.5rem center;
+            background-size: 1em;
+        }
+
+        select.form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        select.form-select:hover {
+            border-color: var(--primary-color);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 1.2rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 3rem auto 1rem;
+            min-width: 200px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .error-message {
+            background: #ffeaea;
+            color: #c0392b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            border-left: 4px solid #e74c3c;
+            font-weight: 500;
+        }
+
+        .form-errors {
+            background: #ffeaea;
+            color: #c0392b;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border-left: 5px solid #e74c3c;
+        }
+
+        .form-errors h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .form-errors ul {
+            margin-left: 1.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .company-header h1 {
+                font-size: 2rem;
+            }
+
+            .company-header p {
+                font-size: 1.1rem;
+            }
+
+            .form-container {
+                margin: 1rem auto;
+            }
+
+            .form-card {
+                padding: 1.5rem;
+            }
+
+            .form-field {
+                padding: 1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .section-title {
+                padding: 1rem;
+                font-size: 1.1rem;
+                margin: 1.5rem 0 1rem 0;
+            }
+
+            .radio-label {
+                padding: 1rem;
+            }
+
+            select.form-select {
+                padding: 1rem;
+            }
+
+            .submit-btn {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .company-header {
+                padding: 1.5rem 1rem;
+            }
+
+            .company-header h1 {
+                font-size: 1.7rem;
+            }
+
+            .form-card {
+                padding: 1rem;
+            }
+
+            .radio-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-field {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        /* Accessibility */
+        .radio-option input[type="radio"]:focus + .radio-label {
+            outline: 3px solid var(--secondary-color);
+            outline-offset: 2px;
+        }
+
+        select.form-select:focus {
+            outline: 3px solid var(--secondary-color);
+            outline-offset: 2px;
         }
     </style>
-    <script>
-        // Generate a random 10-digit username
-        function generateRandomUsername() {
-            return Math.floor(1000000000 + Math.random() * 9000000000).toString();
-        }
-
-        // Save username to localStorage if not already present
-        function saveUsernameToLocalStorage() {
-            let username = localStorage.getItem('homelink_username');
-            if (!username) {
-                username = generateRandomUsername();
-                localStorage.setItem('homelink_username', username);
-            }
-            return username;
-        }
-
-        // Add the username as a query parameter to the current URL
-        function appendUsernameToURL() {
-            const username = saveUsernameToLocalStorage();
-            const url = new URL(window.location.href);
-            if (!url.searchParams.has('username')) {
-                url.searchParams.append('username', username);
-                window.history.replaceState({}, '', url.toString());
-            }
-        }
-
-        // Append the username to the form data before submission
-        function appendUsernameToForm() {
-            const username = localStorage.getItem('homelink_username');
-            if (username) {
-                const form = document.querySelector('form');
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'username';
-                input.value = username;
-                form.appendChild(input);
-            }
-        }
-
-        // Execute on page load
-        document.addEventListener('DOMContentLoaded', function () {
-            appendUsernameToURL();
-
-            // Add submit event listener to include the username in the form
-            const form = document.querySelector('form');
-            form.addEventListener('submit', appendUsernameToForm);
-        });
-    </script>
 </head>
 <body>
-    <div class="homelink-header">
-        <h2>Homelink Employee Engagement Survey</h2>
-        <p>SECTION 1: Demographic Information</p>
+    <div class="company-header">
+        <h1>{{ company.name }}</h1>
+        <p>{% if company.code == 'NHS' %}Client/Stakeholder Satisfaction Survey{% else %}Employee Satisfaction and Engagement Survey{% endif %}</p>
     </div>
 
-    <form method="post">
-        {% csrf_token %}
-        
-        <div class="section-title">Personal Information</div>
-        
-        <div>
-            <label>Gender:</label>
-            {{ form.gender }}
+    <div class="form-container">
+        {% if form.errors %}
+        <div class="form-errors">
+            <h3>Please correct the following errors:</h3>
+            <ul>
+            {% for field in form %}
+                {% if field.errors %}
+                    <li><strong>{{ field.label }}:</strong> 
+                        {% for error in field.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </li>
+                {% endif %}
+            {% endfor %}
+            </ul>
         </div>
+        {% endif %}
 
-        <div>
-            <label>Age Profile:</label>
-            {{ form.age_group }}
+        <div class="form-card">
+            <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-color);">
+                Section 1: {% if company.code == 'NHS' %}Client Information{% else %}Employee Information{% endif %}
+            </h2>
+            
+            <form method="post" id="demographicForm">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    
+                    {% if field.field.widget.input_type == 'radio' %}
+                        <div class="radio-group">
+                            {% for choice in field.field.choices %}
+                            <div class="radio-option">
+                                <input type="radio" 
+                                       name="{{ field.name }}" 
+                                       value="{{ choice.0 }}" 
+                                       id="{{ field.id_for_label }}_{{ forloop.counter }}"
+                                       {% if field.value == choice.0 %}checked{% endif %}
+                                       {% if field.field.required %}required{% endif %}>
+                                <label for="{{ field.id_for_label }}_{{ forloop.counter }}" class="radio-label">
+                                    {{ choice.1 }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ field }}
+                    {% endif %}
+                    
+                    {% if field.errors %}
+                    <div class="error-message">
+                        {% for error in field.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if field.help_text %}
+                    <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
+                        {{ field.help_text }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                
+                <button type="submit" class="submit-btn">
+                    Continue to Survey Questions
+                </button>
+            </form>
         </div>
+    </div>
 
-        <div>
-            <label>Length of Continuous Service (in years):</label>
-            {{ form.work_experience }}
-        </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add styling to select elements
+            document.querySelectorAll('select').forEach(select => {
+                select.classList.add('form-select');
+            });
 
-        <div class="section-title">Organizational Information</div>
-        
-        <div>
-            <label>Division:</label>
-            {{ form.division }}
-        </div>
+            // Form validation
+            const form = document.getElementById('demographicForm');
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                const requiredFields = document.querySelectorAll('[required]');
+                
+                requiredFields.forEach(field => {
+                    if (!field.value && field.type !== 'radio') {
+                        isValid = false;
+                        field.style.borderColor = '#e74c3c';
+                    } else if (field.type === 'radio') {
+                        const radioGroup = document.querySelectorAll(`input[name="${field.name}"]`);
+                        const isChecked = Array.from(radioGroup).some(radio => radio.checked);
+                        if (!isChecked) {
+                            isValid = false;
+                            radioGroup[0].closest('.form-field').style.borderColor = '#e74c3c';
+                        }
+                    }
+                });
 
-        <div>
-            <label>Department:</label>
-            {{ form.department }}
-        </div>
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Please fill in all required fields before continuing.');
+                }
+            });
 
-        <div>
-            <label>Type of Employment Contract:</label>
-            {{ form.contract_type }}
-        </div>
+            // Remove error styling when user interacts with field
+            document.querySelectorAll('input, select').forEach(field => {
+                field.addEventListener('input', function() {
+                    this.style.borderColor = '';
+                    if (this.type === 'radio') {
+                        this.closest('.form-field').style.borderColor = '';
+                    }
+                });
+            });
 
-        <div>
-            <label>Function:</label>
-            {{ form.designation }}
-        </div>
-
-        <div>
-            <label>Location:</label>
-            {{ form.location }}
-        </div>
-
-        <div class="section-title">Education Information</div>
-        
-        <div>
-            <label>Highest Education Level Attained:</label>
-            {{ form.highest_qualification }}
-        </div>
-
-        <p class="info-icon">Please fill in the following details accordingly:
-            <span class='icon-icon'>ℹ️</span>
-        </p>
-        <div class="tooltip">
-            Your responses will remain anonymous and confidential.<br>
-            We value your privacy and ensure that your data will only be used for statistical purposes.
-        </div>
-
-        <button type="submit">Continue to Survey >></button>
-    </form>
+            // Add smooth animations
+            document.querySelectorAll('.radio-label, select').forEach(element => {
+                element.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                });
+                
+                element.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
 </body>
 </html>

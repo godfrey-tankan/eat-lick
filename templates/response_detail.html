@@ -1,0 +1,267 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company.name }} - Response Details</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ company.primary_color }};
+            --secondary-color: {{ company.secondary_color }};
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: #2c3e50;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .detail-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .detail-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color)dd 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .detail-header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .info-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .info-value {
+            font-weight: 500;
+        }
+
+        .responses-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .response-item {
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .response-question {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .response-answer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .score-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .score-5 { background: #28a745; }
+        .score-4 { background: #20c997; }
+        .score-3 { background: #ffc107; color: #000; }
+        .score-2 { background: #fd7e14; }
+        .score-1 { background: #dc3545; }
+
+        .average-score {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color)dd 100%);
+            color: white;
+            border-radius: 15px;
+            margin-top: 2rem;
+        }
+
+        .average-score .value {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .average-score .label {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .response-answer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="detail-container">
+        <div class="detail-header">
+            <h1><i class="fas fa-user-circle"></i> Response Details</h1>
+            <p>Individual survey response analysis</p>
+        </div>
+
+        <a href="javascript:history.back()" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Previous Page
+        </a>
+
+        <!-- Demographic Information -->
+        <div class="info-grid">
+            <div class="info-card">
+                <h3><i class="fas fa-info-circle"></i> Basic Information</h3>
+                <div class="info-item">
+                    <span class="info-label">User ID:</span>
+                    <span class="info-value">{{ demographic_data.user_id }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Response Date:</span>
+                    <span class="info-value">{{ demographic_data.response_date|date:"M j, Y, g:i A" }}</span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-user-tag"></i> Demographic Details</h3>
+                {% if company.code == 'HIT' %}
+                <div class="info-item">
+                    <span class="info-label">Gender:</span>
+                    <span class="info-value">{{ demographic_data.gender|title|default:"Not specified" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Age Group:</span>
+                    <span class="info-value">{{ demographic_data.age_group|title|default:"Not specified" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Department:</span>
+                    <span class="info-value">{{ demographic_data.department|title|default:"Not specified" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Contract Type:</span>
+                    <span class="info-value">{{ demographic_data.contract_type|title|default:"Not specified" }}</span>
+                </div>
+                {% else %}
+                <div class="info-item">
+                    <span class="info-label">Client Type:</span>
+                    <span class="info-value">{{ demographic_data.client_type|title|default:"Not specified" }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Survey Responses -->
+        <div class="responses-section">
+            <h3 style="color: var(--primary-color); margin-bottom: 1.5rem;">
+                <i class="fas fa-list-alt"></i> Survey Responses
+            </h3>
+            
+            {% for response in survey_responses %}
+            <div class="response-item">
+                <div class="response-question">{{ response.question.question_text }}</div>
+                <div class="response-answer">
+                    <span>{{ response.get_response_display }}</span>
+                    <span class="score-badge score-{{ response.response }}">
+                        Score: {{ response.response }}/5
+                    </span>
+                </div>
+            </div>
+            {% empty %}
+            <div style="text-align: center; padding: 3rem; color: #666;">
+                <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <p>No responses found for this user</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Average Score -->
+        {% if avg_score > 0 %}
+        <div class="average-score">
+            <div class="value">{{ avg_score }}/5</div>
+            <div class="label">Overall Average Score</div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

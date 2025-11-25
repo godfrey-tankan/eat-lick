@@ -2,6 +2,7 @@
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
+from requests import request
 from .forms import *
 import json
 from django.contrib import messages
@@ -22,722 +23,714 @@ from django.db.models import (
 )
 from .decorators import check_user_feedback
 from django.utils.timezone import now
+from datetime import datetime, timedelta
+import csv
 import time
 
+import uuid
 
-# Create your views here.
+
 def home_view(request):
-    if request.user.is_staff:
-        return redirect("staff_dashboard")
-    return render(request, "home.html")
+    """Home page with company selection"""
+    if request.method == "POST":
+        form = CompanySelectionForm(request.POST)
+        if form.is_valid():
+            company = form.cleaned_data["company"]
+            request.session["selected_company"] = company.id
+            return redirect("demographic_data")
+    else:
+        form = CompanySelectionForm()
+
+    companies = Company.objects.filter(is_active=True)
+    return render(request, "home.html", {"form": form, "companies": companies})
 
 
-@login_required
-def staff_dashboard_view(request):
-    if not request.user.is_staff:
-        return HttpResponse("You are not authorized to view this page", status=403)
+def demographic_data_view(request):
+    """Demographic data collection based on selected company"""
+    # Check for company code in query parameters first, then POST data
+    company_code = None
 
-    # Update positive/negative thresholds for 6-point scale (4-6 positive, 1-3 negative)
-    POSITIVE_THRESHOLD = 4
-    NEGATIVE_THRESHOLD = 3
+    # Check query parameters
+    if "company" in request.GET:
+        company_code = request.GET.get("company")
 
-    # Get total participants
-    total_participants = LikertScaleAnswer.objects.values("user_id").distinct().count()
+    # Check POST data (for form submissions from home page)
+    elif request.method == "POST" and "company" in request.POST:
+        company_code = request.POST.get("company")
 
-    # Calculate average feedback for each department
-    department_feedback = (
-        DemographicData.objects.values("department")
-        .annotate(avg_feedback=Avg("user_id__likertscaleanswer__response"))
-        .order_by("-avg_feedback")
-    )
+    # If we have a company code, process it
+    if company_code:
 
-    most_proper_department = (
-        department_feedback.first() if department_feedback else None
-    )
-    critical_department = department_feedback.last() if department_feedback else None
+        try:
+            company = Company.objects.get(code=company_code.upper())
+            request.session["selected_company"] = company.id
 
-    # Calculate average qualification
-    qualification_scores = {
-        "o_level": 1,
-        "a_level": 2,
-        "diploma": 3,
-        "degree": 4,
-        "post_grad": 5,
-    }
+            # Generate user session ID
+            if "user_session_id" not in request.session:
+                request.session["user_session_id"] = str(uuid.uuid4())
 
-    qualifications = DemographicData.objects.values_list(
-        "highest_qualification", flat=True
-    )
-    qualification_scores_list = [
-        qualification_scores.get(q, 0)
-        for q in qualifications
-        if q in qualification_scores
-    ]
-    average_qualification_score = (
-        sum(qualification_scores_list) / len(qualification_scores_list)
-        if qualification_scores_list
-        else 0
-    )
-
-    average_qualification_str = None
-    if average_qualification_score is not None:
-        rounded_score = round(average_qualification_score)
-        average_qualification_str = next(
-            (
-                key
-                for key, value in qualification_scores.items()
-                if value == rounded_score
-            ),
-            "o_level",
-        )
-
-    # Get top complaints
-    top_complaints = (
-        LikertScaleAnswer.objects.values("question__question_text")
-        .annotate(avg_score=Avg("response"), response_count=Count("id"))
-        .filter(response_count__gte=3)
-        .order_by("avg_score")[:3]
-    )
-
-    top_complaints_list = [
-        f"{complaint['question__question_text'][:50]}... (Avg: {complaint['avg_score']:.1f}/6)"
-        for complaint in top_complaints
-    ]
-
-    # Prepare data for charts
-    feedback_distribution_by_department = DemographicData.objects.values(
-        "department"
-    ).annotate(
-        total_responses=Count("user_id__likertscaleanswer"),
-        positive_feedback=Count(
-            "user_id__likertscaleanswer",
-            filter=Q(user_id__likertscaleanswer__response__gte=POSITIVE_THRESHOLD),
-        ),
-        negative_feedback=Count(
-            "user_id__likertscaleanswer",
-            filter=Q(user_id__likertscaleanswer__response__lte=NEGATIVE_THRESHOLD),
-        ),
-    )
-
-    average_feedback_by_department = DemographicData.objects.values(
-        "department"
-    ).annotate(avg_feedback=Avg("user_id__likertscaleanswer__response"))
-
-    chart_data = {
-        "feedback_distribution_by_department": list(
-            feedback_distribution_by_department
-        ),
-        "average_feedback_by_department": list(average_feedback_by_department),
-    }
-
-    context = {
-        "total_participants": total_participants,
-        "most_proper_department": most_proper_department,
-        "average_qualification": average_qualification_str,
-        "critical_department": critical_department,
-        "top_complaints": top_complaints_list,
-        "chart_data": json.dumps(chart_data),
-    }
-
-    return render(request, "staff/staff_dashboard.html", context)
-
-
-# @login_required
-def aggregated_feedback_view(request):
-    if not request.user.is_staff:
-        return HttpResponse("You are not authorized to view this page", status=403)
-
-    start_time = time.time()
-
-    # Update thresholds for 6-point scale
-    POSITIVE_THRESHOLD = 4
-    NEGATIVE_THRESHOLD = 3
-
-    questions = JobSatisfactionQuestion.objects.prefetch_related(
-        Prefetch(
-            "answers", queryset=LikertScaleAnswer.objects.select_related("user_id")
-        )
-    )
-
-    total_responses = LikertScaleAnswer.objects.count()
-    total_participants = LikertScaleAnswer.objects.values("user_id").distinct().count()
-
-    question_summary = {}
-
-    # Precompute response distributions
-    response_distributions = {}
-    for i in range(1, 7):  # Changed to 1-6 range
-        response_distributions[i] = (
-            LikertScaleAnswer.objects.filter(response=i)
-            .values("question")
-            .annotate(count=Count("id"))
-        )
-
-    dist_dict = {}
-    for i in range(1, 7):
-        dist_dict[i] = {
-            item["question"]: item["count"] for item in response_distributions[i]
-        }
-
-    question_avgs = LikertScaleAnswer.objects.values("question").annotate(
-        avg_response=Avg("response"),
-        total_count=Count("id"),
-        positive_count=Count("id", filter=Q(response__gte=POSITIVE_THRESHOLD)),
-        negative_count=Count("id", filter=Q(response__lte=NEGATIVE_THRESHOLD)),
-    )
-
-    avg_dict = {item["question"]: item for item in question_avgs}
-
-    for question in questions:
-        question_data = avg_dict.get(question.id)
-
-        if question_data and question_data["total_count"] > 0:
-            distribution = {}
-            for i in range(1, 7):
-                distribution[i] = dist_dict[i].get(question.id, 0)
-
-            percentage_positive = (
-                question_data["positive_count"] / question_data["total_count"]
-            ) * 100
-
-            question_summary[question] = {
-                "average": question_data["avg_response"],
-                "percentage_positive": percentage_positive,
-                "count": question_data["total_count"],
-                "distribution": distribution,
-            }
-
-    # Optimize department feedback analysis with new thresholds
-    departments_feedback = (
-        DemographicData.objects.values("department")
-        .annotate(
-            total_employees=Count("user_id", distinct=True),
-            avg_feedback=Avg("user_id__likertscaleanswer__response"),
-            response_count=Count("user_id__likertscaleanswer"),
-            positive_count=Count(
-                "user_id__likertscaleanswer",
-                filter=Q(user_id__likertscaleanswer__response__gte=POSITIVE_THRESHOLD),
-            ),
-            negative_count=Count(
-                "user_id__likertscaleanswer",
-                filter=Q(user_id__likertscaleanswer__response__lte=NEGATIVE_THRESHOLD),
-            ),
-        )
-        .filter(response_count__gt=0)
-        .order_by("avg_feedback")
-    )
-
-    worst_department = departments_feedback.first()
-    best_department = departments_feedback.last()
-
-    # Update salary complaints calculation
-    pay_data = LikertScaleAnswer.objects.filter(question__category="pay").aggregate(
-        total=Count("id"),
-        complaints=Count("id", filter=Q(response__lte=NEGATIVE_THRESHOLD)),
-        positive=Count("id", filter=Q(response__gte=POSITIVE_THRESHOLD)),
-    )
-
-    salary_complaints = pay_data["complaints"] or 0
-    total_pay_responses = pay_data["total"] or 0
-    salary_satisfaction_percentage = (
-        (pay_data["positive"] / total_pay_responses * 100)
-        if total_pay_responses > 0
-        else 0
-    )
-
-    # Top concerns
-    top_concerns = []
-    for question, summary in question_summary.items():
-        if summary["count"] >= 5:
-            top_concerns.append(
-                {
-                    "question": question,
-                    "average": summary["average"],
-                    "count": summary["count"],
-                }
+            # Initialize the appropriate form for GET display
+            form = (
+                NHSDemographicForm() if company.code == "NHS" else HITDemographicForm()
+            )
+            return render(
+                request, "demographic_data.html", {"form": form, "company": company}
             )
 
-    top_concerns = sorted(top_concerns, key=lambda x: x["average"])[:5]
+        except Company.DoesNotExist:
+            return redirect("home")
 
-    # Overall satisfaction metrics
-    overall_stats = LikertScaleAnswer.objects.aggregate(
-        avg_score=Avg("response"),
-        total=Count("id"),
-        positive=Count("id", filter=Q(response__gte=POSITIVE_THRESHOLD)),
-    )
+    # Handle demographic form submission (when user submits the actual demographic form)
+    company_id = request.session.get("selected_company")
 
-    overall_avg_score = overall_stats["avg_score"] or 0
-    overall_positive_percentage = (
-        (overall_stats["positive"] / overall_stats["total"] * 100)
-        if overall_stats["total"] > 0
-        else 0
-    )
+    if not company_id:
+        return redirect("home")
 
-    # Department response rates
-    department_response_rates = []
-    for dept in departments_feedback:
-        department_response_rates.append(
-            {
-                "department": dept["department"],
-                "response_rate": (
-                    (dept["response_count"] / dept["total_employees"] * 100)
-                    if dept["total_employees"] > 0
-                    else 0
-                ),
-                "total_employees": dept["total_employees"],
-                "responses": dept["response_count"],
-            }
+    company = get_object_or_404(Company, id=company_id)
+
+    # Generate or get user session ID
+    if "user_session_id" not in request.session:
+        request.session["user_session_id"] = str(uuid.uuid4())
+
+    if request.method == "POST":
+        form = (
+            NHSDemographicForm(request.POST)
+            if company.code == "NHS"
+            else HITDemographicForm(request.POST)
         )
-
-    end_time = time.time()
-
-    context = {
-        "total_responses": total_responses,
-        "total_participants": total_participants,
-        "question_summary": question_summary,
-        "departments_feedback": list(departments_feedback),
-        "worst_department": worst_department,
-        "best_department": best_department,
-        "salary_complaints": salary_complaints,
-        "salary_satisfaction_percentage": salary_satisfaction_percentage,
-        "total_pay_responses": total_pay_responses,
-        "top_concerns": top_concerns,
-        "overall_avg_score": overall_avg_score,
-        "overall_positive_percentage": overall_positive_percentage,
-        "department_response_rates": department_response_rates,
-        "now": now(),
-        "execution_time": end_time - start_time,
-    }
-
-    return render(request, "feedbacks/aggregated_feedback.html", context)
-
-
-# @check_user_feedback
-# @login_required
-@csrf_exempt
-def demographic_data_view(request):
-    if request.method == "POST":
-        form = DemographicDataForm(request.POST)
         if form.is_valid():
-            # Get the username from the POST data
-            username = request.POST.get("username")
-            print(f"Username from form: {username}")
-
-            # Check if a user with this username exists
-            user, created = User.objects.get_or_create(username=username)
-            try:
-                demographic_ob = DemographicData.objects.filter(user_id=user)
-                if demographic_ob.exists():
-                    print("User already submitted demographic data")
-                    return render(request, "review_submited.html")
-            except Exception as e:
-                print("Exception -> ", e)
-
-            if created:
-                # Set a default password or other attributes if necessary
-                user.set_password(User.objects.make_random_password())
-                user.save()
-                print(f"Created new user: {user.username}")
-
-            # Save demographic data
             demographic_data = form.save(commit=False)
-            demographic_data.user_id = user
+            demographic_data.company = company
+            demographic_data.user_id = request.session["user_session_id"]
             demographic_data.save()
-            print("Saved demographic data successfully")
-            return redirect("job_satisfaction")
+            return redirect("survey_questions")
         else:
-            print("Form errors:", form.errors)
-            print("Form data:", request.POST)
+            print("Form is invalid")
+    elif company.code == "NHS":
+        form = NHSDemographicForm()
     else:
-        form = DemographicDataForm()
-    return render(request, "demographic_data.html", {"form": form})
+        form = HITDemographicForm()
+
+    return render(request, "demographic_data.html", {"form": form, "company": company})
 
 
-# @login_required
-@csrf_exempt
-def job_satisfaction_view(request):
-    questions = JobSatisfactionQuestion.objects.all()
+def survey_questions_view(request):
+    """Survey questions based on selected company"""
+    company_id = request.session.get("selected_company")
+    if not company_id:
+        return redirect("home")
+
+    company = get_object_or_404(Company, id=company_id)
+    questions = SurveyQuestion.objects.filter(company=company).order_by("order")
+
+    if "user_session_id" not in request.session:
+        return redirect("home")
+
+    # Check if user already completed survey
+    existing_responses = SurveyResponse.objects.filter(
+        user_id=request.session["user_session_id"], company=company
+    )
+    if existing_responses.exists():
+        return render(request, "review_submitted.html")
 
     if request.method == "POST":
-        form = JobSatisfactionForm(request.POST, questions=questions)
-        print(f"Form is valid: {form.is_valid()}")
-
-        if not form.is_valid():
-            print("FORM ERRORS:", form.errors)
-            print("POST DATA:", request.POST)
-
+        form = SurveyResponseForm(request.POST, company=company, questions=questions)
         if form.is_valid():
-            username = request.POST.get("username")
-            print(f"Username from job satisfaction form: {username}")
-
-            try:
-                user = User.objects.get(username=username)
-                print(f"Found user: {user.username}")
-
-                # Check if user already submitted answers
-                existing_answers = LikertScaleAnswer.objects.filter(user_id=user)
-                if existing_answers.exists():
-                    print("User already submitted job satisfaction answers")
-                    return render(request, "review_submited.html")
-
-            except User.DoesNotExist:
-                print(f"User {username} does not exist")
-                return render(
-                    request,
-                    "demographic_data.html",
-                    {
-                        "form": DemographicDataForm(),
-                        "error": "User not found. Please start over.",
-                    },
-                )
-            except Exception as e:
-                print("Exception -> ", e)
-                return render(
-                    request,
-                    "demographic_data.html",
-                    {
-                        "form": DemographicDataForm(),
-                        "error": "An error occurred. Please try again.",
-                    },
-                )
-
-            # Process form data
             for field_name, response in form.cleaned_data.items():
                 if field_name.startswith("question_"):
                     question_id = int(field_name.split("_")[1])
-                    try:
-                        question = JobSatisfactionQuestion.objects.get(id=question_id)
+                    question = SurveyQuestion.objects.get(id=question_id)
 
-                        # Save the response (all questions use the 6-point scale)
-                        LikertScaleAnswer.objects.create(
-                            user_id=user, question=question, response=response
-                        )
-                        print(f"Saved response {response} for question {question_id}")
-                    except JobSatisfactionQuestion.DoesNotExist:
-                        print(f"Question with ID {question_id} does not exist")
-                    except Exception as e:
-                        print(f"Error saving answer for question {question_id}: {e}")
+                    SurveyResponse.objects.create(
+                        user_id=request.session["user_session_id"],
+                        company=company,
+                        question=question,
+                        response=response,
+                    )
 
-            print("All answers saved successfully, redirecting to thank you page")
+            # Clear session data
+            request.session.pop("selected_company", None)
+            request.session.pop("user_session_id", None)
+
             return redirect("thank_you")
-        else:
-            # Form is not valid, re-render with errors
-            print("Form validation failed")
     else:
-        form = JobSatisfactionForm(questions=questions)
-        print("GET request, rendering empty form")
+        form = SurveyResponseForm(company=company, questions=questions)
 
-    return render(request, "job_satisfaction.html", {"form": form})
+    return render(
+        request,
+        "survey_questions.html",
+        {"form": form, "company": company, "questions": questions},
+    )
+
+
+@login_required
+def company_dashboard_view(request):
+    """Enhanced Company Dashboard with comprehensive analytics"""
+    if not hasattr(request.user, "companyadmin"):
+        return HttpResponse("You are not authorized to view this page", status=403)
+
+    company_admin = request.user.companyadmin
+    company = company_admin.company
+
+    # Dashboard statistics
+    total_responses = (
+        SurveyResponse.objects.filter(company=company)
+        .values("user_id")
+        .distinct()
+        .count()
+    )
+
+    # Average scores by category
+    category_scores = (
+        SurveyResponse.objects.filter(company=company)
+        .values("question__category")
+        .annotate(
+            avg_score=Avg("response"),
+            response_count=Count("id"),
+            total_respondents=Count("user_id", distinct=True),
+        )
+        .order_by("-avg_score")
+    )
+
+    # Recent responses (last 7 days)
+    recent_responses_count = SurveyResponse.objects.filter(
+        company=company, response_date__gte=now() - timedelta(days=7)
+    ).count()
+
+    # Calculate completion rate
+    total_questions = SurveyQuestion.objects.filter(company=company).count()
+    total_possible_responses = (
+        total_responses * total_questions if total_responses > 0 else 0
+    )
+    actual_responses = SurveyResponse.objects.filter(company=company).count()
+    completion_rate = (
+        (actual_responses / total_possible_responses * 100)
+        if total_possible_responses > 0
+        else 0
+    )
+
+    # Department performance (for HIT)
+    if company.code == "HIT":
+        department_scores = (
+            DemographicData.objects.filter(company=company, department__isnull=False)
+            .annotate(
+                avg_score=Avg(
+                    SurveyResponse.objects.filter(
+                        company=company, user_id=models.OuterRef("user_id")
+                    ).values("response")
+                ),
+                response_count=Count(
+                    SurveyResponse.objects.filter(
+                        company=company, user_id=models.OuterRef("user_id")
+                    ).values("id")
+                ),
+            )
+            .values("department", "avg_score", "response_count")
+        )
+    else:
+        department_scores = []
+
+    # Response trend (last 30 days)
+    response_trend = (
+        SurveyResponse.objects.filter(
+            company=company, response_date__gte=now() - timedelta(days=30)
+        )
+        .extra({"date": "date(response_date)"})
+        .values("date")
+        .annotate(count=Count("id"))
+        .order_by("date")
+    )
+
+    # Top performing questions
+    top_questions = (
+        SurveyResponse.objects.filter(company=company)
+        .values("question__question_text", "question__category")
+        .annotate(avg_score=Avg("response"))
+        .order_by("-avg_score")[:5]
+    )
+
+    # Areas needing improvement
+    improvement_areas = (
+        SurveyResponse.objects.filter(company=company)
+        .values("question__question_text", "question__category")
+        .annotate(avg_score=Avg("response"))
+        .order_by("avg_score")[:5]
+    )
+
+    # Demographic insights
+    demographic_breakdown = {
+        "gender": DemographicData.objects.filter(company=company)
+        .values("gender")
+        .annotate(count=Count("id")),
+        "age_group": DemographicData.objects.filter(company=company)
+        .values("age_group")
+        .annotate(count=Count("id")),
+        "department": DemographicData.objects.filter(company=company)
+        .values("department")
+        .annotate(count=Count("id")),
+    }
+
+    context = {
+        "company": company,
+        "total_responses": total_responses,
+        "category_scores": category_scores,
+        "recent_responses_count": recent_responses_count,
+        "completion_rate": round(completion_rate, 1),
+        "department_scores": department_scores,
+        "response_trend": list(response_trend),
+        "top_questions": top_questions,
+        "improvement_areas": improvement_areas,
+        "demographic_breakdown": demographic_breakdown,
+    }
+
+    return render(request, "company_dashboard.html", context)
+
+
+@login_required
+def company_reports_view(request):
+    """Detailed reports for company admins"""
+    if not hasattr(request.user, "companyadmin"):
+        return HttpResponse("You are not authorized to view this page", status=403)
+
+    company_admin = request.user.companyadmin
+    company = company_admin.company
+
+    # Comprehensive report data
+    questions = SurveyQuestion.objects.filter(company=company)
+    question_stats = []
+
+    for question in questions:
+        stats = SurveyResponse.objects.filter(question=question).aggregate(
+            avg_response=Avg("response"),
+            total_responses=Count("id"),
+            strongly_agree=Count("id", filter=Q(response=5)),
+            agree=Count("id", filter=Q(response=4)),
+            neutral=Count("id", filter=Q(response=3)),
+            disagree=Count("id", filter=Q(response=2)),
+            strongly_disagree=Count("id", filter=Q(response=1)),
+        )
+        question_stats.append({"question": question, "stats": stats})
+
+    # Demographic breakdown
+    demographics = DemographicData.objects.filter(company=company)
+
+    context = {
+        "company": company,
+        "question_stats": question_stats,
+        "demographics": demographics,
+    }
+
+    return render(request, "company_reports.html", context)
+
+
+###############################################OLD VIEWS#####################################################
 
 
 def thank_you(request):
     return render(request, "thank_you.html")
 
 
+def review_submitted(request):
+    return render(request, "review_submitted.html")
+
+
 @login_required
-def feedback_details(request, user_id):
-    if not request.user.is_staff:
+def company_reports_view(request):
+    """Detailed reports for company admins"""
+    if not hasattr(request.user, "companyadmin"):
         return HttpResponse("You are not authorized to view this page", status=403)
 
-    user = get_object_or_404(User, id=user_id)
-    feedbacks = LikertScaleAnswer.objects.filter(user_id=user).select_related(
-        "question"
-    )
+    company_admin = request.user.companyadmin
+    company = company_admin.company
 
-    feedback_details = []
-    # Updated response choices to match the 6-point scale
-    RESPONSE_CHOICES = {
-        1: "Disagree very much",
-        2: "Disagree moderately",
-        3: "Disagree slightly",
-        4: "Agree slightly",
-        5: "Agree moderately",
-        6: "Agree very much",
-    }
+    # Comprehensive report data
+    questions = SurveyQuestion.objects.filter(company=company)
+    question_stats = []
 
-    for feedback in feedbacks:
-        details = {
-            "question_text": feedback.question.question_text,
-            "response": feedback.response,
-            "response_text": RESPONSE_CHOICES.get(feedback.response, "No response"),
-            "response_date": feedback.response_date.strftime("%Y-%m-%d %H:%M"),
-        }
-        feedback_details.append(details)
-
-    demographic = (
-        DemographicData.objects.filter(user_id=user).order_by("-response_date").first()
-    )
-
-    user_info = {
-        "id": user.id,
-    }
-
-    if demographic:
-        user_info.update(
-            {
-                "gender": demographic.get_gender_display(),
-                "location": demographic.get_location_display(),
-                "qualification": demographic.get_highest_qualification_display(),
-                "designation": demographic.get_designation_display(),
-                "department": demographic.get_department_display(),
-                "experience": demographic.get_work_experience_display(),
-                "age": demographic.get_age_group_display(),
-                "response_date": demographic.response_date.strftime("%b %d, %Y"),
-            }
+    for question in questions:
+        responses = SurveyResponse.objects.filter(question=question)
+        stats = responses.aggregate(
+            avg_response=Avg("response"),
+            total_responses=Count("id"),
+            strongly_agree=Count("id", filter=Q(response=5)),
+            agree=Count("id", filter=Q(response=4)),
+            neutral=Count("id", filter=Q(response=3)),
+            disagree=Count("id", filter=Q(response=2)),
+            strongly_disagree=Count("id", filter=Q(response=1)),
         )
 
-    return JsonResponse({"user": user_info, "feedbacks": feedback_details})
-
-
-def feedback_list(request):
-    if request.user.is_staff:
-        feedbacks = LikertScaleAnswer.objects.select_related("question").order_by(
-            "-response_date"
-        )[:3]
-        return render(request, "feedbacks/feedback_list.html", {"feedbacks": feedbacks})
-    return HttpResponse("You are not authorized to view this page", status=403)
-
-
-def feedback_detail(request):
-    if request.user.is_staff:
-        users = User.objects.all()
-        feedbacks = DemographicData.objects.filter(user_id__in=users).order_by(
-            "-response_date"
-        )
-        return render(
-            request, "feedbacks/feedback_detail.html", {"feedbacks": feedbacks}
-        )
-    return HttpResponse("You are not authorized to view this page", status=403)
-
-
-def get_user_feedback(request, user_id):
-    feedbacks = LikertScaleAnswer.objects.filter(user_id=user_id).select_related(
-        "question"
-    )
-    feedback_details = [
-        {
-            "question_text": feedback.question.question_text,
-            "response": feedback.get_response_display(),
-            "response_date": feedback.response_date.strftime("%Y-%m-%d %H:%M"),
-        }
-        for feedback in feedbacks
-    ]
-    return JsonResponse({"feedbacks": feedback_details})
-
-
-def download_all_responses(request):
-    import csv
-    import pandas as pd
-    from django.http import HttpResponse
-    from django.db.models import Prefetch
-    from django.utils import timezone
-    from a_home.models import (
-        DemographicData,
-        LikertScaleAnswer,
-        JobSatisfactionQuestion,
-    )
-
-    # Get all demographic data with prefetched answers
-    demographics = (
-        DemographicData.objects.select_related("user_id")
-        .prefetch_related(
-            Prefetch(
-                "user_id__likertscaleanswer_set",
-                queryset=LikertScaleAnswer.objects.select_related("question"),
-                to_attr="answers",
+        # Calculate percentages
+        total = stats["total_responses"]
+        if total > 0:
+            stats["strongly_agree_pct"] = (stats["strongly_agree"] / total) * 100
+            stats["agree_pct"] = (stats["agree"] / total) * 100
+            stats["neutral_pct"] = (stats["neutral"] / total) * 100
+            stats["disagree_pct"] = (stats["disagree"] / total) * 100
+            stats["strongly_disagree_pct"] = (stats["strongly_disagree"] / total) * 100
+        else:
+            stats.update(
+                {
+                    f"{key}_pct": 0
+                    for key in [
+                        "strongly_agree",
+                        "agree",
+                        "neutral",
+                        "disagree",
+                        "strongly_disagree",
+                    ]
+                }
             )
-        )
-        .all()
+
+        question_stats.append({"question": question, "stats": stats})
+
+    # Demographic breakdown
+    demographics = DemographicData.objects.filter(company=company)
+
+    # Response rate by demographic
+    demographic_response_rates = {}
+    for field in ["gender", "age_group", "department", "contract_type"]:
+        if company.code == "HIT":  # Only for HIT
+            demographic_response_rates[field] = (
+                demographics.values(field)
+                .annotate(count=Count("id"))
+                .order_by("-count")
+            )
+        else:  # For NHS
+            demographic_response_rates["client_type"] = (
+                demographics.values("client_type")
+                .annotate(count=Count("id"))
+                .order_by("-count")
+            )
+            break  # Only client_type for NHS
+
+    context = {
+        "company": company,
+        "question_stats": question_stats,
+        "demographics": demographics,
+        "demographic_response_rates": demographic_response_rates,
+    }
+
+    return render(request, "company_reports.html", context)
+
+
+@login_required
+def response_detail_view(request, user_id):
+    """View individual response details"""
+    if not hasattr(request.user, "companyadmin"):
+        return HttpResponse("You are not authorized to view this page", status=403)
+
+    company_admin = request.user.companyadmin
+    company = company_admin.company
+
+    # Get demographic data
+    demographic_data = get_object_or_404(
+        DemographicData, user_id=user_id, company=company
     )
 
-    # Create response with CSV content
+    # Get survey responses
+    survey_responses = SurveyResponse.objects.filter(
+        user_id=user_id, company=company
+    ).select_related("question")
+
+    # Calculate average score
+    avg_score = survey_responses.aggregate(avg=Avg("response"))["avg"]
+
+    context = {
+        "company": company,
+        "demographic_data": demographic_data,
+        "survey_responses": survey_responses,
+        "avg_score": round(avg_score, 2) if avg_score else 0,
+    }
+
+    return render(request, "response_detail.html", context)
+
+
+@login_required
+def export_responses_csv(request):
+    """Export all responses as CSV"""
+    if not hasattr(request.user, "companyadmin"):
+        return HttpResponse("You are not authorized to view this page", status=403)
+
+    company_admin = request.user.companyadmin
+    company = company_admin.company
+
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = (
-        f'attachment; filename="homelink_all_responses_{timezone.now().strftime("%Y%m%d_%H%M")}.csv"'
+        f'attachment; filename="{company.code}_survey_responses_{datetime.now().strftime("%Y%m%d")}.csv"'
     )
-
-    # Get all questions organized by ALL categories
-    categories_order = [
-        "pay",
-        "promotion",
-        "supervision",
-        "fringe_benefits",
-        "contingent_rewards",
-        "operating_conditions",
-        "coworkers",
-        "nature_of_work",
-        "communication",
-        "health_and_safety",
-        "vigour_energy",
-        "dedication",
-        "absorption",
-    ]
-
-    # Get questions in the order they should appear
-    questions_by_category = {}
-    for category in categories_order:
-        questions_by_category[category] = JobSatisfactionQuestion.objects.filter(
-            category=category
-        ).order_by("id")
 
     writer = csv.writer(response)
 
-    # Write headers based on the Excel template structure
-    headers = [
-        "USER ID",
-        "GENDER",
-        "LOCATION",
-        "QUALIFICATION",
-        "DESIGNATION",
-        "DEPARTMENT",
-        "EXPERIENCE",
-        "CONTRACT TYPE",
-        "AGE",
-    ]
-
-    pay_questions = list(questions_by_category["pay"])
-    headers.extend([f"PAY {i+1}" for i in range(len(pay_questions))])
-
-    # Add PROMOTION section - main header and sub-columns
-    promotion_questions = list(questions_by_category["promotion"])
-    headers.extend([f"PROMOTION {i+1}" for i in range(len(promotion_questions))])
-
-    supervision_questions = list(questions_by_category["supervision"])
-    headers.extend([f"SUPERVISION {i+1}" for i in range(len(supervision_questions))])
-
-    fringe_questions = list(questions_by_category["fringe_benefits"])
-    headers.extend([f"FRINGE BENEFITS {i+1}" for i in range(len(fringe_questions))])
-
-    # Add CONTIGENT REWARDS section - main header and sub-columns
-    contingent_questions = list(questions_by_category["contingent_rewards"])
-    headers.extend(
-        [f"CONTIGENT REWARDS {i+1}" for i in range(len(contingent_questions))]
-    )
-
-    # Add OPERATING CONDITIONS section - main header and sub-columns
-    operating_questions = list(questions_by_category["operating_conditions"])
-    headers.extend(
-        [f"OPERATING CONDITIONS {i+1}" for i in range(len(operating_questions))]
-    )
-
-    coworkers_questions = list(questions_by_category["coworkers"])
-    headers.extend([f"CORE WORKERS {i+1}" for i in range(len(coworkers_questions))])
-
-    # Add NATURE OF WORK section - main header and sub-columns
-    nature_questions = list(questions_by_category["nature_of_work"])
-    headers.extend([f"NATURE OF WORK {i+1}" for i in range(len(nature_questions))])
-
-    # Add COMMUNICATION section - main header and sub-columns
-    communication_questions = list(questions_by_category["communication"])
-    headers.extend(
-        [f"COMMUNICATION {i+1}" for i in range(len(communication_questions))]
-    )
-
-    # Add HEALTH AND SAFETY section - main header and sub-columns
-    health_questions = list(questions_by_category["health_and_safety"])
-    headers.extend([f"HEALTH AND SAFETY {i+1}" for i in range(len(health_questions))])
-
-    # Add VIGOUR AND ENERGY section - main header and sub-columns
-    vigour_questions = list(questions_by_category["vigour_energy"])
-    headers.extend([f"VIGOUR AND ENERGY {i+1}" for i in range(len(vigour_questions))])
-
-    # Add DEDICATION section - main header and sub-columns
-    dedication_questions = list(questions_by_category["dedication"])
-    headers.extend([f"DEDICATION {i+1}" for i in range(len(dedication_questions))])
-
-    # Add ABSORPTION section - main header and sub-columns
-    absorption_questions = list(questions_by_category["absorption"])
-    headers.extend([f"ABSORPTION {i+1}" for i in range(len(absorption_questions))])
-
     # Write headers
+    headers = ["User ID", "Response Date"]
+
+    # Add demographic fields based on company
+    if company.code == "HIT":
+        headers.extend(
+            [
+                "Gender",
+                "Age Group",
+                "Department",
+                "Contract Type",
+                "Designation",
+                "Highest Qualification",
+                "Category",
+            ]
+        )
+    else:  # NHS
+        headers.extend(["Client Type"])
+
+    # Add questions
+    questions = SurveyQuestion.objects.filter(company=company).order_by("order")
+    for question in questions:
+        headers.append(question.question_text[:50])  # Truncate long questions
+
     writer.writerow(headers)
 
-    # Write data rows
-    for demo in demographics:
-        # Start with demographic data
-        row = [
-            demo.user_id.id,
-            demo.get_gender_display(),
-            demo.get_location_display() if demo.location else "",
-            demo.get_highest_qualification_display(),
-            demo.get_designation_display(),
-            demo.get_department_display(),
-            demo.get_work_experience_display(),
-            demo.get_contract_type_display(),
-            demo.get_age_group_display(),
-        ]
+    # Get all unique users
+    user_ids = (
+        SurveyResponse.objects.filter(company=company)
+        .values_list("user_id", flat=True)
+        .distinct()
+    )
 
-        # Helper function to get answer for a question
-        def get_answer_value(question):
-            for answer in getattr(demo.user_id, "answers", []):
-                if answer.question_id == question.id:
-                    return answer.response if answer.response else 0
-            return 0
+    for user_id in user_ids:
+        try:
+            demographic = DemographicData.objects.get(user_id=user_id, company=company)
+            responses = SurveyResponse.objects.filter(user_id=user_id, company=company)
 
-        # Add pay section - main column (empty) and answers
-        for question in pay_questions:
-            row.append(get_answer_value(question))
+            row = [user_id, demographic.response_date.strftime("%Y-%m-%d %H:%M:%S")]
 
-        # Add promotion section - main column (empty) and answers
-        # row.append("")  # PROMOTTION main header column (empty)
-        for question in promotion_questions:
-            row.append(get_answer_value(question))
+            # Add demographic data
+            if company.code == "HIT":
+                row.extend(
+                    [
+                        demographic.gender,
+                        demographic.age_group,
+                        demographic.department,
+                        demographic.contract_type,
+                        demographic.designation,
+                        demographic.highest_qualification,
+                        demographic.category,
+                    ]
+                )
+            else:
+                row.extend([demographic.client_type])
 
-        # Add supervision section - main column (empty) and answers
-        # row.append("")  # SUPERVISION main header column (empty)
-        for question in supervision_questions:
-            row.append(get_answer_value(question))
+            # Add responses
+            response_dict = {resp.question_id: resp.response for resp in responses}
+            for question in questions:
+                row.append(response_dict.get(question.id, ""))
 
-        # Add fringe benefits section - main column (empty) and answers
-        # row.append("")  # FRINGE BENEFITS main header column (empty)
-        for question in fringe_questions:
-            row.append(get_answer_value(question))
-
-        # Add contingent rewards section - main column (empty) and answers
-        # row.append("")  # CONTIGENT REWARDS main header column (empty)
-        for question in contingent_questions:
-            row.append(get_answer_value(question))
-
-        # Add operating conditions section - main column (empty) and answers
-        # row.append("")  # OPERATING CONDITIONS main header column (empty)
-        for question in operating_questions:
-            row.append(get_answer_value(question))
-
-        # Add core workers section - main column (empty) and answers
-        # row.append("")  # CORE WORKERS main header column (empty)
-        for question in coworkers_questions:
-            row.append(get_answer_value(question))
-
-        # Add nature of work section - main column (empty) and answers
-        # row.append("")  # NATURE OF WORK main header column (empty)
-        for question in nature_questions:
-            row.append(get_answer_value(question))
-
-        # Add communication section - main column (empty) and answers
-        # row.append("")  # COMMUNICATION main header column (empty)
-        for question in communication_questions:
-            row.append(get_answer_value(question))
-
-        # Add health and safety section - main column (empty) and answers
-        # row.append("")  # HEALTH AND SAFETY main header column (empty)
-        for question in health_questions:
-            row.append(get_answer_value(question))
-
-        # Add vigour and energy section - main column (empty) and answers
-        # row.append("")  # VIGOUR AND ENERGY main header column (empty)
-        for question in vigour_questions:
-            row.append(get_answer_value(question))
-
-        # Add dedication section - main column (empty) and answers
-        # row.append("")  # DEDICATION main header column (empty)
-        for question in dedication_questions:
-            row.append(get_answer_value(question))
-
-        # Add absorption section - main column (empty) and answers
-        # row.append("")  # ABSORPTION main header column (empty)
-        for question in absorption_questions:
-            row.append(get_answer_value(question))
-
-        writer.writerow(row)
+            writer.writerow(row)
+        except DemographicData.DoesNotExist:
+            continue
 
     return response
+
+
+@login_required
+def demographic_analysis_view(request):
+    """Detailed demographic analysis using existing data"""
+    if not hasattr(request.user, "companyadmin"):
+        return HttpResponse("You are not authorized to view this page", status=403)
+
+    company_admin = request.user.companyadmin
+    company = company_admin.company
+
+    # Get all demographic data for this company
+    demographics = DemographicData.objects.filter(company=company)
+    total_respondents = demographics.count()
+
+    # Get all survey responses for score calculations
+    all_responses = SurveyResponse.objects.filter(company=company)
+    total_responses = all_responses.count()
+
+    # Calculate average score
+    avg_score = all_responses.aggregate(avg=Avg("response"))["avg"] or 0
+
+    # Calculate completion rate (simplified - you might want to adjust this)
+    total_questions = SurveyQuestion.objects.filter(company=company).count()
+    expected_responses = total_respondents * total_questions
+    completion_rate = (
+        (total_responses / expected_responses * 100) if expected_responses > 0 else 0
+    )
+
+    # Response rate (percentage of demographic entries that have survey responses)
+    users_with_responses = all_responses.values("user_id").distinct().count()
+    response_rate = (
+        (users_with_responses / total_respondents * 100) if total_respondents > 0 else 0
+    )
+
+    # Demographic analysis data
+    analysis_data = {}
+    demographic_fields = []
+
+    if company.code == "HIT":
+        demographic_fields = [
+            "gender",
+            "age_group",
+            "department",
+            "contract_type",
+            "designation",
+            "highest_qualification",
+            "category",
+        ]
+    else:
+        demographic_fields = ["client_type"]
+
+    for field in demographic_fields:
+        field_analysis = []
+
+        # Get unique values for this field
+        unique_values = demographics.values_list(field, flat=True).distinct()
+
+        for value in unique_values:
+            if value:  # Only process non-empty values
+                # Count demographics with this value
+                demo_filter = {field: value}
+                demos_with_value = demographics.filter(**demo_filter)
+                count = demos_with_value.count()
+
+                # Get user_ids for these demographics
+                user_ids = demos_with_value.values_list("user_id", flat=True)
+
+                # Calculate average score for these users
+                user_responses = all_responses.filter(user_id__in=user_ids)
+                response_count = user_responses.count()
+                avg_score_value = (
+                    user_responses.aggregate(avg=Avg("response"))["avg"] or 0
+                )
+
+                field_analysis.append(
+                    {
+                        field: value,
+                        "count": count,
+                        "avg_score": avg_score_value,
+                        "response_count": response_count,
+                    }
+                )
+
+        # Sort by count descending
+        field_analysis.sort(key=lambda x: x["count"], reverse=True)
+        analysis_data[field] = field_analysis
+
+    context = {
+        "company": company,
+        "analysis_data": analysis_data,
+        "demographic_fields": demographic_fields,
+        "total_respondents": total_respondents,
+        "avg_score": avg_score,
+        "completion_rate": round(completion_rate, 1),
+        "response_rate": round(response_rate, 1),
+    }
+
+    return render(request, "demographic_analysis.html", context)
+
+
+@login_required
+def category_analysis_view(request, category):
+    """Detailed analysis for a specific category"""
+    if not hasattr(request.user, "companyadmin"):
+        return HttpResponse("You are not authorized to view this page", status=403)
+
+    company_admin = request.user.companyadmin
+    company = company_admin.company
+
+    # Get questions in this category
+    questions = SurveyQuestion.objects.filter(company=company, category=category)
+
+    # Get response statistics for each question
+    question_stats = []
+    for question in questions:
+        stats = SurveyResponse.objects.filter(question=question).aggregate(
+            avg_response=Avg("response"),
+            total_responses=Count("id"),
+            strongly_agree=Count("id", filter=Q(response=5)),
+            agree=Count("id", filter=Q(response=4)),
+            neutral=Count("id", filter=Q(response=3)),
+            disagree=Count("id", filter=Q(response=2)),
+            strongly_disagree=Count("id", filter=Q(response=1)),
+        )
+        question_stats.append({"question": question, "stats": stats})
+
+    # Get category performance over time
+    trend_data = (
+        SurveyResponse.objects.filter(question__category=category, company=company)
+        .extra({"date": "date(response_date)"})
+        .values("date")
+        .annotate(avg_score=Avg("response"))
+        .order_by("date")
+    )
+
+    context = {
+        "company": company,
+        "category": category,
+        "questions": questions,
+        "question_stats": question_stats,
+        "trend_data": list(trend_data),
+    }
+
+    return render(request, "category_analysis.html", context)
+
+
+@login_required
+def real_time_analytics_view(request):
+    """Real-time analytics dashboard"""
+    from django.db.models.functions import TruncHour, TruncDate
+    from django.utils.timezone import now
+    import datetime
+
+    if not hasattr(request.user, "companyadmin"):
+        return HttpResponse("You are not authorized to view this page", status=403)
+
+    company_admin = request.user.companyadmin
+    company = company_admin.company
+
+    # Real-time data
+    current_hour = now().replace(minute=0, second=0, microsecond=0)
+    responses_last_hour = SurveyResponse.objects.filter(
+        company=company, response_date__gte=current_hour
+    ).count()
+
+    responses_today = SurveyResponse.objects.filter(
+        company=company, response_date__date=now().date()
+    ).count()
+
+    # Active users (responses in last 30 minutes)
+    active_users = (
+        SurveyResponse.objects.filter(
+            company=company, response_date__gte=now() - timedelta(minutes=30)
+        )
+        .values("user_id")
+        .distinct()
+        .count()
+    )
+
+    # Response rate by hour (last 24 hours) - Fixed query
+    hourly_data = (
+        SurveyResponse.objects.filter(
+            company=company, response_date__gte=now() - timedelta(hours=24)
+        )
+        .annotate(hour=TruncHour("response_date"))
+        .values("hour")
+        .annotate(count=Count("id"))
+        .order_by("hour")
+    )
+
+    # Format hourly data for the template
+    formatted_hourly_data = []
+    for data in hourly_data:
+        formatted_hourly_data.append(
+            {"hour": data["hour"].strftime("%H:00"), "count": data["count"]}
+        )
+
+    context = {
+        "company": company,
+        "responses_last_hour": responses_last_hour,
+        "responses_today": responses_today,
+        "active_users": active_users,
+        "hourly_data": formatted_hourly_data,
+    }
+
+    return render(request, "real_time_analytics.html", context)

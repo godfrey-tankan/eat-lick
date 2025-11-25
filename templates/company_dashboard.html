@@ -1,0 +1,688 @@
+{% load static %}
+{% load tz %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company.name }} - Analytics Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ company.primary_color }};
+            --secondary-color: {{ company.secondary_color }};
+            --primary-light: {{ company.primary_color }}22;
+            --secondary-light: {{ company.secondary_color }}22;
+            --primary-dark: {{ company.primary_color }}dd;
+            --secondary-dark: {{ company.secondary_color }}dd;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: #2c3e50;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+        }
+
+        .dashboard-header h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .dashboard-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* Main Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        /* Category Performance */
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .category-item:hover {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .category-name {
+            flex: 1;
+            font-weight: 600;
+        }
+
+        .category-score {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .category-item:hover .category-score {
+            color: white;
+        }
+
+        /* Improvement Areas */
+        .improvement-list {
+            list-style: none;
+        }
+
+        .improvement-item {
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            background: #fff3cd;
+            border-radius: 12px;
+            border-left: 4px solid #ffc107;
+            transition: all 0.3s ease;
+        }
+
+        .improvement-item:hover {
+            background: #ffeaa7;
+            transform: translateX(5px);
+        }
+
+        /* Chart Containers */
+        .chart-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 300px !important;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .action-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
+            color: white;
+        }
+
+        .action-button i {
+            font-size: 1.5rem;
+        }
+
+        /* Footer */
+        .dashboard-footer {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .dashboard-header p {
+                font-size: 1.1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-value {
+                font-size: 2rem;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            canvas {
+                height: 250px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-header {
+                padding: 1.5rem;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .stat-card {
+                padding: 1.2rem;
+            }
+            
+            .stat-value {
+                font-size: 1.8rem;
+            }
+            
+            .dashboard-card {
+                padding: 1.5rem;
+            }
+            
+            .card-title {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dashboard-card, .stat-card, .chart-container {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .score-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1><i class="fas fa-chart-line"></i> {{ company.name }} Analytics Dashboard</h1>
+            <p>Comprehensive Survey Insights and Performance Metrics</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-value">{{ total_responses }}</div>
+                <div class="stat-label">Total Respondents</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value">{{ completion_rate }}%</div>
+                <div class="stat-label">Completion Rate</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div class="stat-value">{{ recent_responses_count }}</div>
+                <div class="stat-label">Recent Responses (7 days)</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-value">
+                    {% if category_scores.0.avg_score %}
+                        {{ category_scores.0.avg_score|floatformat:1 }}/5
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+                <div class="stat-label">Top Category Score</div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Category Performance -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Category Performance</h2>
+                    <div class="card-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                </div>
+                
+                {% for category in category_scores %}
+                <div class="category-item">
+                    <span class="category-name">{{ category.question__category|title }}</span>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ category.avg_score|floatformat:0|add:0 }}0%"></div>
+                        </div>
+                        <span class="category-score">{{ category.avg_score|floatformat:1 }}/5</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="text-align: center; padding: 2rem; color: #666;">
+                    <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p>No category data available yet</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Areas for Improvement -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Areas Needing Improvement</h2>
+                    <div class="card-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                
+                {% if improvement_areas %}
+                <ul class="improvement-list">
+                    {% for area in improvement_areas %}
+                    <li class="improvement-item">
+                        <i class="fas fa-chevron-right" style="margin-right: 10px;"></i>
+                        {{ area.question__question_text|truncatewords:10 }}
+                        <span class="score-badge" style="float: right; background: #dc3545;">
+                            {{ area.avg_score|floatformat:1 }}
+                        </span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div style="text-align: center; padding: 2rem; color: #666;">
+                    <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p>All areas performing well</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{% url 'company_reports' %}" class="action-button">
+                <i class="fas fa-file-alt"></i>
+                Detailed Reports
+            </a>
+            <a href="{% url 'demographic_analysis' %}" class="action-button">
+                <i class="fas fa-chart-pie"></i>
+                Demographic Analysis
+            </a>
+            <a href="{% url 'export_responses_csv' %}" class="action-button">
+                <i class="fas fa-download"></i>
+                Export Data
+            </a>
+            <a href="{% url 'real_time_analytics' %}" class="action-button">
+                <i class="fas fa-bolt"></i>
+                Real-time Analytics
+            </a>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="chart-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">Category Performance Overview</h3>
+                <canvas id="categoryChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Response Trend (Last 30 Days)</h3>
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Top Performers -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">Top Performing Questions</h2>
+                <div class="card-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+            </div>
+            <div style="display: grid; gap: 1rem;">
+                {% for question in top_questions %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                    <span style="font-weight: 500;">{{ question.question__question_text|truncatewords:8 }}</span>
+                    <span class="score-badge">{{ question.avg_score|floatformat:1 }}/5</span>
+                </div>
+                {% empty %}
+                <div style="text-align: center; padding: 2rem; color: #666;">
+                    <p>No question data available yet</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="dashboard-footer">
+            <p>© {% now "Y" %} {{ company.name }} Survey |Powered by <a href="https://empyreanintegratedsolutions.com/" target="_blank" rel="noopener noreferrer">Empyrean Integrated Solutions</a> | Last updated: {% now "F j, Y, g:i a" %}</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Category Performance Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            const categoryLabels = [
+                {% for category in category_scores %}
+                    '{{ category.question__category|title }}',
+                {% endfor %}
+            ];
+            const categoryData = [
+                {% for category in category_scores %}
+                    {{ category.avg_score|default:0 }},
+                {% endfor %}
+            ];
+
+            new Chart(categoryCtx, {
+                type: 'bar',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        label: 'Average Score',
+                        data: categoryData,
+                        backgroundColor: 'rgba(0, 123, 255, 0.8)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            title: {
+                                display: true,
+                                text: 'Average Score',
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Response Trend Chart
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            const trendLabels = [
+                {% for trend in response_trend %}
+                    '{{ trend.date }}',
+                {% endfor %}
+            ];
+            const trendData = [
+                {% for trend in response_trend %}
+                    {{ trend.count }},
+                {% endfor %}
+            ];
+
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: trendLabels,
+                    datasets: [{
+                        label: 'Responses per Day',
+                        data: trendData,
+                        borderColor: 'rgba(255, 102, 0, 1)',
+                        backgroundColor: 'rgba(255, 102, 0, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Responses'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Auto-refresh every 2 minutes
+        setInterval(() => {
+            window.location.reload();
+        }, 120000);
+
+        // Add floating action buttons
+        const floatingButtons = `
+            <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px;">
+                <button onclick="window.location.reload()" style="
+                    background: var(--primary-color);
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    width: 60px;
+                    height: 60px;
+                    font-size: 1.5rem;
+                    cursor: pointer;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                " title="Refresh Dashboard">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', floatingButtons);
+    </script>
+</body>
+</html>

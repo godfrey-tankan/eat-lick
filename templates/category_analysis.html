@@ -1,0 +1,304 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company.name }} - {{ category|title }} Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ company.primary_color }};
+            --secondary-color: {{ company.secondary_color }};
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: #2c3e50;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .category-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color)dd 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .category-header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            padding: 1rem 2rem;
+            background: white;
+            color: #333;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-button.primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .analysis-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .question-analysis {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .question-card {
+            padding: 1.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .response-distribution {
+            margin-top: 1rem;
+        }
+
+        .distribution-bar {
+            display: flex;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .distribution-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .trend-chart {
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .stats-summary {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="category-container">
+        <div class="category-header">
+            <h1><i class="fas fa-chart-bar"></i> {{ category|title }} Analysis</h1>
+            <p>Detailed performance metrics for this category</p>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="{% url 'company_dashboard' %}" class="nav-button">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <a href="{% url 'company_reports' %}" class="nav-button">
+                <i class="fas fa-chart-bar"></i> All Reports
+            </a>
+        </div>
+
+        <div class="analysis-section">
+            <h2 class="section-title">Question Performance</h2>
+            <div class="question-analysis">
+                {% for item in question_stats %}
+                <div class="question-card">
+                    <div class="question-text">{{ item.question.question_text }}</div>
+                    
+                    <div class="stats-summary">
+                        <div class="stat-box">
+                            <div class="stat-value">{{ item.stats.avg_response|floatformat:2 }}</div>
+                            <div class="stat-label">Average Score</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">{{ item.stats.total_responses }}</div>
+                            <div class="stat-label">Total Responses</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">{{ item.stats.strongly_agree|add:item.stats.agree }}</div>
+                            <div class="stat-label">Positive (4-5)</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">{{ item.stats.strongly_disagree|add:item.stats.disagree }}</div>
+                            <div class="stat-label">Negative (1-2)</div>
+                        </div>
+                    </div>
+
+                    <div class="response-distribution">
+                        <strong>Response Distribution:</strong>
+                        <div class="distribution-bar">
+                            <div class="distribution-segment" style="background: #dc3545; width: {% widthratio item.stats.strongly_disagree item.stats.total_responses 100 %}%">
+                                {% if item.stats.strongly_disagree > 0 %}1{% endif %}
+                            </div>
+                            <div class="distribution-segment" style="background: #fd7e14; width: {% widthratio item.stats.disagree item.stats.total_responses 100 %}%">
+                                {% if item.stats.disagree > 0 %}2{% endif %}
+                            </div>
+                            <div class="distribution-segment" style="background: #ffc107; color: #000; width: {% widthratio item.stats.neutral item.stats.total_responses 100 %}%">
+                                {% if item.stats.neutral > 0 %}3{% endif %}
+                            </div>
+                            <div class="distribution-segment" style="background: #20c997; width: {% widthratio item.stats.agree item.stats.total_responses 100 %}%">
+                                {% if item.stats.agree > 0 %}4{% endif %}
+                            </div>
+                            <div class="distribution-segment" style="background: #28a745; width: {% widthratio item.stats.strongly_agree item.stats.total_responses 100 %}%">
+                                {% if item.stats.strongly_agree > 0 %}5{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="text-align: center; padding: 3rem; color: #666;">
+                    <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p>No data available for this category</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if trend_data %}
+        <div class="analysis-section">
+            <h2 class="section-title">Performance Trend</h2>
+            <div class="trend-chart">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            {% if trend_data %}
+            // Trend Chart
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            const trendLabels = [
+                {% for trend in trend_data %}
+                    '{{ trend.date }}',
+                {% endfor %}
+            ];
+            const trendScores = [
+                {% for trend in trend_data %}
+                    {{ trend.avg_score|floatformat:2 }},
+                {% endfor %}
+            ];
+
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: trendLabels,
+                    datasets: [{
+                        label: 'Average Score',
+                        data: trendScores,
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            title: {
+                                display: true,
+                                text: 'Average Score'
+                            }
+                        }
+                    }
+                }
+            });
+            {% endif %}
+        });
+    </script>
+</body>
+</html>
