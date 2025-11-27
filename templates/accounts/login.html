@@ -13,7 +13,7 @@
             <div class="card card-plain mt-8">
               <div class="card-header pb-0 text-left bg-transparent">
                 <h3 class="font-weight-bolder text-info text-gradient">Sign IN</h3>
-                <p class="mt-4">Or create a New <a href="{% url 'register' %}" class="text-primary">Account</a></p>
+                {% comment %} <p class="mt-4">Or create a New <a href="{% url 'register' %}" class="text-primary">Account</a></p> {% endcomment %}
               </div>
               <div class="card-body">
                 <form role="form" method="post" action="/accounts/login/">
