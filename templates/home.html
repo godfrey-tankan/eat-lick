@@ -274,31 +274,12 @@
 </head>
 <body>
     <div class="hero">
-        <h1>Welcome to Survey Platform</h1>
-        <p>Select a company to begin your survey</p>
+        {% comment %} <h1>Welcome to Survey Platform</h1>
+        <p>Select a company to begin your survey</p> {% endcomment %}
     </div>
 
     <div class="company-selection">
-        <div class="company-card nhs" onclick="selectCompany('NHS')">
-            <div class="company-logo">NHS</div>
-            <h2>National Handling Services</h2>
-            <p>Client/Stakeholder Satisfaction Survey</p>
-            <p><small>Share your feedback to help improve our services</small></p>
-            <button class="btn nhs">Take Survey</button>
-        </div>
-        
-        <div class="company-card hit" onclick="selectCompany('HIT')">
-            <div class="company-logo">HIT</div>
-            <h2>Harare Institute of Technology</h2>
-            <p>Employee Satisfaction and Engagement Survey</p>
-            <p><small>Help us create a better workplace environment</small></p>
-            <button class="btn hit">Take Survey</button>
-        </div>
-    </div>
-
-    <div class="admin-login">
-        <h3>Company Administrators</h3>
-        <p><a href="{% url 'admin:login' %}">Login to view reports</a></p>
+        <p> Loading... </p>
     </div>
 
     <!-- Loading overlay -->
