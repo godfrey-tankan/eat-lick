@@ -404,7 +404,9 @@
         <!-- Header -->
         <div class="dashboard-header">
             <h1><i class="fas fa-chart-line"></i> {{ company.name }} Analytics Dashboard</h1>
-            <p>Comprehensive Survey Insights and Performance Metrics</p>
+            <p>Comprehensive Survey Insights and Performance Metrics
+                <a href="{% url 'logout' %}" style="color: red; text-decoration: underline; margin-left: 10px;">(Logout)</a>
+            </p>
         </div>
 
         <!-- Stats Grid -->

@@ -119,15 +119,15 @@
         }
 
         .radio-option input[type="radio"] {
-    opacity: 0;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-    z-index: 2;
-}
+        opacity: 0;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        z-index: 2;
+     }
 
         .radio-label {
             display: block;
@@ -357,6 +357,11 @@
             <form method="post" id="demographicForm">
                 {% csrf_token %}
                 
+                <!-- Hidden field for user ID -->
+                <input type="hidden" name="user_session_id" id="userSessionId">
+                <input type="hidden" name="company_id" id="surveyCompanyId">
+
+                
                 {% for field in form %}
                 <div class="form-field">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -405,7 +410,72 @@
     </div>
 
     <script>
+        // User ID Management
+        class UserSessionManager {
+            constructor() {
+                this.storageKey = 'survey_user_id';
+                this.companyKey = 'survey_company_id';
+            }
+
+            // Generate or retrieve user ID
+            getOrCreateUserId() {
+                let userId = localStorage.getItem(this.storageKey);
+                
+                if (!userId) {
+                    userId = this.generateUserId();
+                    localStorage.setItem(this.storageKey, userId);
+                    console.log('Created new user ID:', userId);
+                } else {
+                    console.log('Retrieved existing user ID:', userId);
+                    
+                }
+                
+                return userId;
+            }
+
+            // Generate unique user ID
+            generateUserId() {
+                return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            // Store company information
+            setCompanyInfo(companyId) {
+                localStorage.setItem(this.companyKey, companyId);
+            }
+
+            // Get company information
+            getCompanyInfo() {
+                return localStorage.getItem(this.companyKey);
+            }
+
+            // Clear user data (when survey is completed)
+            clearUserData() {
+                localStorage.removeItem(this.storageKey);
+                localStorage.removeItem(this.companyKey);
+                console.log('Cleared user session data');
+            }
+
+            // Check if user ID exists
+            hasUserId() {
+                return localStorage.getItem(this.storageKey) !== null;
+            }
+        }
+
+        // Initialize user session manager
+        const userSessionManager = new UserSessionManager();
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Set user ID in hidden field
+            const userId = userSessionManager.getOrCreateUserId();
+            document.getElementById('userSessionId').value = userId;
+
+            // Store company info (you might need to pass this from backend)
+            const companyId = '{{ company.id }}';  // This comes from your Django context
+            document.getElementById('surveyCompanyId').value = companyId;
+            if (companyId) {
+                userSessionManager.setCompanyInfo(companyId);
+            }
+
             // Add styling to select elements
             document.querySelectorAll('select').forEach(select => {
                 select.classList.add('form-select');
@@ -434,6 +504,8 @@
                 if (!isValid) {
                     e.preventDefault();
                     alert('Please fill in all required fields before continuing.');
+                } else {
+                    console.log('Submitting demographic data with user ID:', userId);
                 }
             });
 

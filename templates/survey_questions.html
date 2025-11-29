@@ -516,8 +516,14 @@
 </head>
 <body>
     <div class="company-header">
-        <h1>{{ company.name }}</h1>
-        <p>{% if company.code == 'NHS' %}Client/Stakeholder Satisfaction Survey{% else %}Employee Satisfaction and Engagement Survey{% endif %}</p>
+        <h1 id="companyName">Loading...</h1>
+        <p id="surveyType">Loading survey type...</p>
+    </div>
+
+    <!-- Session Info Debug (optional, remove in production) -->
+    <div id="sessionDebug" style="position: fixed; top: 10px; right: 10px; background: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 1000; border: 1px solid #ddd;">
+        <strong>Session Debug:</strong>
+        <div id="sessionInfo">Loading...</div>
     </div>
 
     <!-- Sticky Progress Bar -->
@@ -542,7 +548,7 @@
         Please complete all questions before submitting
     </div>
 
-    <div class="survey-container">
+    <div class="survey-container" id="surveyContainer" style="display: none;">
         {% if form.errors %}
         <div class="form-errors">
             <h3>Please correct the following errors:</h3>
@@ -562,6 +568,11 @@
 
         <form method="post" id="surveyForm" class="survey-form">
             {% csrf_token %}
+            
+            <!-- Hidden fields for session data -->
+            <input type="hidden" name="user_session_id" id="userSessionId">
+            <input type="hidden" name="company_id" id="companyId">
+            <input type="hidden" name="company_code" id="companyCode">
             
             {% for field in form %}
                 {% if field.name|slice:":7" == "header_" %}
@@ -613,6 +624,22 @@
         </form>
     </div>
 
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state">
+        <div class="spinner"></div>
+        <span>Loading survey questions...</span>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="error-state" style="display: none; text-align: center; padding: 3rem;">
+        <i class="fas fa-exclamation-triangle fa-3x" style="color: #e74c3c; margin-bottom: 1rem;"></i>
+        <h3>Unable to Load Survey</h3>
+        <p id="errorMessage"></p>
+        <button onclick="window.location.href='{% url 'demographic_data' %}'" class="submit-btn">
+            Return to Demographic Data
+        </button>
+    </div>
+
     <!-- Loading Overlay -->
     <div class="loading" id="loadingOverlay">
         <div class="spinner"></div>
@@ -620,264 +647,394 @@
     </div>
 
     <script>
+    // Enhanced UserSessionManager with API calls
+    class UserSessionManager {
+        constructor() {
+            this.storageKeys = {
+                userId: 'survey_user_id',
+                companyId: 'survey_company_id',
+                companyCode: 'survey_company_code',
+                companyName: 'survey_company_name',
+                demographicCompleted: 'survey_demographic_completed'
+            };
+        }
+
+        // Initialize or retrieve user session
+        initializeSession(companyId = null, companyCode = null, companyName = null) {
+            let userId = localStorage.getItem(this.storageKeys.userId);
+            
+            if (!userId) {
+                userId = this.generateUserId();
+                localStorage.setItem(this.storageKeys.userId, userId);
+            }
+
+            if (companyId) this.setCompanyId(companyId);
+            if (companyCode) this.setCompanyCode(companyCode);
+            if (companyName) this.setCompanyName(companyName);
+
+            return userId;
+        }
+
+        generateUserId() {
+            return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        setCompanyId(companyId) {
+            localStorage.setItem(this.storageKeys.companyId, companyId);
+        }
+
+        getCompanyId() {
+            return localStorage.getItem(this.storageKeys.companyId);
+        }
+
+        setCompanyCode(companyCode) {
+            localStorage.setItem(this.storageKeys.companyCode, companyCode);
+        }
+
+        getCompanyCode() {
+            return localStorage.getItem(this.storageKeys.companyCode);
+        }
+
+        setCompanyName(companyName) {
+            localStorage.setItem(this.storageKeys.companyName, companyName);
+        }
+
+        getCompanyName() {
+            return localStorage.getItem(this.storageKeys.companyName);
+        }
+
+        markDemographicCompleted() {
+            localStorage.setItem(this.storageKeys.demographicCompleted, 'true');
+        }
+
+        isDemographicCompleted() {
+            return localStorage.getItem(this.storageKeys.demographicCompleted) === 'true';
+        }
+
+        getSessionData() {
+            return {
+                userId: this.getUserId(),
+                companyId: this.getCompanyId(),
+                companyCode: this.getCompanyCode(),
+                companyName: this.getCompanyName(),
+                demographicCompleted: this.isDemographicCompleted()
+            };
+        }
+
+        getUserId() {
+            return localStorage.getItem(this.storageKeys.userId);
+        }
+
+        isValidSession() {
+            return this.getUserId() && this.getCompanyId();
+        }
+
+        clearSession() {
+            Object.values(this.storageKeys).forEach(key => {
+                localStorage.removeItem(key);
+            });
+            console.log('Cleared all user session data');
+        }
+
+        debugSession() {
+            const sessionData = this.getSessionData();
+            console.log('Current session state:', sessionData);
+            return sessionData;
+        }
+
+        
+    }
+
+    const userSessionManager = new UserSessionManager();
+
     document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('surveyForm');
-        const progressFill = document.getElementById('progressFill');
-        const progressPercentage = document.getElementById('progressPercentage');
-        const answeredCount = document.getElementById('answeredCount');
-        const totalCount = document.getElementById('totalCount');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const submitBtn = document.getElementById('submitBtn');
-        const stickyProgress = document.getElementById('stickyProgress');
-        const stickyNotification = document.getElementById('stickyNotification');
-
-        let unansweredQuestions = [];
-
-        // Get all actual question fields
-        function getQuestionFields() {
-            return Array.from(form.elements).filter(field => 
-                field.type === 'radio' && field.name.startsWith('question_')
-            );
+        const surveyContainer = document.getElementById('surveyContainer');
+        const loadingState = document.getElementById('loadingState');
+        const errorState = document.getElementById('errorState');
+        const errorMessage = document.getElementById('errorMessage');
+        const companyNameElement = document.getElementById('companyName');
+        const surveyTypeElement = document.getElementById('surveyType');
+        const localCompanyID = localStorage.getItem('survey_company_id');
+        if (!localCompanyID){
+            console.log("comp id is missing....")
         }
-
-        // Get unique question names
-        function getQuestionNames() {
-            const names = new Set();
-            getQuestionFields().forEach(field => names.add(field.name));
-            return Array.from(names);
-        }
-
-        // Calculate and update progress
-        function updateProgress() {
-            const questionNames = getQuestionNames();
-            const totalQuestions = questionNames.length;
-            let answeredQuestions = 0;
-
-            questionNames.forEach(name => {
-                const answered = document.querySelectorAll(`input[name="${name}"]:checked`).length > 0;
-                if (answered) answeredQuestions++;
+        if (localCompanyID){
+            const response = fetch(`/surveys/survey/?company_id=${localCompanyID}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
             });
-
-            const progress = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
-            
-            // Update progress bar
-            progressFill.style.width = `${progress}%`;
-            progressPercentage.textContent = `${Math.round(progress)}%`;
-            answeredCount.textContent = `${answeredQuestions} answered`;
-            totalCount.textContent = `${totalQuestions} total`;
-            
-            // Update progress bar color
-            if (progress >= 100) {
-                progressFill.style.background = 'linear-gradient(90deg, #27ae60, #2ecc71)';
-                stickyProgress.style.borderBottomColor = '#27ae60';
-            } else if (progress >= 75) {
-                progressFill.style.background = 'linear-gradient(90deg, #f39c12, #f1c40f)';
-                stickyProgress.style.borderBottomColor = '#f39c12';
-            } else if (progress >= 50) {
-                progressFill.style.background = 'linear-gradient(90deg, #e67e22, #f39c12)';
-                stickyProgress.style.borderBottomColor = '#e67e22';
-            } else {
-                progressFill.style.background = 'linear-gradient(90deg, var(--primary-color), var(--secondary-color))';
-                stickyProgress.style.borderBottomColor = 'var(--primary-color)';
-            }
-
-            // Update question container states
-            updateQuestionStates();
-
-            return { totalQuestions, answeredQuestions, progress };
+        }
+        // Check if we have a valid session
+        if (!userSessionManager.isValidSession()) {
+            showError('No valid session found. Please start from the demographic data page.');
+            return;
         }
 
-        // Update visual state of question containers
-        function updateQuestionStates() {
-            const questionNames = getQuestionNames();
-            
-            questionNames.forEach(name => {
-                const container = document.getElementById(`container_${name}`);
-                if (container) {
-                    const isAnswered = document.querySelectorAll(`input[name="${name}"]:checked`).length > 0;
+        // Load survey questions using company ID from localStorage
+        loadSurveyQuestions();
+
+        async function loadSurveyQuestions() {
+            try {
+                const sessionData = userSessionManager.getSessionData();
+                console.log('Loading survey for session:', sessionData);
+
+                // Update header with company info from localStorage
+                companyNameElement.textContent = sessionData.companyName || 'Survey';
+                surveyTypeElement.textContent = sessionData.companyCode === 'NHS' 
+                    ? 'Client/Stakeholder Satisfaction Survey' 
+                    : 'Employee Satisfaction and Engagement Survey';
+
+                // Update debug info
+                document.getElementById('sessionInfo').textContent = 
+                    `User: ${sessionData.userId.substring(0, 8)}... | Company: ${sessionData.companyCode}`;
+
+                // Set hidden field values from localStorage
+                document.getElementById('userSessionId').value = sessionData.userId;
+                document.getElementById('companyId').value = sessionData.companyId;
+                document.getElementById('companyCode').value = sessionData.companyCode;
                     
-                    container.classList.remove('answered', 'unanswered');
-                    if (isAnswered) {
-                        container.classList.add('answered');
-                    } else {
-                        container.classList.add('unanswered');
-                    }
-                }
-            });
-        }
-
-        // Find unanswered questions
-        function findUnansweredQuestions() {
-            const questionNames = getQuestionNames();
-            unansweredQuestions = [];
-            
-            questionNames.forEach(questionName => {
-                const isAnswered = document.querySelectorAll(`input[name="${questionName}"]:checked`).length > 0;
-                if (!isAnswered) {
-                    unansweredQuestions.push(questionName);
-                }
-            });
-
-            return unansweredQuestions;
-        }
-
-        // Highlight unanswered questions with animation
-        function highlightUnansweredQuestions() {
-            // Reset all highlights first
-            document.querySelectorAll('.question-container').forEach(container => {
-                container.style.animation = 'none';
-            });
-
-            // Highlight unanswered questions
-            unansweredQuestions.forEach(questionName => {
-                const container = document.getElementById(`container_${questionName}`);
-                if (container) {
-                    container.style.animation = 'pulseWarning 2s ease-in-out';
-                    
-                    // Scroll to first unanswered question
-                    if (questionName === unansweredQuestions[0]) {
-                        setTimeout(() => {
-                            container.scrollIntoView({
-                                behavior: 'smooth',
-                                block: 'center'
-                            });
-                        }, 500);
-                    }
-                }
-            });
-
-            // Show sticky notification
-            stickyNotification.classList.add('show');
-            setTimeout(() => {
-                stickyNotification.classList.remove('show');
-            }, 3000);
-        }
-
-        // Update progress when answers are selected
-        document.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                updateProgress();
-                
-                // Update the specific question container
-                const container = document.getElementById(`container_${this.name}`);
-                if (container) {
-                    const isAnswered = document.querySelectorAll(`input[name="${this.name}"]:checked`).length > 0;
-                    container.classList.remove('answered', 'unanswered');
-                    if (isAnswered) {
-                        container.classList.add('answered');
-                    } else {
-                        container.classList.add('unanswered');
-                    }
-                }
-            });
-        });
-
-        // Make sticky progress bar compact on scroll
-        let lastScrollTop = 0;
-        window.addEventListener('scroll', function() {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
-            if (scrollTop > lastScrollTop && scrollTop > 100) {
-                // Scrolling down
-                stickyProgress.classList.add('compact');
-            } else {
-                // Scrolling up
-                stickyProgress.classList.remove('compact');
-            }
-            
-            lastScrollTop = scrollTop;
-        });
-
-        // Form submission handling
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const unanswered = findUnansweredQuestions();
-            
-            if (unanswered.length > 0) {
-                // Show error and highlight unanswered questions
-                highlightUnansweredQuestions();
-                
-                // Create error message
-                let errorDiv = document.getElementById('validationError');
-                if (!errorDiv) {
-                    errorDiv = document.createElement('div');
-                    errorDiv.id = 'validationError';
-                    errorDiv.className = 'error-message';
-                    form.insertBefore(errorDiv, form.firstChild);
-                }
-                errorDiv.innerHTML = `<strong>Survey Incomplete:</strong> Please answer ${unanswered.length} remaining question${unanswered.length > 1 ? 's' : ''} before submitting.`;
-                
-            } else {
-                // All questions answered - proceed with submission
-                console.log('All questions answered, submitting form...');
-                
-                // Remove any existing error message
-                const errorDiv = document.getElementById('validationError');
-                if (errorDiv) {
-                    errorDiv.remove();
-                }
-                
-                // Show loading state
-                loadingOverlay.classList.add('show');
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Submitting...';
-                
-                // Submit the form
+                // For now, we'll show the existing Django-rendered form
+                // In a more advanced implementation, you could fetch questions via API
                 setTimeout(() => {
-                    form.submit();
-                }, 500);
-            }
-        });
+                    loadingState.style.display = 'none';
+                    surveyContainer.style.display = 'block';
+                    initializeSurveyForm();
+                }, 1000);
 
-        // Enhanced answer selection with visual feedback
-        document.querySelectorAll('.response-option').forEach(option => {
-            option.addEventListener('click', function() {
-                const radio = this.querySelector('input[type="radio"]');
-                if (radio) {
-                    radio.checked = true;
-                    radio.dispatchEvent(new Event('change', { bubbles: true }));
+            } catch (error) {
+                console.error('Error loading survey:', error);
+                showError(error.message);
+            }
+        }
+
+        function showError(message) {
+            loadingState.style.display = 'none';
+            errorState.style.display = 'block';
+            errorMessage.textContent = message;
+        }
+
+        function initializeSurveyForm() {
+            const form = document.getElementById('surveyForm');
+            const progressFill = document.getElementById('progressFill');
+            const progressPercentage = document.getElementById('progressPercentage');
+            const answeredCount = document.getElementById('answeredCount');
+            const totalCount = document.getElementById('totalCount');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const submitBtn = document.getElementById('submitBtn');
+            const stickyProgress = document.getElementById('stickyProgress');
+            const stickyNotification = document.getElementById('stickyNotification');
+
+            let unansweredQuestions = [];
+
+            // Get all actual question fields
+            function getQuestionFields() {
+                return Array.from(form.elements).filter(field => 
+                    field.type === 'radio' && field.name.startsWith('question_')
+                );
+            }
+
+            // Get unique question names
+            function getQuestionNames() {
+                const names = new Set();
+                getQuestionFields().forEach(field => names.add(field.name));
+                return Array.from(names);
+            }
+
+            // Calculate and update progress
+            function updateProgress() {
+                const questionNames = getQuestionNames();
+                const totalQuestions = questionNames.length;
+                let answeredQuestions = 0;
+
+                questionNames.forEach(name => {
+                    const answered = document.querySelectorAll(`input[name="${name}"]:checked`).length > 0;
+                    if (answered) answeredQuestions++;
+                });
+
+                const progress = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
+                
+                // Update progress bar
+                progressFill.style.width = `${progress}%`;
+                progressPercentage.textContent = `${Math.round(progress)}%`;
+                answeredCount.textContent = `${answeredQuestions} answered`;
+                totalCount.textContent = `${totalQuestions} total`;
+                
+                // Update progress bar color
+                if (progress >= 100) {
+                    progressFill.style.background = 'linear-gradient(90deg, #27ae60, #2ecc71)';
+                    stickyProgress.style.borderBottomColor = '#27ae60';
+                } else if (progress >= 75) {
+                    progressFill.style.background = 'linear-gradient(90deg, #f39c12, #f1c40f)';
+                    stickyProgress.style.borderBottomColor = '#f39c12';
+                } else if (progress >= 50) {
+                    progressFill.style.background = 'linear-gradient(90deg, #e67e22, #f39c12)';
+                    stickyProgress.style.borderBottomColor = '#e67e22';
+                } else {
+                    progressFill.style.background = 'linear-gradient(90deg, var(--primary-color), var(--secondary-color))';
+                    stickyProgress.style.borderBottomColor = 'var(--primary-color)';
+                }
+
+                updateQuestionStates();
+                return { totalQuestions, answeredQuestions, progress };
+            }
+
+            function updateQuestionStates() {
+                const questionNames = getQuestionNames();
+                
+                questionNames.forEach(name => {
+                    const container = document.getElementById(`container_${name}`);
+                    if (container) {
+                        const isAnswered = document.querySelectorAll(`input[name="${name}"]:checked`).length > 0;
+                        
+                        container.classList.remove('answered', 'unanswered');
+                        if (isAnswered) {
+                            container.classList.add('answered');
+                        } else {
+                            container.classList.add('unanswered');
+                        }
+                    }
+                });
+            }
+
+            function findUnansweredQuestions() {
+                const questionNames = getQuestionNames();
+                unansweredQuestions = [];
+                
+                questionNames.forEach(questionName => {
+                    const isAnswered = document.querySelectorAll(`input[name="${questionName}"]:checked`).length > 0;
+                    if (!isAnswered) {
+                        unansweredQuestions.push(questionName);
+                    }
+                });
+
+                return unansweredQuestions;
+            }
+
+            function highlightUnansweredQuestions() {
+                document.querySelectorAll('.question-container').forEach(container => {
+                    container.style.animation = 'none';
+                });
+
+                unansweredQuestions.forEach(questionName => {
+                    const container = document.getElementById(`container_${questionName}`);
+                    if (container) {
+                        container.style.animation = 'pulseWarning 2s ease-in-out';
+                        
+                        if (questionName === unansweredQuestions[0]) {
+                            setTimeout(() => {
+                                container.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'center'
+                                });
+                            }, 500);
+                        }
+                    }
+                });
+
+                stickyNotification.classList.add('show');
+                setTimeout(() => {
+                    stickyNotification.classList.remove('show');
+                }, 3000);
+            }
+
+            // Update progress when answers are selected
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    updateProgress();
                     
-                    // Visual feedback
-                    this.style.transform = 'scale(0.95)';
+                    const container = document.getElementById(`container_${this.name}`);
+                    if (container) {
+                        const isAnswered = document.querySelectorAll(`input[name="${this.name}"]:checked`).length > 0;
+                        container.classList.remove('answered', 'unanswered');
+                        if (isAnswered) {
+                            container.classList.add('answered');
+                        } else {
+                            container.classList.add('unanswered');
+                        }
+                    }
+                });
+            });
+
+            // Form submission handling
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const unanswered = findUnansweredQuestions();
+                
+                if (unanswered.length > 0) {
+                    highlightUnansweredQuestions();
+                    
+                    let errorDiv = document.getElementById('validationError');
+                    if (!errorDiv) {
+                        errorDiv = document.createElement('div');
+                        errorDiv.id = 'validationError';
+                        errorDiv.className = 'error-message';
+                        form.insertBefore(errorDiv, form.firstChild);
+                    }
+                    errorDiv.innerHTML = `<strong>Survey Incomplete:</strong> Please answer ${unanswered.length} remaining question${unanswered.length > 1 ? 's' : ''} before submitting.`;
+                    
+                } else {
+                    const sessionData = userSessionManager.getSessionData();
+                    console.log('Submitting survey with session data:', sessionData);
+                    
+                    const errorDiv = document.getElementById('validationError');
+                    if (errorDiv) {
+                        errorDiv.remove();
+                    }
+                    
+                    loadingOverlay.classList.add('show');
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Submitting...';
+                    
                     setTimeout(() => {
-                        this.style.transform = '';
-                    }, 150);
+                        userSessionManager.clearSession();
+                        form.submit();
+                    }, 500);
                 }
             });
-        });
 
-        // Keyboard navigation for better accessibility
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && e.target.type !== 'radio') {
-                e.preventDefault();
-            }
-        });
-
-        // Initialize progress
-        const progressInfo = updateProgress();
-        console.log('Initial progress:', progressInfo);
-
-        // Auto-save progress every 10 seconds (optional)
-        setInterval(() => {
-            const progress = updateProgress();
-            console.log('Auto-save progress:', progress);
-            // You could add localStorage saving here
-        }, 10000);
-
-        // Touch device optimizations
-        if ('ontouchstart' in window) {
-            document.querySelectorAll('.question-container').forEach(container => {
-                container.addEventListener('touchstart', function() {
-                    this.style.background = 'var(--primary-light)';
-                });
-                
-                container.addEventListener('touchend', function() {
-                    this.style.background = '';
-                });
-            });
+            // Initialize progress
+            const progressInfo = updateProgress();
+            console.log('Survey form initialized with progress:', progressInfo);
         }
     });
     </script>
+
+    <style>
+    .loading-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin: 2rem 0;
+    }
+
+    .loading-state .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+
+    .error-state {
+        background: white;
+        padding: 3rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin: 2rem 0;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    </style>
 </body>
 </html>

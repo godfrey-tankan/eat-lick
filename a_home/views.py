@@ -49,10 +49,10 @@ def demographic_data_view(request):
     """Demographic data collection based on selected company"""
     # Check for company code in query parameters first, then POST data
     company_code = None
-
+    company = None
     # Check query parameters
     if "company" in request.GET:
-        company_code = request.GET.get("company")
+        company_code = request.GET.get("company", "x").upper()
 
     # Check POST data (for form submissions from home page)
     elif request.method == "POST" and "company" in request.POST:
@@ -60,14 +60,9 @@ def demographic_data_view(request):
 
     # If we have a company code, process it
     if company_code:
+        company = Company.objects.get(code=company_code.upper())
 
         try:
-            company = Company.objects.get(code=company_code.upper())
-            request.session["selected_company"] = company.id
-
-            # Generate user session ID
-            if "user_session_id" not in request.session:
-                request.session["user_session_id"] = str(uuid.uuid4())
 
             # Initialize the appropriate form for GET display
             form = (
@@ -81,16 +76,11 @@ def demographic_data_view(request):
             return redirect("home")
 
     # Handle demographic form submission (when user submits the actual demographic form)
-    company_id = request.session.get("selected_company")
-
+    company_id = request.POST.get("company_id")
     if not company_id:
         return redirect("home")
 
     company = get_object_or_404(Company, id=company_id)
-
-    # Generate or get user session ID
-    if "user_session_id" not in request.session:
-        request.session["user_session_id"] = str(uuid.uuid4())
 
     if request.method == "POST":
         form = (
@@ -101,9 +91,21 @@ def demographic_data_view(request):
         if form.is_valid():
             demographic_data = form.save(commit=False)
             demographic_data.company = company
-            demographic_data.user_id = request.session["user_session_id"]
-            demographic_data.save()
-            return redirect("survey_questions")
+            user_session_id = request.POST.get("user_session_id")
+            if user_session_id:
+                demographic_data.user_id = user_session_id
+                print(f"Using user ID from localStorage: {user_session_id}")
+            else:
+                # Fallback: generate new ID (shouldn't happen with our frontend)
+                demographic_data.user_id = str(uuid.uuid4())
+                print("Generated new user ID as fallback")
+            if not DemographicData.objects.filter(
+                user_id=demographic_data.user_id, company=company
+            ):
+                demographic_data.save()
+            return redirect(
+                f"/surveys/survey/?company_id={company.id}&user_id={user_session_id}"
+            )
         else:
             print("Form is invalid")
     elif company.code == "NHS":
@@ -116,24 +118,21 @@ def demographic_data_view(request):
 
 def survey_questions_view(request):
     """Survey questions based on selected company"""
-    company_id = request.session.get("selected_company")
+    company_id = request.GET.get("company_id")
+    user_id = request.GET.get("user_id")
     if not company_id:
         return redirect("home")
 
     company = get_object_or_404(Company, id=company_id)
     questions = SurveyQuestion.objects.filter(company=company).order_by("order")
 
-    if "user_session_id" not in request.session:
-        return redirect("home")
-
     # Check if user already completed survey
-    existing_responses = SurveyResponse.objects.filter(
-        user_id=request.session["user_session_id"], company=company
-    )
+    existing_responses = SurveyResponse.objects.filter(user_id=user_id, company=company)
     if existing_responses.exists():
         return render(request, "review_submitted.html")
 
     if request.method == "POST":
+
         form = SurveyResponseForm(request.POST, company=company, questions=questions)
         if form.is_valid():
             for field_name, response in form.cleaned_data.items():
@@ -142,15 +141,11 @@ def survey_questions_view(request):
                     question = SurveyQuestion.objects.get(id=question_id)
 
                     SurveyResponse.objects.create(
-                        user_id=request.session["user_session_id"],
+                        user_id=user_id,
                         company=company,
                         question=question,
                         response=response,
                     )
-
-            # Clear session data
-            request.session.pop("selected_company", None)
-            request.session.pop("user_session_id", None)
 
             return redirect("thank_you")
     else:
@@ -284,43 +279,6 @@ def company_dashboard_view(request):
     }
 
     return render(request, "company_dashboard.html", context)
-
-
-@login_required
-def company_reports_view(request):
-    """Detailed reports for company admins"""
-    if not hasattr(request.user, "companyadmin"):
-        return HttpResponse("You are not authorized to view this page", status=403)
-
-    company_admin = request.user.companyadmin
-    company = company_admin.company
-
-    # Comprehensive report data
-    questions = SurveyQuestion.objects.filter(company=company)
-    question_stats = []
-
-    for question in questions:
-        stats = SurveyResponse.objects.filter(question=question).aggregate(
-            avg_response=Avg("response"),
-            total_responses=Count("id"),
-            strongly_agree=Count("id", filter=Q(response=5)),
-            agree=Count("id", filter=Q(response=4)),
-            neutral=Count("id", filter=Q(response=3)),
-            disagree=Count("id", filter=Q(response=2)),
-            strongly_disagree=Count("id", filter=Q(response=1)),
-        )
-        question_stats.append({"question": question, "stats": stats})
-
-    # Demographic breakdown
-    demographics = DemographicData.objects.filter(company=company)
-
-    context = {
-        "company": company,
-        "question_stats": question_stats,
-        "demographics": demographics,
-    }
-
-    return render(request, "company_reports.html", context)
 
 
 ###############################################OLD VIEWS#####################################################
@@ -496,7 +454,11 @@ def export_responses_csv(request):
 
     for user_id in user_ids:
         try:
-            demographic = DemographicData.objects.get(user_id=user_id, company=company)
+            demographic = DemographicData.objects.filter(
+                user_id=user_id, company=company
+            ).first()
+            if not demographic:
+                continue
             responses = SurveyResponse.objects.filter(user_id=user_id, company=company)
 
             row = [user_id, demographic.response_date.strftime("%Y-%m-%d %H:%M:%S")]
@@ -579,6 +541,7 @@ def demographic_analysis_view(request):
     else:
         demographic_fields = ["client_type"]
 
+    # Optimize by prefetching related data
     for field in demographic_fields:
         field_analysis = []
 
@@ -604,7 +567,7 @@ def demographic_analysis_view(request):
 
                 field_analysis.append(
                     {
-                        field: value,
+                        "value": value,
                         "count": count,
                         "avg_score": avg_score_value,
                         "response_count": response_count,

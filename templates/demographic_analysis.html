@@ -1,4 +1,5 @@
 {% load static %}
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -301,6 +302,7 @@
             }
         }
     </style>
+
 </head>
 <body>
     <div class="analysis-container">
@@ -377,6 +379,8 @@
                 {{ field|title }} Analysis
             </h2>
 
+            {% with field_data=analysis_data|get_item:field %}
+            {% if field_data %}
             <div class="charts-grid">
                 <div class="chart-card">
                     <h3 class="chart-title">Distribution</h3>
@@ -399,28 +403,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item in analysis_data.field %}
+                    {% for item in field_data %}
                     <tr>
                         <td>
-                            {% if item.gender %}
-                                {{ item.gender|default:"Not Specified"|title }}
-                            {% elif item.age_group %}
-                                {{ item.age_group|default:"Not Specified"|title }}
-                            {% elif item.department %}
-                                {{ item.department|default:"Not Specified"|title }}
-                            {% elif item.contract_type %}
-                                {{ item.contract_type|default:"Not Specified"|title }}
-                            {% elif item.designation %}
-                                {{ item.designation|default:"Not Specified"|title }}
-                            {% elif item.highest_qualification %}
-                                {{ item.highest_qualification|default:"Not Specified"|title }}
-                            {% elif item.category %}
-                                {{ item.category|default:"Not Specified"|title }}
-                            {% elif item.client_type %}
-                                {{ item.client_type|default:"Not Specified"|title }}
-                            {% else %}
-                                Not Specified
-                            {% endif %}
+                            {{ item.value|default:"Not Specified"|title }}
                         </td>
                         <td>{{ item.count }}</td>
                         <td>
@@ -450,12 +436,6 @@
                             {% endif %}
                         </td>
                     </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" style="text-align: center; padding: 2rem; color: #666;">
-                            <i class="fas fa-inbox"></i> No data available for {{ field|title }}
-                        </td>
-                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -464,12 +444,12 @@
             <div class="demographic-grid">
                 <div class="demographic-item">
                     <span class="demographic-label">Total Groups</span>
-                    <span class="demographic-value">{{ analysis_data.field|length }}</span>
+                    <span class="demographic-value">{{ field_data|length }}</span>
                 </div>
                 <div class="demographic-item">
                     <span class="demographic-label">Highest Score</span>
                     <span class="demographic-value">
-                        {% with analysis_data.field|first as first_item %}
+                        {% with field_data|first as first_item %}
                             {% if first_item.avg_score %}{{ first_item.avg_score|floatformat:1 }}/5{% else %}N/A{% endif %}
                         {% endwith %}
                     </span>
@@ -477,32 +457,28 @@
                 <div class="demographic-item">
                     <span class="demographic-label">Largest Group</span>
                     <span class="demographic-value">
-                        {% with analysis_data.field|first as first_item %}
+                        {% with field_data|first as first_item %}
                             {{ first_item.count }} respondents
                         {% endwith %}
                     </span>
                 </div>
             </div>
+            {% else %}
+            <div style="text-align: center; padding: 3rem; color: #666;">
+                <i class="fas fa-inbox fa-3x" style="margin-bottom: 1rem;"></i>
+                <p>No data available for {{ field|title }} analysis</p>
+            </div>
+            {% endif %}
+            {% endwith %}
         </div>
-        {% endfor %}
-
-        <!-- Overall Demographic Overview -->
+        {% empty %}
         <div class="demographic-section">
-            <h2 class="section-title">
-                <i class="fas fa-chart-bar"></i> Demographic Overview
-            </h2>
-            
-            <div class="charts-grid">
-                <div class="chart-card">
-                    <h3 class="chart-title">Demographic Distribution</h3>
-                    <canvas id="overviewChart"></canvas>
-                </div>
-                <div class="chart-card">
-                    <h3 class="chart-title">Score Distribution</h3>
-                    <canvas id="scoreDistributionChart"></canvas>
-                </div>
+            <div style="text-align: center; padding: 3rem; color: #666;">
+                <i class="fas fa-chart-bar fa-3x" style="margin-bottom: 1rem;"></i>
+                <p>No demographic fields configured for this company</p>
             </div>
         </div>
+        {% endfor %}
     </div>
 
     <script>
@@ -515,38 +491,22 @@
             ];
 
             {% for field in demographic_fields %}
+            {% with field_data=analysis_data|get_item:field %}
+            {% if field_data %}
             // Distribution Chart for {{ field }}
-            const {{ field }}DistributionCtx = document.getElementById('{{ field }}DistributionChart').getContext('2d');
-            const {{ field }}DistributionLabels = [
-                {% for item in analysis_data.field %}
-                    {% if item.gender %}
-                        '{{ item.gender|default:"Not Specified"|title }}',
-                    {% elif item.age_group %}
-                        '{{ item.age_group|default:"Not Specified"|title }}',
-                    {% elif item.department %}
-                        '{{ item.department|default:"Not Specified"|title }}',
-                    {% elif item.contract_type %}
-                        '{{ item.contract_type|default:"Not Specified"|title }}',
-                    {% elif item.designation %}
-                        '{{ item.designation|default:"Not Specified"|title }}',
-                    {% elif item.highest_qualification %}
-                        '{{ item.highest_qualification|default:"Not Specified"|title }}',
-                    {% elif item.category %}
-                        '{{ item.category|default:"Not Specified"|title }}',
-                    {% elif item.client_type %}
-                        '{{ item.client_type|default:"Not Specified"|title }}',
-                    {% else %}
-                        'Not Specified',
-                    {% endif %}
-                {% endfor %}
-            ];
-            const {{ field }}DistributionData = [
-                {% for item in analysis_data.field %}
-                    {{ item.count }},
-                {% endfor %}
-            ];
+            const {{ field }}DistributionCtx = document.getElementById('{{ field }}DistributionChart');
+            if ({{ field }}DistributionCtx) {
+                const {{ field }}DistributionLabels = [
+                    {% for item in field_data %}
+                        '{{ item.value|default:"Not Specified"|title|escapejs }}',
+                    {% endfor %}
+                ];
+                const {{ field }}DistributionData = [
+                    {% for item in field_data %}
+                        {{ item.count }},
+                    {% endfor %}
+                ];
 
-            if ({{ field }}DistributionData.length > 0) {
                 new Chart({{ field }}DistributionCtx, {
                     type: 'doughnut',
                     data: {
@@ -578,18 +538,23 @@
             }
 
             // Score Chart for {{ field }}
-            const {{ field }}ScoreCtx = document.getElementById('{{ field }}ScoreChart').getContext('2d');
-            const {{ field }}ScoreData = [
-                {% for item in analysis_data.field %}
-                    {{ item.avg_score|default:0 }},
-                {% endfor %}
-            ];
+            const {{ field }}ScoreCtx = document.getElementById('{{ field }}ScoreChart');
+            if ({{ field }}ScoreCtx) {
+                const {{ field }}ScoreLabels = [
+                    {% for item in field_data %}
+                        '{{ item.value|default:"Not Specified"|title|escapejs }}',
+                    {% endfor %}
+                ];
+                const {{ field }}ScoreData = [
+                    {% for item in field_data %}
+                        {{ item.avg_score|default:0 }},
+                    {% endfor %}
+                ];
 
-            if ({{ field }}ScoreData.length > 0) {
                 new Chart({{ field }}ScoreCtx, {
                     type: 'bar',
                     data: {
-                        labels: {{ field }}DistributionLabels,
+                        labels: {{ field }}ScoreLabels,
                         datasets: [{
                             label: 'Average Score',
                             data: {{ field }}ScoreData,
@@ -614,16 +579,9 @@
                     }
                 });
             }
+            {% endif %}
+            {% endwith %}
             {% endfor %}
-
-            // Overview Chart
-            const overviewCtx = document.getElementById('overviewChart').getContext('2d');
-            // This would show an overview of all demographic factors
-            // For now, we'll create a simple bar chart showing the largest groups from each demographic
-
-            // Score Distribution Chart
-            const scoreDistributionCtx = document.getElementById('scoreDistributionChart').getContext('2d');
-            // This would show the distribution of scores across all respondents
         });
     </script>
 </body>
