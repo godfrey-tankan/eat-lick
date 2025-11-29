@@ -404,7 +404,7 @@ def response_detail_view(request, user_id):
 
 
 @login_required
-def export_responses_csv(request):
+def dexport_responses_csv(request):
     """Export all responses as CSV"""
     if not hasattr(request.user, "companyadmin"):
         return HttpResponse("You are not authorized to view this page", status=403)
@@ -487,6 +487,220 @@ def export_responses_csv(request):
             writer.writerow(row)
         except DemographicData.DoesNotExist:
             continue
+
+    return response
+
+
+@login_required
+def export_responses_csv(request):
+    """Export all responses as CSV"""
+    if not hasattr(request.user, "companyadmin"):
+        return HttpResponse("You are not authorized to view this page", status=403)
+
+    company_admin = request.user.companyadmin
+    company = company_admin.company
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = (
+        f'attachment; filename="{company.code}_survey_responses_{datetime.now().strftime("%Y%m%d")}.csv"'
+    )
+
+    writer = csv.writer(response)
+
+    # Use HIT template if company is HIT, otherwise use existing logic
+    if company.code == "HIT":
+        # Build headers based on actual question categories and counts from the questionnaire
+        headers = [
+            "USER ID",
+            "GENDER",
+            "LOCATION",
+            "QUALIFICATION",
+            "DESIGNATION",
+            "DEPARTMENT",
+            "EXPERIENCE",
+            "AGE",
+        ]
+
+        # PAY section (1 question)
+        headers.extend(["PAY", "", ""])  # 3 columns for PAY
+
+        # VISION AND STRATEGY (5 questions)
+        headers.extend(["VISION AND STRATEGY"] + [""] * 4)  # 5 columns
+
+        # JOB SATISFACTION (7 questions)
+        headers.extend(["JOB SATISFACTION"] + [""] * 6)  # 7 columns
+
+        # LEADERSHIP AND PEOPLE MANAGEMENT (6 questions)
+        headers.extend(["LEADERSHIP AND PEOPLE MANAGEMENT"] + [""] * 5)  # 6 columns
+
+        # CONDITIONS OF SERVICE (8 questions)
+        headers.extend(["CONDITIONS OF SERVICE"] + [""] * 7)  # 8 columns
+
+        # COMMUNICATION (6 questions)
+        headers.extend(["COMMUNICATION"] + [""] * 5)  # 6 columns
+
+        # LEARNING DEVELOPMENT (3 questions)
+        headers.extend(["LEARNING DEVELOPMENT"] + [""] * 2)  # 3 columns
+
+        # ORGANIZATIONAL CULTURE (3 questions)
+        headers.extend(["ORGANIZATIONAL CULTURE"] + [""] * 2)  # 3 columns
+
+        # NATURE OF WORK (3 questions)
+        headers.extend(["NATURE OF WORK"] + [""] * 2)  # 3 columns
+
+        # VIGOUR (3 questions)
+        headers.extend(["VIGOUR"] + [""] * 2)  # 3 columns
+
+        # DEDICATION (3 questions)
+        headers.extend(["DEDICATION"] + [""] * 2)  # 3 columns
+
+        # ABSORPTION (3 questions)
+        headers.extend(["ABSORPTION"] + [""] * 2)  # 3 columns
+
+        writer.writerow(headers)
+
+        # Get all unique users
+        user_ids = (
+            SurveyResponse.objects.filter(company=company)
+            .values_list("user_id", flat=True)
+            .distinct()
+        )
+
+        # Pre-fetch all questions for HIT company and organize by category
+        hit_questions = SurveyQuestion.objects.filter(company=company).order_by("order")
+        questions_by_category = {}
+        for question in hit_questions:
+            if question.category not in questions_by_category:
+                questions_by_category[question.category] = []
+            questions_by_category[question.category].append(question)
+
+        # Define the exact order and count of questions per category based on the questionnaire
+        category_mapping = {
+            "vision_strategy": ("VISION AND STRATEGY", 5),
+            "job_satisfaction": ("JOB SATISFACTION", 7),
+            "leadership": ("LEADERSHIP AND PEOPLE MANAGEMENT", 6),
+            "conditions_service": ("CONDITIONS OF SERVICE", 8),
+            "communication": ("COMMUNICATION", 6),
+            "learning_development": ("LEARNING DEVELOPMENT", 3),
+            "organizational_culture": ("ORGANIZATIONAL CULTURE", 3),
+            "nature_work": ("NATURE OF WORK", 3),
+            "vigour": ("VIGOUR", 3),
+            "dedication": ("DEDICATION", 3),
+            "absorption": ("ABSORPTION", 3),
+        }
+
+        for user_id in user_ids:
+            try:
+                demographic = DemographicData.objects.filter(
+                    user_id=user_id, company=company
+                ).first()
+                if not demographic:
+                    continue
+
+                # Get all responses for this user
+                responses = SurveyResponse.objects.filter(
+                    user_id=user_id, company=company
+                )
+                response_dict = {resp.question_id: resp.response for resp in responses}
+
+                # Start building the row with demographic data
+                row = [
+                    user_id,  # USER ID
+                    demographic.gender or "",  # GENDER
+                    "",  # LOCATION - not in demographic model
+                    demographic.highest_qualification or "",  # QUALIFICATION
+                    demographic.designation or "",  # DESIGNATION
+                    demographic.department or "",  # DEPARTMENT
+                    demographic.work_experience or "",  # EXPERIENCE
+                    demographic.age_group or "",  # AGE
+                ]
+
+                # PAY section (question 7 from job satisfaction)
+                pay_question = None
+                job_satisfaction_questions = questions_by_category.get(
+                    "job_satisfaction", []
+                )
+                if (
+                    len(job_satisfaction_questions) >= 4
+                ):  # Question 7 is the 4th in job satisfaction
+                    pay_question = job_satisfaction_questions[3]
+                pay_response = (
+                    response_dict.get(pay_question.id, "") if pay_question else ""
+                )
+                row.extend([pay_response, "", ""])  # PAY with 2 empty columns
+
+                # Add responses for each category in the exact order
+                for category_key, (
+                    header_name,
+                    question_count,
+                ) in category_mapping.items():
+                    questions = questions_by_category.get(category_key, [])
+                    # Get responses for available questions
+                    for i in range(question_count):
+                        if i < len(questions):
+                            question = questions[i]
+                            response_value = response_dict.get(question.id, "")
+                            row.append(response_value)
+                        else:
+                            row.append("")  # Empty if no question
+
+                writer.writerow(row)
+
+            except DemographicData.DoesNotExist:
+                continue
+
+    else:  # NHS and other companies use existing logic
+        # Write headers
+        headers = ["User ID", "Response Date"]
+
+        # Add demographic fields based on company
+        if company.code == "NHS":  # Explicitly check for NHS
+            headers.extend(["Client Type"])
+        else:  # Other companies
+            headers.extend([])  # Add appropriate headers for other companies
+
+        # Add questions
+        questions = SurveyQuestion.objects.filter(company=company).order_by("order")
+        for question in questions:
+            headers.append(question.question_text[:50])  # Truncate long questions
+
+        writer.writerow(headers)
+
+        # Get all unique users
+        user_ids = (
+            SurveyResponse.objects.filter(company=company)
+            .values_list("user_id", flat=True)
+            .distinct()
+        )
+
+        for user_id in user_ids:
+            try:
+                demographic = DemographicData.objects.filter(
+                    user_id=user_id, company=company
+                ).first()
+                if not demographic:
+                    continue
+                responses = SurveyResponse.objects.filter(
+                    user_id=user_id, company=company
+                )
+
+                row = [user_id, demographic.response_date.strftime("%Y-%m-%d %H:%M:%S")]
+
+                # Add demographic data
+                if company.code == "NHS":
+                    row.extend([demographic.client_type])
+                else:
+                    # Add appropriate demographic fields for other companies
+                    pass
+
+                # Add responses
+                response_dict = {resp.question_id: resp.response for resp in responses}
+                for question in questions:
+                    row.append(response_dict.get(question.id, ""))
+
+                writer.writerow(row)
+            except DemographicData.DoesNotExist:
+                continue
 
     return response
 
