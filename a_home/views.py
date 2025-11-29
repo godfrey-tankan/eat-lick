@@ -509,7 +509,7 @@ def export_responses_csv(request):
 
     # Use HIT template if company is HIT, otherwise use existing logic
     if company.code == "HIT":
-        # Build headers based on actual question categories and counts from the questionnaire
+        # Build headers based on actual question categories and counts from your seed data
         headers = [
             "USER ID",
             "GENDER",
@@ -521,40 +521,40 @@ def export_responses_csv(request):
             "AGE",
         ]
 
-        # PAY section (1 question)
+        # PAY section (1 question - order 9 from job_satisfaction)
         headers.extend(["PAY", "", ""])  # 3 columns for PAY
 
-        # VISION AND STRATEGY (5 questions)
+        # VISION AND STRATEGY (5 questions - orders 1-5)
         headers.extend(["VISION AND STRATEGY"] + [""] * 4)  # 5 columns
 
-        # JOB SATISFACTION (7 questions)
-        headers.extend(["JOB SATISFACTION"] + [""] * 6)  # 7 columns
+        # JOB SATISFACTION (6 questions - orders 6,7,8,10,11,12)
+        headers.extend(["JOB SATISFACTION"] + [""] * 5)  # 6 columns
 
-        # LEADERSHIP AND PEOPLE MANAGEMENT (6 questions)
+        # LEADERSHIP AND PEOPLE MANAGEMENT (6 questions - orders 13-18)
         headers.extend(["LEADERSHIP AND PEOPLE MANAGEMENT"] + [""] * 5)  # 6 columns
 
-        # CONDITIONS OF SERVICE (8 questions)
+        # CONDITIONS OF SERVICE (8 questions - orders 19-26)
         headers.extend(["CONDITIONS OF SERVICE"] + [""] * 7)  # 8 columns
 
-        # COMMUNICATION (6 questions)
+        # COMMUNICATION (6 questions - orders 27-32)
         headers.extend(["COMMUNICATION"] + [""] * 5)  # 6 columns
 
-        # LEARNING DEVELOPMENT (3 questions)
+        # LEARNING DEVELOPMENT (3 questions - orders 33-35)
         headers.extend(["LEARNING DEVELOPMENT"] + [""] * 2)  # 3 columns
 
-        # ORGANIZATIONAL CULTURE (3 questions)
+        # ORGANIZATIONAL CULTURE (3 questions - orders 36-38)
         headers.extend(["ORGANIZATIONAL CULTURE"] + [""] * 2)  # 3 columns
 
-        # NATURE OF WORK (3 questions)
+        # NATURE OF WORK (3 questions - orders 39-41)
         headers.extend(["NATURE OF WORK"] + [""] * 2)  # 3 columns
 
-        # VIGOUR (3 questions)
+        # VIGOUR (3 questions - orders 42-44)
         headers.extend(["VIGOUR"] + [""] * 2)  # 3 columns
 
-        # DEDICATION (3 questions)
+        # DEDICATION (3 questions - orders 45-47)
         headers.extend(["DEDICATION"] + [""] * 2)  # 3 columns
 
-        # ABSORPTION (3 questions)
+        # ABSORPTION (3 questions - orders 48-50)
         headers.extend(["ABSORPTION"] + [""] * 2)  # 3 columns
 
         writer.writerow(headers)
@@ -566,28 +566,11 @@ def export_responses_csv(request):
             .distinct()
         )
 
-        # Pre-fetch all questions for HIT company and organize by category
+        # Pre-fetch all questions for HIT company ordered by the order field
         hit_questions = SurveyQuestion.objects.filter(company=company).order_by("order")
-        questions_by_category = {}
-        for question in hit_questions:
-            if question.category not in questions_by_category:
-                questions_by_category[question.category] = []
-            questions_by_category[question.category].append(question)
 
-        # Define the exact order and count of questions per category based on the questionnaire
-        category_mapping = {
-            "vision_strategy": ("VISION AND STRATEGY", 5),
-            "job_satisfaction": ("JOB SATISFACTION", 7),
-            "leadership": ("LEADERSHIP AND PEOPLE MANAGEMENT", 6),
-            "conditions_service": ("CONDITIONS OF SERVICE", 8),
-            "communication": ("COMMUNICATION", 6),
-            "learning_development": ("LEARNING DEVELOPMENT", 3),
-            "organizational_culture": ("ORGANIZATIONAL CULTURE", 3),
-            "nature_work": ("NATURE OF WORK", 3),
-            "vigour": ("VIGOUR", 3),
-            "dedication": ("DEDICATION", 3),
-            "absorption": ("ABSORPTION", 3),
-        }
+        # Create a mapping of order numbers to questions for easy lookup
+        questions_by_order = {question.order: question for question in hit_questions}
 
         for user_id in user_ids:
             try:
@@ -615,34 +598,101 @@ def export_responses_csv(request):
                     demographic.age_group or "",  # AGE
                 ]
 
-                # PAY section (question 7 from job satisfaction)
-                pay_question = None
-                job_satisfaction_questions = questions_by_category.get(
-                    "job_satisfaction", []
-                )
-                if (
-                    len(job_satisfaction_questions) >= 4
-                ):  # Question 7 is the 4th in job satisfaction
-                    pay_question = job_satisfaction_questions[3]
+                # PAY section (order 9 - "I am being paid a fair amount for the work I do")
+                pay_question = questions_by_order.get(9)
                 pay_response = (
                     response_dict.get(pay_question.id, "") if pay_question else ""
                 )
                 row.extend([pay_response, "", ""])  # PAY with 2 empty columns
 
-                # Add responses for each category in the exact order
-                for category_key, (
-                    header_name,
-                    question_count,
-                ) in category_mapping.items():
-                    questions = questions_by_category.get(category_key, [])
-                    # Get responses for available questions
-                    for i in range(question_count):
-                        if i < len(questions):
-                            question = questions[i]
-                            response_value = response_dict.get(question.id, "")
-                            row.append(response_value)
-                        else:
-                            row.append("")  # Empty if no question
+                # VISION AND STRATEGY (orders 1-5)
+                for order_num in range(1, 6):
+                    question = questions_by_order.get(order_num)
+                    response_value = (
+                        response_dict.get(question.id, "") if question else ""
+                    )
+                    row.append(response_value)
+
+                # JOB SATISFACTION (orders 6,7,8,10,11,12) - excluding order 9 which is PAY
+                job_satisfaction_orders = [6, 7, 8, 10, 11, 12]
+                for order_num in job_satisfaction_orders:
+                    question = questions_by_order.get(order_num)
+                    response_value = (
+                        response_dict.get(question.id, "") if question else ""
+                    )
+                    row.append(response_value)
+
+                # LEADERSHIP AND PEOPLE MANAGEMENT (orders 13-18)
+                for order_num in range(13, 19):
+                    question = questions_by_order.get(order_num)
+                    response_value = (
+                        response_dict.get(question.id, "") if question else ""
+                    )
+                    row.append(response_value)
+
+                # CONDITIONS OF SERVICE (orders 19-26)
+                for order_num in range(19, 27):
+                    question = questions_by_order.get(order_num)
+                    response_value = (
+                        response_dict.get(question.id, "") if question else ""
+                    )
+                    row.append(response_value)
+
+                # COMMUNICATION (orders 27-32)
+                for order_num in range(27, 33):
+                    question = questions_by_order.get(order_num)
+                    response_value = (
+                        response_dict.get(question.id, "") if question else ""
+                    )
+                    row.append(response_value)
+
+                # LEARNING DEVELOPMENT (orders 33-35)
+                for order_num in range(33, 36):
+                    question = questions_by_order.get(order_num)
+                    response_value = (
+                        response_dict.get(question.id, "") if question else ""
+                    )
+                    row.append(response_value)
+
+                # ORGANIZATIONAL CULTURE (orders 36-38)
+                for order_num in range(36, 39):
+                    question = questions_by_order.get(order_num)
+                    response_value = (
+                        response_dict.get(question.id, "") if question else ""
+                    )
+                    row.append(response_value)
+
+                # NATURE OF WORK (orders 39-41)
+                for order_num in range(39, 42):
+                    question = questions_by_order.get(order_num)
+                    response_value = (
+                        response_dict.get(question.id, "") if question else ""
+                    )
+                    row.append(response_value)
+
+                # VIGOUR (orders 42-44)
+                for order_num in range(42, 45):
+                    question = questions_by_order.get(order_num)
+                    response_value = (
+                        response_dict.get(question.id, "") if question else ""
+                    )
+                    row.append(response_value)
+
+                # DEDICATION (orders 45-47)
+                for order_num in range(45, 48):
+                    question = questions_by_order.get(order_num)
+                    response_value = (
+                        response_dict.get(question.id, "") if question else ""
+                    )
+                    row.append(response_value)
+
+                # ABSORPTION (orders 48-50)
+                for order_num in range(48, 51):
+                    question = questions_by_order.get(order_num)
+                    response_value = (
+                        response_dict.get(question.id, "") if question else ""
+                    )
+                    row.append(response_value)
 
                 writer.writerow(row)
 
